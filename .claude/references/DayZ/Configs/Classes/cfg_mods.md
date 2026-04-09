@@ -69,7 +69,7 @@ class CfgMods
 
 Поле `value` — имя функции точки входа. Если пусто — используется дефолтная. Поле `files[]` — пути к директориям/файлам скриптов, которые компилируются вместе с оригинальными скриптами модуля.
 
-> Доп. информация: `@.claude/references/DayZ/Scripts/script_modules.md`
+> Доп. информация: `@.claude/references/DayZ/Scripts/.INDEX.md`
 
 ### Пример — ванильный DLC (Sakhal/Frostline)
 
