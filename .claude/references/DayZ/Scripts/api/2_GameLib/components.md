@@ -50,7 +50,7 @@
 | `OnComponentRemove(IEntity owner, ScriptComponent other)` | Другой компонент удалён из сущности |
 | `OnDelete(IEntity owner)` | Сущность/компонент уничтожается |
 
-Остальные `EOn*` события (Frame, Touch, Simulate, Contact и т.д.) аналогичны `IEntity` — см. `@.claude/references/DayZ/Scripts/1_Core/entity.md`.
+Остальные `EOn*` события (Frame, Touch, Simulate, Contact и т.д.) аналогичны `IEntity` — см. `@.claude/references/DayZ/Scripts/api/1_Core/entity.md`.
 
 ### GenericComponentClass
 
