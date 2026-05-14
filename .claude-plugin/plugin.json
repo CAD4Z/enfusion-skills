@@ -6,7 +6,7 @@
     "name": "hurfy",
     "url": "https://github.com/hurfy"
   },
-  "repository": "https://github.com/TomatoLabz/Scope",
+  "repository": "https://github.com/TomatoLabz/DayZScope",
   "skills": [
     "./skills/dayz-scripting",
     "./skills/dayz-ui"

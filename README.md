@@ -25,7 +25,7 @@ Claude Code plugin for DayZ modding — skills, agents, and reference docs for w
 ## Install
 
 ```
-/plugin marketplace add TomatoLabz/Scope
+/plugin marketplace add TomatoLabz/DayZScope
 /plugin install dayz-scope@tomatolabz
 ```
 
