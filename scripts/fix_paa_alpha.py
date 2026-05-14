@@ -2,20 +2,25 @@
 
 import os
 
-        
-def main() -> None:
+def read() -> str:
     files: list[str] = os.listdir("./")
-    flag : str = "0400000001000000"
 
     for fileName in files:
         if fileName.endswith(".paa"):
             with open("./" + "\\" + fileName, "r+b") as file:
-                file.seek(2, 0)
+                return file
 
-                for _ in range(5):
-                    if file.read(8) == b'GGATGALF':
-                        file.write(bytes.fromhex(flag))
-                        break
+
+def main() -> None:
+    flag : str = "0400000001000000"
+    file : str = read()
+
+    file.seek(2, 0)
+
+    for _ in range(5):
+        if file.read(8) == b'GGATGALF':
+            file.write(bytes.fromhex(flag))
+            break
 
 
 if __name__ == "__main__":
