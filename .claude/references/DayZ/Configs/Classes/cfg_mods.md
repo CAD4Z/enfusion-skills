@@ -1,19 +1,19 @@
-Обязателен в PBO, которые добавляют или модифицируют скрипты, инпуты или скелеты. Описывает мод и указывает, какие скриптовые модули подключать.
+Mandatory in PBOs that add or modify scripts, inputs or skeletons. Describes the mod and specifies which script modules to attach.
 
-### Структура
+### Structure
 
 ```cpp
 class CfgMods
 {
     class MyMod
     {
-        type = "mod";                                           // обязательное поле
-        dir = "MyMod";                                          // директория мода
-        inputs = "mods\mymod\inputs\inputs.xml";                // (опц.) кастомные инпуты
-        skeletonDefinitions = "mods\mymod\skeleton\skel.xml";   // (опц.) кастомные скелеты
-        dependencies[] = { "Game" };                            // (опц.) зависимости классов
+        type = "mod";                                           // required field
+        dir = "MyMod";                                          // mod directory
+        inputs = "mods\mymod\inputs\inputs.xml";                // (opt.) custom inputs
+        skeletonDefinitions = "mods\mymod\skeleton\skel.xml";   // (opt.) custom skeletons
+        dependencies[] = { "Game" };                            // (opt.) class dependencies
 
-        // Презентация (используется в ванильных DLC-аддонах, для модов — через mod.cpp)
+        // Presentation (used in vanilla DLC addons; for mods — via mod.cpp)
         name = "My Mod";
         picture = "";
         logo = "";
@@ -22,10 +22,10 @@ class CfgMods
 
         class defs
         {
-            // Подключение скриптов к модулям движка
+            // Attaching scripts to engine modules
             class engineScriptModule        // 1_Core
             {
-                value = "";                 // точка входа (пусто = дефолтная)
+                value = "";                 // entry point (empty = default)
                 files[] = { "MyMod/scripts/1_Core" };
             };
             class gameLibScriptModule       // 2_GameLib
@@ -35,7 +35,7 @@ class CfgMods
             };
             class gameScriptModule          // 3_Game
             {
-                value = "";                 // можно переопределить: "CreateGameMod"
+                value = "";                 // can be overridden: "CreateGameMod"
                 files[] = { "MyMod/scripts/3_Game" };
             };
             class worldScriptModule         // 4_World
@@ -49,7 +49,7 @@ class CfgMods
                 files[] = { "MyMod/scripts/5_Mission" };
             };
 
-            // Опционально: кастомные GUI ресурсы
+            // Optional: custom GUI resources
             class imageSets
             {
                 files[] = { "MyMod/gui/imagesets/mod.imageset" };
@@ -63,15 +63,15 @@ class CfgMods
 };
 ```
 
-### Скриптовые модули
+### Script modules
 
-Определяются только те, которые мод фактически модифицирует.
+Only those that the mod actually modifies are defined.
 
-Поле `value` — имя функции точки входа. Если пусто — используется дефолтная. Поле `files[]` — пути к директориям/файлам скриптов, которые компилируются вместе с оригинальными скриптами модуля.
+The `value` field is the name of the entry-point function. If empty, the default is used. The `files[]` field contains paths to script directories/files that are compiled together with the module's original scripts.
 
-> Доп. информация: `@.claude/references/DayZ/Scripts/.INDEX.md`
+> Further information: `@.claude/references/DayZ/Scripts/api/INDEX.md`
 
-### Пример — ванильный DLC (Sakhal/Frostline)
+### Example — vanilla DLC (Sakhal/Frostline)
 
 ```cpp
 class CfgMods

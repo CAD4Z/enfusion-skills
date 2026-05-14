@@ -1,127 +1,127 @@
-AI-инфраструктура: навигация, группы, сенсорика. Фундамент, на котором работают все AI-сущности.
+AI infrastructure: navigation, groups, sensing. The foundation on which all AI entities operate.
 
-Вся инфраструктура — **proto native**. Скрипты только вызывают и настраивают, вся обработка в C++.
+The entire infrastructure is **proto native**. Scripts only call and configure it — all processing happens in C++.
 
-### Навигация (NavMesh)
+### Navigation (NavMesh)
 
-Мир использует предрассчитанную навигационную сетку (NavMesh). Доступ: `g_Game.GetWorld().GetAIWorld()`.
+The world uses a precomputed navigation mesh (NavMesh). Access: `g_Game.GetWorld().GetAIWorld()`.
 
-#### Запросы к навмешу
+#### Navmesh queries
 
-Три операции, каждая принимает `PGFilter` для фильтрации полигонов:
+Three operations, each accepting a `PGFilter` for polygon filtering:
 
-- **FindPath(from, to, filter, out waypoints)** — поиск пути. Возвращает массив waypoint-ов включая начальную и конечную позиции
-- **RaycastNavMesh(from, to, filter, out hitPos, out hitNormal)** — луч по навмешу. `true` = луч упёрся в край
-- **SampleNavmeshPosition(pos, maxDist, filter, out result)** — ближайшая точка на навмеше в радиусе
+- **FindPath(from, to, filter, out waypoints)** — path search. Returns an array of waypoints including the start and end positions
+- **RaycastNavMesh(from, to, filter, out hitPos, out hitNormal)** — ray along the navmesh. `true` = the ray hit an edge
+- **SampleNavmeshPosition(pos, maxDist, filter, out result)** — the closest point on the navmesh within the radius
 
-#### PGFilter — фильтр полигонов
+#### PGFilter — polygon filter
 
-Определяет, какие полигоны навмеша доступны для поиска. Три набора флагов:
+Defines which navmesh polygons are available for search. Three flag sets:
 
-- **Include** — полигоны с этими флагами рассматриваются
-- **Exclude** — полигоны с этими флагами исключаются
-- **Exclusive** — только полигоны с этими флагами (приоритет над include)
+- **Include** — polygons with these flags are considered
+- **Exclude** — polygons with these flags are excluded
+- **Exclusive** — only polygons with these flags (takes priority over include)
 
-`SetCost(areaType, cost)` — стоимость прохода по типу зоны. Влияет на выбор маршрута при pathfinding.
+`SetCost(areaType, cost)` — traversal cost for a zone type. Affects route selection during pathfinding.
 
-#### PGPolyFlags — возможности полигонов
+#### PGPolyFlags — polygon capabilities
 
-Битовая маска, описывающая что можно делать на полигоне:
+A bitmask describing what can be done on the polygon:
 
-| Флаг | Назначение |
-|------|-----------|
-| `WALK` | Обычное перемещение (земля, дороги) |
-| `DOOR` | Проход через двери |
-| `INSIDE` | Внутри зданий |
-| `SWIM` / `SWIM_SEA` | Плавание (пресная / морская вода) |
-| `LADDER` | Лестницы |
-| `JUMP_OVER` / `JUMP_DOWN` | Перепрыгивание / спрыгивание |
-| `CLIMB` | Карабканье |
-| `CRAWL` / `CROUCH` | Ползком / в присяде |
-| `DISABLED` | Отключённый полигон |
-| `UNREACHABLE` | Недостижимый |
-| `JUMP` | Композит: `JUMP_OVER | JUMP_DOWN` |
-| `SPECIAL` | Композит: `JUMP | CLIMB | CRAWL | CROUCH` |
+| Flag | Purpose |
+|------|---------|
+| `WALK` | Normal movement (ground, roads) |
+| `DOOR` | Passage through doors |
+| `INSIDE` | Inside buildings |
+| `SWIM` / `SWIM_SEA` | Swimming (fresh / sea water) |
+| `LADDER` | Ladders |
+| `JUMP_OVER` / `JUMP_DOWN` | Jumping over / jumping down |
+| `CLIMB` | Climbing |
+| `CRAWL` / `CROUCH` | Crawling / crouched |
+| `DISABLED` | Disabled polygon |
+| `UNREACHABLE` | Unreachable |
+| `JUMP` | Composite: `JUMP_OVER | JUMP_DOWN` |
+| `SPECIAL` | Composite: `JUMP | CLIMB | CRAWL | CROUCH` |
 
-#### PGAreaType — типы зон навмеша
+#### PGAreaType — navmesh zone types
 
-Определяют тип поверхности для расчёта стоимости:
+Define the surface type for cost calculation:
 
 `TERRAIN`, `WATER` / `WATER_DEEP` / `WATER_SEA` / `WATER_SEA_DEEP`, `OBJECTS` / `OBJECTS_NOFFCON`, `BUILDING`, `ROADWAY` / `ROADWAY_BUILDING`, `TREE`, `DOOR_OPENED` / `DOOR_CLOSED`, `LADDER`, `CRAWL`, `CROUCH`, `FENCE_WALL`, `JUMP`
 
 ---
 
-### Группы (AIWorld → AIGroup → AIAgent)
+### Groups (AIWorld → AIGroup → AIAgent)
 
-Трёхуровневая иерархия управления AI-сущностями.
+A three-tier hierarchy for managing AI entities.
 
-**AIWorld** — синглтон, управляет всеми группами. Создание групп:
-- `CreateGroup(templateName)` — группа с поведением из шаблона
-- `CreateDefaultGroup()` — группа без поведения
+**AIWorld** — a singleton, manages all groups. Group creation:
+- `CreateGroup(templateName)` — group with behavior from a template
+- `CreateDefaultGroup()` — group without behavior
 
-Важно: **пустые группы автоматически удаляются на следующем кадре**. Управление группами — ответственность AIWorld (`DeleteGroup()` уничтожает группу вместе со всеми агентами).
+Important: **empty groups are automatically deleted on the next frame**. Group management is the responsibility of AIWorld (`DeleteGroup()` destroys the group along with all of its agents).
 
-**AIGroup** — контейнер агентов. `AddAgent()` / `RemoveAgent()` для ручного управления составом. `GetBehaviour()` — получить поведение группы.
+**AIGroup** — agent container. `AddAgent()` / `RemoveAgent()` for manual roster management. `GetBehaviour()` — get the group's behavior.
 
-**AIAgent** — индивидуальный агент. Минимальный скриптовый интерфейс:
-- `SetKeepInIdle(bool)` — удерживать в idle-состоянии
-- `GetGroup()` — текущая группа
+**AIAgent** — an individual agent. Minimal script interface:
+- `SetKeepInIdle(bool)` — keep in idle state
+- `GetGroup()` — current group
 
-#### Групповое поведение заражённых
+#### Infected group behavior
 
-`BehaviourGroupInfectedPack` — единственное реализованное групповое поведение. Патрулирование по waypoint-ам:
+`BehaviourGroupInfectedPack` — the only implemented group behavior. Patrols along waypoints:
 
-- `SetWaypoints(params[], startIndex, forward, loop)` — задать маршрут. Каждый waypoint: позиция + радиус
-- `loop=true` — цикл, `loop=false` — патруль (туда-обратно)
-- `SetCurrentWaypoint(index)` — принудительная смена текущей точки
-
----
-
-### AIBehaviour — система поведений
-
-Двухуровневая архитектура, полностью native:
-
-**AIBehaviourHLData** — шаблон поведения, парсится из конфига:
-- `ParseBehaviourSlot(name)` — зарегистрировать слот поведения ("Calm", "Attracted", "Disturbed", "Alerted")
-- `ParseAlertLevel(name)` — зарегистрировать уровень тревоги
-- `ReadParamValue(name, default)` — прочитать параметр из конфига
-
-**AIBehaviourHL** — рантайм-поведение, тикается каждый кадр:
-- `Simulate(timeDelta)` — вызывается движком каждый кадр
-- `OnDamage(damage, source)` — реакция на получение урона
-- `OnAnimationEvent(nameCrc)` — реакция на анимационное событие
-- `SetNextBehaviour(crc)` / `SwitchToNextBehaviour()` — переключение между слотами поведения
-
-Пример: `AIBehaviourHLZombie2` определяет слоты Calm/Attracted/Disturbed/Alerted и параметры `damageToCrawl`, `crawlProbability`.
+- `SetWaypoints(params[], startIndex, forward, loop)` — set the route. Each waypoint: position + radius
+- `loop=true` — loop, `loop=false` — patrol (back and forth)
+- `SetCurrentWaypoint(index)` — forcibly change the current waypoint
 
 ---
 
-### Сенсорика — как AI воспринимает мир
+### AIBehaviour — behavior system
 
-Две системы: шум (слух) и видимость (зрение). Обе работают **только на сервере**.
+A two-tier architecture, fully native:
 
-#### NoiseSystem — шум
+**AIBehaviourHLData** — behavior template, parsed from config:
+- `ParseBehaviourSlot(name)` — register a behavior slot ("Calm", "Attracted", "Disturbed", "Alerted")
+- `ParseAlertLevel(name)` — register an alert level
+- `ReadParamValue(name, default)` — read a parameter from the config
 
-Глобальная система (`g_Game.GetNoiseSystem()`). Источники шума вызывают один из трёх методов:
+**AIBehaviourHL** — runtime behavior, ticked every frame:
+- `Simulate(timeDelta)` — called by the engine every frame
+- `OnDamage(damage, source)` — reaction to taking damage
+- `OnAnimationEvent(nameCrc)` — reaction to an animation event
+- `SetNextBehaviour(crc)` / `SwitchToNextBehaviour()` — switching between behavior slots
 
-| Метод | Назначение |
-|-------|-----------|
-| `AddNoise(entity, params, multiplier)` | Шум от сущности в её позиции |
-| `AddNoisePos(entity, pos, params, multiplier)` | Шум от сущности в указанной позиции |
-| `AddNoiseTarget(pos, lifetime, params, multiplier)` | Визуальный "пинг" — AI "видит" точку в течение `lifetime` секунд |
+Example: `AIBehaviourHLZombie2` defines slots Calm/Attracted/Disturbed/Alerted and the parameters `damageToCrawl`, `crawlProbability`.
 
-`NoiseParams` загружаются из конфигов (`NoiseParams.Load("cfgPath")`). Конфиг определяет базовую силу и дальность шума.
+---
 
-**Формула итогового множителя (для игрока):**
+### Sensing — how the AI perceives the world
+
+Two systems: noise (hearing) and visibility (sight). Both run **server-side only**.
+
+#### NoiseSystem — noise
+
+Global system (`g_Game.GetNoiseSystem()`). Noise sources call one of three methods:
+
+| Method | Purpose |
+|--------|---------|
+| `AddNoise(entity, params, multiplier)` | Noise from an entity at its position |
+| `AddNoisePos(entity, pos, params, multiplier)` | Noise from an entity at the specified position |
+| `AddNoiseTarget(pos, lifetime, params, multiplier)` | Visual "ping" — the AI "sees" the point for `lifetime` seconds |
+
+`NoiseParams` are loaded from configs (`NoiseParams.Load("cfgPath")`). The config defines the base strength and range of the noise.
+
+**Resulting multiplier formula (for the player):**
 
 ```
 noise = (shoesCoef + surfaceCoef * 0.25) / 1.25 * speedCoef * weatherReduction
 ```
 
-Множители скорости (`PlayerConstants`):
+Speed multipliers (`PlayerConstants`):
 
-| Состояние | Множитель |
-|-----------|-----------|
+| State | Multiplier |
+|-------|-----------|
 | Idle | 0 |
 | Walk | 0.4 |
 | Crouch run | 0.6 |
@@ -129,42 +129,42 @@ noise = (shoesCoef + surfaceCoef * 0.25) / 1.25 * speedCoef * weatherReduction
 | Sprint | 1.0 |
 | Roll (prone) | 2.0 |
 
-Множители обуви:
+Shoe multipliers:
 
-| Обувь | Множитель |
+| Footwear | Multiplier |
+|----------|-----------|
+| Barefoot | 0.45 |
+| Sneakers | 0.6 |
+| Boots | 0.85 |
+
+Surface: value from the surface config (`GetSurfaceNoise()`), weighted with a coefficient of 0.25.
+
+**Weather** reduces noise: rain up to −50% (`RAIN_NOISE_REDUCTION_WEIGHT = 0.5`), snowfall up to −25% (`SNOWFALL_NOISE_REDUCTION_WEIGHT = 0.25`). The maximum of the two reductions is used; they are not summed.
+
+**Noise sources** besides footsteps: doors, fences, vehicles, grenades, fireplaces, alarm clocks, road flares, flare guns, traps, gunshots. Each loads its own `NoiseParams` from config.
+
+#### AITargetCallbacks — visibility
+
+The system through which targets (primarily the player) report their visibility to the AI. Registration: `EntityAI.SetAITargetCallbacks()`.
+
+**AITargetCallbacksPlayer** — the implementation for the player:
+
+**Vision point** (`GetVisionPointPositionWS`): depends on the observing zombie's mind state:
+- ALERTED and above → the player's head
+- CALM → chest (bone `Spine3`)
+- Fallback → position + 1m up
+
+**Vision modifier** (`GetMaxVisionRangeModifier`): the average of speed and stance coefficients:
+
+| State | Multiplier |
 |-------|-----------|
-| Босиком | 0.45 |
-| Кроссовки | 0.6 |
-| Ботинки | 0.85 |
+| Standing | 1.5 |
+| Crouch | 0.6 |
+| Prone | 0.15 |
+| Run/Sprint | 1.0 |
+| Walk | 0.66 |
+| Standing still | 0.3 |
 
-Поверхность: значение из конфига поверхности (`GetSurfaceNoise()`), взвешивается с коэффициентом 0.25.
+Final modifier: `(speedCoef + stanceCoef) / 2`. Example: running while standing = `(1.0 + 1.5) / 2 = 1.25`, walking while prone = `(0.66 + 0.15) / 2 = 0.405`.
 
-**Погода** снижает шум: дождь до −50% (`RAIN_NOISE_REDUCTION_WEIGHT = 0.5`), снегопад до −25% (`SNOWFALL_NOISE_REDUCTION_WEIGHT = 0.25`). Берётся максимальное из двух снижение, не суммируется.
-
-**Источники шума** помимо шагов: двери, заборы, транспорт, гранаты, костры, будильники, дорожные фальшфейеры, ракетницы, ловушки, выстрелы. Каждый загружает свои `NoiseParams` из конфига.
-
-#### AITargetCallbacks — видимость
-
-Система, через которую цели (в первую очередь игрок) сообщают AI о своей заметности. Регистрация: `EntityAI.SetAITargetCallbacks()`.
-
-**AITargetCallbacksPlayer** — реализация для игрока:
-
-**Точка обзора** (`GetVisionPointPositionWS`): зависит от mind state зомби-наблюдателя:
-- ALERTED и выше → голова игрока
-- CALM → грудь (кость `Spine3`)
-- Fallback → позиция + 1м вверх
-
-**Модификатор видимости** (`GetMaxVisionRangeModifier`): среднее из коэффициента скорости и стойки:
-
-| Состояние | Множитель |
-|-----------|-----------|
-| Стоя | 1.5 |
-| Присед | 0.6 |
-| Лёжа | 0.15 |
-| Бег/Спринт | 1.0 |
-| Шаг | 0.66 |
-| Стоя на месте | 0.3 |
-
-Итоговый модификатор: `(speedCoef + stanceCoef) / 2`. Пример: бег стоя = `(1.0 + 1.5) / 2 = 1.25`, шаг лёжа = `(0.66 + 0.15) / 2 = 0.405`.
-
-Стойка влияет на интерпретацию скорости: бег в присяде считается как шаг, спринт в присяде — как `CROUCH_RUN`, любое движение лёжа — как шаг.
+Stance affects how speed is interpreted: running while crouched counts as a walk, sprinting while crouched as `CROUCH_RUN`, any movement while prone as a walk.

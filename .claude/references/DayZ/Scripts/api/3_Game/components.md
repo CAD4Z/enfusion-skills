@@ -1,112 +1,112 @@
-Компонентная система и температурный источник. Источники: `tools/component.c`, `systems/temperature/`
+Component system and temperature source. Sources: `tools/component.c`, `systems/temperature/`
 
 ### Component
 
-Базовый класс компонентов сущностей. Источник: `tools/component.c`
+Base class for entity components. Source: `tools/component.c`
 
-#### Типы компонентов
+#### Component types
 
-| Константа | Значение | Описание |
-|-----------|----------|----------|
-| `COMP_TYPE_ENTITY_DEBUG` | `0` | Отладка сущности |
-| `COMP_TYPE_ENERGY_MANAGER` | `1` | Энергетическая система |
-| `COMP_TYPE_BODY_STAGING` | `2` | Стадии разделки тела |
-| `COMP_TYPE_ANIMAL_BLEEDING` | `3` | Кровотечение животных |
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `COMP_TYPE_ENTITY_DEBUG` | `0` | Entity debug |
+| `COMP_TYPE_ENERGY_MANAGER` | `1` | Energy system |
+| `COMP_TYPE_BODY_STAGING` | `2` | Body staging (skinning) stages |
+| `COMP_TYPE_ANIMAL_BLEEDING` | `3` | Animal bleeding |
 
 #### Lifecycle
 
-| Метод | Описание |
-|-------|----------|
-| `SetParentEntityAI(parent)` | Привязка к сущности |
-| `Event_OnAwake()` | Пробуждение |
-| `Event_OnInit()` | Инициализация |
-| `Event_OnFrame(entity, timeslice)` | Обновление каждый кадр |
+| Method | Description |
+|--------|-------------|
+| `SetParentEntityAI(parent)` | Bind to entity |
+| `Event_OnAwake()` | Awake |
+| `Event_OnInit()` | Initialization |
+| `Event_OnFrame(entity, timeslice)` | Per-frame update |
 
-#### Использование
+#### Usage
 
 ```enforcescript
-// Создание через EntityAI
+// Creating through EntityAI
 entity.CreateComponent(COMP_TYPE_ENERGY_MANAGER);
 ComponentEnergyManager em = entity.GetComponent(COMP_TYPE_ENERGY_MANAGER);
 ```
 
 ### ComponentEnergyManager
 
-Управление электрической энергией предметов. Сетевая синхронизация: `m_IsSwichedOn`, `m_CanWork`, `m_IsPlugged`, `m_Energy`.
+Manages electrical energy of items. Network synchronization: `m_IsSwichedOn`, `m_CanWork`, `m_IsPlugged`, `m_Energy`.
 
-#### Ключевые методы
+#### Key methods
 
-| Метод | Описание |
-|-------|----------|
-| `SwitchOn()` / `SwitchOff()` | Включить/выключить |
-| `CanWork()` | Может ли работать |
-| `GetEnergy()` / `SetEnergy(value)` | Текущий заряд |
-| `HasEnoughStoredEnergy()` | Достаточно энергии |
-| `GetEnergyMax()` | Максимальная ёмкость |
-| `GetEnergyUsage()` | Расход в секунду |
-| `IsPlugged()` | Подключён к источнику |
-| `PlugThisInto(source)` / `UnplugThis()` | Подключение/отключение |
-| `GetEnergySource()` | Источник энергии |
-| `ConsumeEnergy(amount)` | Потребить |
-| `AddEnergy(amount)` | Добавить |
-| `IsWorking()` | Работает сейчас |
-| `SetDebugPlugs(enable)` | Отладочный режим |
+| Method | Description |
+|--------|-------------|
+| `SwitchOn()` / `SwitchOff()` | Turn on/off |
+| `CanWork()` | Whether it can work |
+| `GetEnergy()` / `SetEnergy(value)` | Current charge |
+| `HasEnoughStoredEnergy()` | Enough energy |
+| `GetEnergyMax()` | Maximum capacity |
+| `GetEnergyUsage()` | Consumption per second |
+| `IsPlugged()` | Plugged into a source |
+| `PlugThisInto(source)` / `UnplugThis()` | Plug in / unplug |
+| `GetEnergySource()` | Energy source |
+| `ConsumeEnergy(amount)` | Consume |
+| `AddEnergy(amount)` | Add |
+| `IsWorking()` | Currently working |
+| `SetDebugPlugs(enable)` | Debug mode |
 
 ### ComponentBodyStaging
 
-Стадии разделки тел (животных/игроков).
+Body staging (skinning) stages for animals/players.
 
 ### ComponentAnimalBleeding
 
-Кровотечение животных.
+Animal bleeding.
 
 ### ComponentsBank
 
-Внутренний реестр компонентов сущности. Создаётся лениво при первом `GetComponent()`.
+Internal entity component registry. Created lazily on the first `GetComponent()`.
 
-| Метод | Описание |
-|-------|----------|
-| `GetComponent(comp_type, extended)` | Получить/создать компонент |
-| `DeleteComponent(comp_type)` | Удалить |
-| `IsComponentAlreadyExist(comp_type)` | Проверка |
+| Method | Description |
+|--------|-------------|
+| `GetComponent(comp_type, extended)` | Get/create component |
+| `DeleteComponent(comp_type)` | Delete |
+| `IsComponentAlreadyExist(comp_type)` | Check |
 
 ---
 
 ## UniversalTemperatureSource
 
-Универсальный источник температуры. Источник: `systems/temperature/`
+Universal temperature source. Source: `systems/temperature/`
 
-Система расчёта температуры для костров, печей, транспорта и любых нагревающих/охлаждающих объектов.
+Temperature calculation system for campfires, ovens, vehicles, and any heating/cooling objects.
 
 ### UniversalTemperatureSource
 
-| Метод | Описание |
-|-------|----------|
-| `SetActive(state)` | Активировать/деактивировать |
-| `IsActive()` | Активен |
-| `GetTemperature()` | Текущая температура |
-| `Update(settings)` | Обновить расчёт |
+| Method | Description |
+|--------|-------------|
+| `SetActive(state)` | Activate/deactivate |
+| `IsActive()` | Active |
+| `GetTemperature()` | Current temperature |
+| `Update(settings)` | Update calculation |
 
 ### UniversalTemperatureSourceLambdaBase
 
-Лямбда-функция расчёта температуры. Переопределяется для кастомной логики нагрева/охлаждения.
+Lambda function for temperature calculation. Overridden for custom heating/cooling logic.
 
 ### TemperatureAccessManager
 
-Менеджер доступа к температурным данным. Центральный узел обновления температур.
+Manager of access to temperature data. Central hub for temperature updates.
 
 ### TemperatureAccessComponent
 
-Компонент привязки к EntityAI. Создаётся автоматически для сущностей с `CanHaveTemperature() == true`.
+EntityAI binding component. Created automatically for entities with `CanHaveTemperature() == true`.
 
 ### TemperatureData
 
-Контейнер температурных данных.
+Container of temperature data.
 
-| Поле | Описание |
-|------|----------|
-| `m_Value` | Текущая температура |
-| `m_Min` / `m_Max` | Пределы |
-| `m_FreezeThreshold` / `m_ThawThreshold` | Пороги замерзания/оттаивания |
-| `m_FreezeTime` / `m_ThawTime` | Время замерзания/оттаивания |
-| `m_HeatPermeabilityCoef` | Коэффициент теплопроницаемости |
+| Field | Description |
+|-------|-------------|
+| `m_Value` | Current temperature |
+| `m_Min` / `m_Max` | Limits |
+| `m_FreezeThreshold` / `m_ThawThreshold` | Freezing/thawing thresholds |
+| `m_FreezeTime` / `m_ThawTime` | Freezing/thawing duration |
+| `m_HeatPermeabilityCoef` | Heat permeability coefficient |

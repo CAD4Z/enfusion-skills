@@ -1,6 +1,6 @@
-Расширенные сущности GameLib. Условие: `COMPONENT_SYSTEM`. Источник: `entities/gamelibentities.c`
+Extended GameLib entities. Condition: `COMPONENT_SYSTEM`. Source: `entities/gamelibentities.c`
 
-### Иерархия наследования
+### Inheritance hierarchy
 
 ```
 IEntity (1_Core)
@@ -20,42 +20,42 @@ IEntity (1_Core)
 
 ### GenericEntity
 
-Наследует `IEntity`. Добавляет компонентную систему.
+Inherits `IEntity`. Adds the component system.
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `Show(bool show)` | — | Показать/скрыть сущность |
-| `FindComponent(typename typeName)` | `GenericComponent` | Найти первый компонент по типу |
-| `InsertComponent(GenericComponent component)` | — | Добавить компонент. Вызывает `OnComponentInsert` на всех компонентах, затем `EOnInit` (при маске) и `EOnActivate` |
-| `RemoveComponent(GenericComponent component)` | — | Убрать компонент (без удаления). Вызывает `EOnDeactivate` и `OnComponentRemove` |
-| `DeleteComponent(GenericComponent component)` | — | Убрать и удалить компонент. Дополнительно вызывает `OnDelete` |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `Show(bool show)` | — | Show/hide the entity |
+| `FindComponent(typename typeName)` | `GenericComponent` | Find the first component by type |
+| `InsertComponent(GenericComponent component)` | — | Add a component. Calls `OnComponentInsert` on all components, then `EOnInit` (if masked) and `EOnActivate` |
+| `RemoveComponent(GenericComponent component)` | — | Remove the component (without deletion). Calls `EOnDeactivate` and `OnComponentRemove` |
+| `DeleteComponent(GenericComponent component)` | — | Remove and delete the component. Additionally calls `OnDelete` |
 
-В Workbench: `_WB_AfterWorldUpdate(float timeSlice)` — вызывается после обновления мира для выделенных сущностей (только `WORKBENCH`).
+In Workbench: `_WB_AfterWorldUpdate(float timeSlice)` — called after world update for selected entities (only `WORKBENCH`).
 
 ### LightEntity
 
-Наследует `GenericEntity`. Управление источником света.
+Inherits `GenericEntity`. Manages a light source.
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `SetDiffuseColor(int color)` | — | Цвет рассеянного света |
-| `GetDiffuseColor()` | `int` | Текущий цвет |
-| `SetRadius(float radius)` | — | Радиус |
-| `GetRadius()` | `float` | Текущий радиус |
-| `SetConeAngle(float angle)` | — | Угол конуса (только `LT_SPOT`) |
-| `GetConeAngle()` | `float` | Текущий угол конуса |
-| `SetCastShadow(bool enable)` | — | Отбрасывание теней |
-| `IsCastShadow(bool enable)` | `bool` | Отбрасывает ли тени |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `SetDiffuseColor(int color)` | — | Diffuse light color |
+| `GetDiffuseColor()` | `int` | Current color |
+| `SetRadius(float radius)` | — | Radius |
+| `GetRadius()` | `float` | Current radius |
+| `SetConeAngle(float angle)` | — | Cone angle (only `LT_SPOT`) |
+| `GetConeAngle()` | `float` | Current cone angle |
+| `SetCastShadow(bool enable)` | — | Shadow casting |
+| `IsCastShadow(bool enable)` | `bool` | Whether it casts shadows |
 
 ### CharacterEntity
 
-Наследует `BasicEntity`. Управляемый персонаж.
+Inherits `BasicEntity`. A controllable character.
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `Teleport(vector transform[4])` | — | Телепортация (матрица 4x4) |
-| `GetCurrentMovement()` | `CharacterMovement` | Текущий тип движения |
-| `GetCurrentStance()` | `CharacterStance` | Текущая стойка |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `Teleport(vector transform[4])` | — | Teleport (4x4 matrix) |
+| `GetCurrentMovement()` | `CharacterMovement` | Current movement type |
+| `GetCurrentStance()` | `CharacterStance` | Current stance |
 
 #### CharacterMovement
 
@@ -65,18 +65,18 @@ IEntity (1_Core)
 
 `STANCE_ERECT`, `STANCE_CROUCH`, `STANCE_PRONE`, `STANCE_ERECT_RAISED`, `STANCE_CROUCH_RAISED`, `STANCE_PRONE_RAISED`
 
-### Пустые классы-маркеры
+### Empty marker classes
 
-`GenericWorldEntity`, `GenericTerrainEntity`, `GenericWorldLightEntity`, `GenericWorldFogEntity`, `BasicEntity`, `BasicCamera`, `ModelEntity`, `VRHandEntity`, `WorldEntityClass`, `WorldEntity` — без дополнительных методов, используются для типизации и фильтрации.
+`GenericWorldEntity`, `GenericTerrainEntity`, `GenericWorldLightEntity`, `GenericWorldFogEntity`, `BasicEntity`, `BasicCamera`, `ModelEntity`, `VRHandEntity`, `WorldEntityClass`, `WorldEntity` — no additional methods, used for typing and filtering.
 
-### Шаблонные сущности (GAME_TEMPLATE)
+### Template entities (GAME_TEMPLATE)
 
-Примеры/шаблоны под `#ifdef GAME_TEMPLATE`, не являются частью API. Источники: `entities/script*.c`, `entities/rendertarget.c`, `entities/worldsmenu.c`.
+Examples/templates under `#ifdef GAME_TEMPLATE`, not part of the API. Sources: `entities/script*.c`, `entities/rendertarget.c`, `entities/worldsmenu.c`.
 
-| Класс | Описание |
-|-------|----------|
-| `ScriptCamera` | Free-fly камера с отладочным UI |
-| `ScriptLight` | Точечный источник света |
-| `ScriptModel` | Модель со статической/динамической физикой |
-| `RenderTarget` | Виджет рендер-таргета для камеры |
-| `WorldsMenu` | Отладочное меню выбора мира |
+| Class | Description |
+|-------|-------------|
+| `ScriptCamera` | Free-fly camera with debug UI |
+| `ScriptLight` | Point light source |
+| `ScriptModel` | Model with static/dynamic physics |
+| `RenderTarget` | Render-target widget for the camera |
+| `WorldsMenu` | Debug world-selection menu |

@@ -1,129 +1,129 @@
-`4_World` — системы. Инвентарь, температура, ловля, рецепты, эмоуты, VirtualHud. Источники: `systems/`, `classes/recipes/`, `classes/emoteclasses/`, `classes/virtualhud/`
+`4_World` — systems. Inventory, temperature, catching, recipes, emotes, VirtualHud. Sources: `systems/`, `classes/recipes/`, `classes/emoteclasses/`, `classes/virtualhud/`
 
-### Инвентарь (DayZPlayerInventory)
+### Inventory (DayZPlayerInventory)
 
-`DayZPlayerInventory extends HumanInventoryWithFSM`. Добавляет анимированную Hand FSM, отложенные события и серверную валидацию поверх `HumanInventory` из 3_Game.
+`DayZPlayerInventory extends HumanInventoryWithFSM`. Adds an animated Hand FSM, deferred events, and server-side validation on top of `HumanInventory` from 3_Game.
 
-#### Синхронизация
+#### Synchronization
 
 ```
-Клиент → StoreInputUserData → [сеть] → ProcessInputData
- → Валидация (дистанция src/dst, juncture lock, LocationCanMoveEntity)
- → Выполнение или juncture-ожидание
+Client → StoreInputUserData → [network] → ProcessInputData
+ → Validation (src/dst distance, juncture lock, LocationCanMoveEntity)
+ → Execute or juncture wait
 ```
 
-5 подклассов `DeferredEvent` для атомарных резервирований слотов при предиктивных операциях.
+Five `DeferredEvent` subclasses for atomic slot reservations during predictive operations.
 
 #### AttachmentsOutOfReach
 
-Проверка доступности через memory points или LOD selections. XZ и Y проверяются независимо.
+Reach validation via memory points or LOD selections. XZ and Y are checked independently.
 
 ---
 
-### Температурные источники (UniversalTemperatureSource)
+### Temperature sources (UniversalTemperatureSource)
 
-`UTemperatureSource` — объект-источник тепла рядом с сущностями.
+`UTemperatureSource` — a heat-source object near entities.
 
-#### Как работает
+#### How it works
 
 `UniversalTemperatureSourceLambdaBaseImpl.Execute()`:
-1. AABB box query → фильтрация по сфере
-2. Сушка предметов (коэффициент обратно-пропорционален дистанции)
-3. Нагрев сущностей рекурсивно через весь инвентарь/аттачменты
-4. На каждом уровне учитывается `HeatPermeabilityCoef`
+1. AABB box query → filter by sphere
+2. Dry items (coefficient inversely proportional to distance)
+3. Heat entities recursively through the full inventory/attachments
+4. `HeatPermeabilityCoef` is applied at every level
 
 ---
 
-### Ловля животных (AnimalCatchingSystem)
+### Animal catching (AnimalCatchingSystem)
 
-Источники: `systems/animalcatchingsystem/`
+Sources: `systems/animalcatchingsystem/`
 
-#### Удочка
+#### Fishing rod
 
-- Сигнальные циклы с Poisson-подобной вероятностью (EaseInExpo)
-- Синхронизированный RNG
-- Потеря крючка/наживки при промахе
+- Signaling cycles with Poisson-like probability (EaseInExpo)
+- Synchronized RNG
+- Hook/bait loss on miss
 
-#### Ловушки
+#### Traps
 
-- Формула Бернулли: `P = 1 - (1 - cumulative)^(1/N)` за попытку
-- Чувствительность наживки по типу животного
+- Bernoulli formula: `P = 1 - (1 - cumulative)^(1/N)` per attempt
+- Bait sensitivity per animal type
 
 #### Yield Items
 
-Несут 24-элементные массивы коэффициентов по часам суток (рыболовные ставки по времени дня).
+Carry 24-element arrays of coefficients by hour of day (time-of-day fishing rates).
 
 ---
 
-### Рецепты (Recipes)
+### Recipes
 
-Источники: `classes/recipes/`
+Sources: `classes/recipes/`
 
-Макс 2 ингредиента, 10 результатов. `CheckIngredientMatch` использует `IsKindOf` для проверки иерархии типов.
+Max 2 ingredients, 10 results. `CheckIngredientMatch` uses `IsKindOf` to walk the type hierarchy.
 
-Массивы per-ingredient и per-result для: health, quantity, destroy, softskills флагов.
+Per-ingredient and per-result arrays for: health, quantity, destroy, softskills flags.
 
 ---
 
-### Эмоуты (EmoteClasses)
+### Emotes (EmoteClasses)
 
-Источники: `classes/emoteclasses/`
+Sources: `classes/emoteclasses/`
 
-`EmoteBase` — базовый класс эмоута.
+`EmoteBase` — emote base class.
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `DetermineOverride(out int, out int)` | Переопределение анимации по контексту |
-| `CanBeCanceledNormally()` | Можно ли отменить нормально |
+| `DetermineOverride(out int, out int)` | Override the animation based on context |
+| `CanBeCanceledNormally()` | Whether it can be cancelled normally |
 
-Additive vs fullbody определяется через stance masks.
+Additive vs fullbody is determined via stance masks.
 
 ---
 
 ### VirtualHud
 
-Источники: `classes/virtualhud/`
+Sources: `classes/virtualhud/`
 
-Серверная система → RPC на клиент. Сервер вычисляет битовую маску изменённых элементов.
+Server-side system → RPC to client. The server computes a bitmask of changed elements.
 
-| Элемент | Тип |
+| Element | Type |
 |---------|-----|
-| `DELM_TDCY_*` | Tendency (стрелки) |
-| `DELM_BADGE_*` | Badges (иконки) |
-| `STANCE`, `BLEEDING` | Только клиент |
+| `DELM_TDCY_*` | Tendency (arrows) |
+| `DELM_BADGE_*` | Badges (icons) |
+| `STANCE`, `BLEEDING` | Client only |
 
-16 элементов, 2 INT маски. `DSLevels` → HUD коды состояний 1–5.
-
----
-
-### Кровотечение (BleedingSources)
-
-Источники: `classes/bleedingsources/`
-
-28 зон по всем костям скелета, привязаны к слотам инвентаря (BODY, LEGS, FEET, GLOVES, HEADGEAR, MASK).
-
-Битовая маска на игрока (`GetBleedingBits()`), макс 32 зоны. Тип `CONTAMINATED` умножает поток на `BURN_MODIFIER`. Удаление источника → бросок шанса инфекции.
+16 elements, 2 INT masks. `DSLevels` → HUD state codes 1–5.
 
 ---
 
-### Заражённые зоны (ContaminatedArea)
+### Bleeding (BleedingSources)
 
-Источники: `classes/contaminatedarea/`
+Sources: `classes/bleedingsources/`
 
-Динамические зоны: симуляция времени полёта снаряда (`distance / 100 + 20с`), спаун `Grenade_ChemGas` при создании, `ShellLight` (0.15с вспышка).
+28 zones across all skeleton bones, bound to inventory slots (BODY, LEGS, FEET, GLOVES, HEADGEAR, MASK).
 
----
-
-### Эффекты (misc)
-
-- **Flashbang**: 8с длительность, 2.5с breakpoint, PPE + отложенный звук 0.4с, день/ночь интенсивность
-- **HitDirection**: позиционирование на краю экрана (sin/cos), SmoothCD сглаживание
-- **Sound handlers**: stamina, hunger, thirst, injury — injury адаптирует зону по стойке и скорости
+Per-player bitmask (`GetBleedingBits()`), max 32 zones. `CONTAMINATED` type multiplies flow by `BURN_MODIFIER`. Removing a source → infection chance roll.
 
 ---
 
-### Bot (тестирование)
+### Contaminated areas (ContaminatedArea)
 
-Источники: `systems/bot/`
+Sources: `classes/contaminatedarea/`
 
-Инструмент разработчика. FSM-driven, управление через `EActions.PLAYER_BOT_*`. Только при `#define BOT_DEBUG`. Не присутствует в релизных билдах.
+Dynamic zones: projectile flight-time simulation (`distance / 100 + 20s`), spawn `Grenade_ChemGas` on creation, `ShellLight` (0.15s flash).
+
+---
+
+### Effects (misc)
+
+- **Flashbang**: 8s duration, 2.5s breakpoint, PPE + delayed sound 0.4s, day/night intensity
+- **HitDirection**: positioning along the screen edge (sin/cos), SmoothCD smoothing
+- **Sound handlers**: stamina, hunger, thirst, injury — injury adapts the zone based on stance and speed
+
+---
+
+### Bot (testing)
+
+Sources: `systems/bot/`
+
+Developer tool. FSM-driven, controlled via `EActions.PLAYER_BOT_*`. Only with `#define BOT_DEBUG`. Not present in release builds.

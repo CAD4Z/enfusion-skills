@@ -1,63 +1,63 @@
-Конечные автоматы (FSM). Источники: `systems/fsm/`
+Finite state machines (FSM). Sources: `systems/fsm/`
 
-### Архитектура
+### Architecture
 
 ```
 FSMBase<StateClass, EventClass, TransitionClass>
-├── HFSMBase (иерархический FSM)
-└── OFSMBase (объектный FSM)
+├── HFSMBase (hierarchical FSM)
+└── OFSMBase (object FSM)
 ```
 
-FSM — generic-шаблон с типизированными состояниями, событиями и переходами.
+FSM is a generic template with typed states, events, and transitions.
 
 ### FSMTransition
 
-Переход между состояниями.
+Transition between states.
 
-| Поле | Описание |
-|------|----------|
-| `m_srcState` | Исходное состояние |
-| `m_dstState` | Целевое состояние |
-| `m_event` | Событие-триггер |
-| `m_guard` | Guard-условие (может блокировать переход) |
-| `m_action` | Действие при переходе |
+| Field | Description |
+|-------|-------------|
+| `m_srcState` | Source state |
+| `m_dstState` | Destination state |
+| `m_event` | Trigger event |
+| `m_guard` | Guard condition (can block the transition) |
+| `m_action` | Action on transition |
 
 ### ProcessEventResult
 
 ```
-FSM_OK — событие обработано
-FSM_NO_TRANSITION — нет подходящего перехода
-FSM_TERMINATED — автомат завершён
+FSM_OK — event processed
+FSM_NO_TRANSITION — no matching transition
+FSM_TERMINATED — machine terminated
 ```
 
 ### FSMBase
 
-Базовый FSM.
+Base FSM.
 
-| Метод | Описание |
-|-------|----------|
-| `Start(initialState)` | Запуск с начальным состоянием |
-| `Terminate()` | Завершение |
-| `ProcessEvent(event)` | Обработка события → переход |
-| `GetCurrentState()` | Текущее состояние |
-| `IsRunning()` | Автомат запущен |
-| `AddTransition(transition)` | Добавить переход |
+| Method | Description |
+|--------|-------------|
+| `Start(initialState)` | Start with initial state |
+| `Terminate()` | Terminate |
+| `ProcessEvent(event)` | Handle event → transition |
+| `GetCurrentState()` | Current state |
+| `IsRunning()` | Machine is running |
+| `AddTransition(transition)` | Add a transition |
 
 ### HFSMBase
 
-Иерархический FSM. Состояния могут содержать вложенные FSM.
+Hierarchical FSM. States may contain nested FSMs.
 
-| Метод | Описание |
-|-------|----------|
-| `ProcessEvent(event)` | Обработка с делегированием вложенным |
-| `ProcessAbortEvent(event)` | Прерывание с откатом |
+| Method | Description |
+|--------|-------------|
+| `ProcessEvent(event)` | Handle with delegation to nested machines |
+| `ProcessAbortEvent(event)` | Abort with rollback |
 
 ### OFSMBase
 
-Объектный FSM. Состояния хранятся как объекты с привязкой к владельцу.
+Object FSM. States are stored as objects bound to an owner.
 
-### Использование в DayZ
+### Usage in DayZ
 
-- **HandFSM** (`systems/hand/`) — операции с предметами в руках (см. `inventory.md`)
-- **ИИ-поведение** — состояния заражённых и животных
-- **Оружейные механизмы** — состояния затвора, магазина (4_World)
+- **HandFSM** (`systems/hand/`) — operations with items in hands (see `inventory.md`)
+- **AI behaviour** — infected and animal states
+- **Weapon mechanisms** — bolt and magazine states (4_World)

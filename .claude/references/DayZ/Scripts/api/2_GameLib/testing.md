@@ -1,75 +1,75 @@
-Фреймворк тестирования. Условие: `GAME_TEMPLATE`. Источник: `tests/testingframework.c`
+Testing framework. Condition: `GAME_TEMPLATE`. Source: `tests/testingframework.c`
 
-### Архитектура
+### Architecture
 
-`TestHarness` → `TestSuite` → `TestBase`. Сбор и инстанцирование примитивов происходит после компиляции скриптов. Один `TestHarness`-наследник на проект.
+`TestHarness` → `TestSuite` → `TestBase`. Collection and instantiation of primitives happens after script compilation. One `TestHarness` descendant per project.
 
-### Атрибуты
+### Attributes
 
-**`[Test("SuiteName", timeoutS, timeoutMs, sortOrder)]`** — пометить функцию или класс как тест. `suite` — имя набора, `timeoutS`/`timeoutMs` — таймаут (0 = без лимита), `sortOrder` — порядок.
+**`[Test("SuiteName", timeoutS, timeoutMs, sortOrder)]`** — mark a function or class as a test. `suite` — suite name, `timeoutS`/`timeoutMs` — timeout (0 = no limit), `sortOrder` — order.
 
-**`[Step(EStage)]`** — пометить метод как шаг теста (только в классах `TestBase`).
+**`[Step(EStage)]`** — mark a method as a test step (only in `TestBase` classes).
 
 ### EStage
 
-Стадии выполняются по порядку: `Setup` → `Main` → `TearDown`.
+Stages execute in order: `Setup` → `Main` → `TearDown`.
 
-### Типы тестов
+### Test types
 
-**Простой тест** — свободная функция, возвращает `TestResultBase`:
+**Simple test** — free function returning `TestResultBase`:
 ```cpp
 [Test("MySuite")]
 TestResultBase MyTest() { return TestBoolResult(5 > 3); }
 ```
 
-**Stateful тест** — класс наследник `TestBase`, шаги через `[Step]`:
-- `void` метод — выполняется однократно
-- `bool` метод — выполняется каждый тик до `return true`
+**Stateful test** — a class inheriting from `TestBase`, steps via `[Step]`:
+- `void` method — executes once
+- `bool` method — executes every tick until `return true`
 
 ### Failure unwind
 
-- `Setup` провал → тест завершается, `TearDown` **не вызывается**
-- `Main` провал → запускается `TearDown`
-- `TearDown` провал → ничего не происходит
+- `Setup` failure → test ends, `TearDown` **is not called**
+- `Main` failure → `TearDown` runs
+- `TearDown` failure → nothing happens
 
-Таймаут сбрасывается для каждого step-метода. При таймауте устанавливается `TimeoutResult` (failure).
+Timeout is reset for each step method. On timeout, a `TimeoutResult` (failure) is set.
 
 ### TestHarness
 
-| Метод | Описание |
-|-------|----------|
-| `Begin()` | **static** — инициализация тестов |
-| `Run()` | **static** → `bool` — тик тестов, `true` когда все завершены |
-| `End()` | **static** — финализация |
-| `Report()` | **static** → `string` — XML-отчёт |
-| `Finished()` | **static** → `bool` — все тесты завершены |
-| `GetNSuites()` | **static** → `int` — количество наборов |
+| Method | Description |
+|--------|-------------|
+| `Begin()` | **static** — initialize tests |
+| `Run()` | **static** → `bool` — tick tests, `true` when all complete |
+| `End()` | **static** — finalize |
+| `Report()` | **static** → `string` — XML report |
+| `Finished()` | **static** → `bool` — all tests complete |
+| `GetNSuites()` | **static** → `int` — number of suites |
 | `GetSuite(int handle)` | **static** → `TestSuite` |
-| `ActiveSuite()` | **static** → `TestSuite` или `null` |
+| `ActiveSuite()` | **static** → `TestSuite` or `null` |
 
 ### TestSuite
 
-| Метод | Описание |
-|-------|----------|
-| `SetResult(TestResultBase res)` | Установить результат набора |
-| `GetNTests()` | `int` — количество тестов |
+| Method | Description |
+|--------|-------------|
+| `SetResult(TestResultBase res)` | Set suite result |
+| `GetNTests()` | `int` — number of tests |
 | `GetTest(int handle)` | `TestBase` |
-| `SetEnabled(bool val)` / `IsEnabled()` | Включить/выключить набор |
-| `GetName()` | `string` — имя класса |
-| `OnInit()` | `protected` — пользовательская инициализация (при `Begin`) |
+| `SetEnabled(bool val)` / `IsEnabled()` | Enable/disable the suite |
+| `GetName()` | `string` — class name |
+| `OnInit()` | `protected` — user initialization (during `Begin`) |
 
 ### TestBase
 
-| Метод | Описание |
-|-------|----------|
-| `SetResult(TestResultBase res)` | Установить результат теста |
+| Method | Description |
+|--------|-------------|
+| `SetResult(TestResultBase res)` | Set test result |
 | `GetResult()` | `TestResultBase` |
-| `SetEnabled(bool val)` / `IsEnabled()` | Включить/выключить тест |
-| `GetName()` | `string` — имя |
+| `SetEnabled(bool val)` / `IsEnabled()` | Enable/disable the test |
+| `GetName()` | `string` — name |
 
 ### TestResultBase
 
-| Метод | Описание |
-|-------|----------|
-| `Failure()` | `bool` — провал ли результат (переопределяемый) |
-| `FailureText()` | `string` — текст для XML-отчёта в формате JUnit |
+| Method | Description |
+|--------|-------------|
+| `Failure()` | `bool` — whether the result is a failure (overridable) |
+| `FailureText()` | `string` — text for the JUnit-format XML report |

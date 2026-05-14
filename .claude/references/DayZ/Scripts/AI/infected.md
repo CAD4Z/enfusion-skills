@@ -1,139 +1,139 @@
-Заражённые (зомби): DayZInfected (3_Game) → ZombieBase (4_World). Наиболее скриптовая ветка AI — большая часть боевой логики и поведения доступна в скриптах.
+Infected (zombies): DayZInfected (3_Game) → ZombieBase (4_World). The most script-heavy branch of AI — most of the combat logic and behavior is accessible from scripts.
 
-### Иерархия
+### Hierarchy
 
 ```
 DayZCreatureAI
- └── DayZInfected (3_Game)          — proto native команды, InputController, урон
-      └── ZombieBase (4_World)      — CommandHandler, боевая логика, mind states, звук
-           ├── ZombieMaleBase       — мужские модели
-           └── ZombieFemaleBase     — женские модели
-               └── конкретные классы (ZmbM_CitizenASkinny, ZmbF_Doctor, ...)
+ └── DayZInfected (3_Game)          — proto native commands, InputController, damage
+      └── ZombieBase (4_World)      — CommandHandler, combat logic, mind states, sound
+           ├── ZombieMaleBase       — male models
+           └── ZombieFemaleBase     — female models
+               └── concrete classes (ZmbM_CitizenASkinny, ZmbF_Doctor, ...)
 ```
 
-Рядом:
+Alongside:
 ```
-DayZCreatureAIType → DayZInfectedType — таблица атак, HitComponents, выбор атаки
-DayZCreatureAIInputController → DayZInfectedInputController — MindState, цель (native)
+DayZCreatureAIType → DayZInfectedType — attack table, HitComponents, attack selection
+DayZCreatureAIInputController → DayZInfectedInputController — MindState, target (native)
 ```
 
 ---
 
-### Mind States — состояния сознания
+### Mind States
 
-Определяются **native AI** и читаются через `DayZInfectedInputController.GetMindState()`. Скрипт не устанавливает их напрямую — AI реагирует на шум и видимость, скрипт только читает и реагирует.
+Defined by **native AI** and read via `DayZInfectedInputController.GetMindState()`. The script does not set them directly — the AI reacts to noise and visibility, the script only reads and reacts.
 
-| Состояние | Значение | Поведение |
-|-----------|----------|-----------|
-| `MINDSTATE_CALM` | 0 | Idle, бродит. IdleState = 0 |
-| `MINDSTATE_DISTURBED` | 1 | Насторожён, осматривается. IdleState = 1 |
-| `MINDSTATE_ALERTED` | 2 | Тревога (звук в infrastructure.md) |
-| `MINDSTATE_CHASE` | 3 | Преследование цели. IdleState = 2 |
-| `MINDSTATE_FIGHT` | 4 | Ближний бой |
+| State | Value | Behavior |
+|-------|-------|----------|
+| `MINDSTATE_CALM` | 0 | Idle, wandering. IdleState = 0 |
+| `MINDSTATE_DISTURBED` | 1 | Wary, looking around. IdleState = 1 |
+| `MINDSTATE_ALERTED` | 2 | Alarmed (sound in infrastructure.md) |
+| `MINDSTATE_CHASE` | 3 | Pursuing target. IdleState = 2 |
+| `MINDSTATE_FIGHT` | 4 | Melee combat |
 
-При смене mind state — сброс cooldown атаки и `SetSynchDirty()` для синхронизации на клиент.
+On mind state change — attack cooldown is reset and `SetSynchDirty()` is called to synchronize to the client.
 
 ---
 
 ### DayZInfectedInputController
 
-Расширяет `DayZCreatureAIInputController` (см. creatures.md). Дополнительно:
+Extends `DayZCreatureAIInputController` (see creatures.md). Additionally:
 
-- `GetMindState()` — текущее состояние (proto native, от AI-мозга)
-- `GetTargetEntity()` — текущая цель AI (proto native)
-- `IsVault()` / `GetVaultHeight()` — нужен ли vault (аналог Jump)
+- `GetMindState()` — current state (proto native, from the AI brain)
+- `GetTargetEntity()` — current AI target (proto native)
+- `IsVault()` / `GetVaultHeight()` — whether a vault is needed (analogous to Jump)
 
-Всё управление существом — от native AI. Скрипт читает через Get-методы и реагирует в CommandHandler.
+All creature control comes from native AI. The script reads via Get methods and reacts in CommandHandler.
 
 ---
 
-### CommandHandler — полный цикл
+### CommandHandler — full cycle
 
 ```
 CommandHandler(dt, currentCommandID, currentCommandFinished)
- 1. ModCommandHandlerBefore()        → полный перехват
+ 1. ModCommandHandlerBefore()        → full interception
  2. HandleDeath()                    → StartCommand_Death(type, direction)
- 3. HandleMove() / HandleOrientation() → синхронизация скорости и yaw
- 4. Если команда завершена           → StartCommand_Move() с StanceVariation
+ 3. HandleMove() / HandleOrientation() → synchronize speed and yaw
+ 4. If the command is finished        → StartCommand_Move() with StanceVariation
  5. ModCommandHandlerInside()
  6. HandleCrawlTransition()          → StartCommand_Crawl(type)
  7. HandleDamageHit()                → StartCommand_Hit(heavy, type, direction)
  8. HandleVault()                    → StartCommand_Vault(type)
- 9. HandleMindStateChange()          → смена idle-анимации
+ 9. HandleMindStateChange()          → change idle animation
 10. FightLogic()                     → ChaseAttackLogic / FightAttackLogic
 11. ModCommandHandlerAfter()
 ```
 
-#### Синхронизация (HandleMove / HandleOrientation)
+#### Synchronization (HandleMove / HandleOrientation)
 
-**Скорость** (`m_MovementSpeed`): синхронизируется при изменении >= 0.9 от последнего значения. Диапазон: -1..3.
+**Speed** (`m_MovementSpeed`): synchronized when the change is >= 0.9 from the last value. Range: -1..3.
 
-**Ориентация** (`m_OrientationSynced`): квантизованный yaw (0–359°). Синхронизируется каждые **2 секунды** или при отклонении >30° от последнего синхронизированного значения. Минимальный порог обновления — 5°.
+**Orientation** (`m_OrientationSynced`): quantized yaw (0–359°). Synchronized every **2 seconds** or when deviating >30° from the last synchronized value. Minimum update threshold — 5°.
 
 ---
 
-### Боевая система
+### Combat system
 
-#### Таблица атак (DayZInfectedType)
+#### Attack table (DayZInfectedType)
 
-Атаки зарегистрированы в `DayZInfectedType.RegisterAttacks()`. Два группы:
+Attacks are registered in `DayZInfectedType.RegisterAttacks()`. Two groups:
 
-**CHASE** — атаки на бегу (дальняя дистанция):
-- Дистанция 2.4м, только center pitch, cooldown 0.3–0.4с
+**CHASE** — running attacks (long range):
+- Distance 2.4m, center pitch only, cooldown 0.3–0.4s
 
-**FIGHT** — ближний бой (ближняя дистанция):
-- Дистанция 1.4–1.7м, три pitch (up/center/down)
-- Light и Heavy варианты
-- Cooldown 0.1–0.6с, вероятность 0.4–0.9
+**FIGHT** — melee (close range):
+- Distance 1.4–1.7m, three pitches (up/center/down)
+- Light and Heavy variants
+- Cooldown 0.1–0.6s, probability 0.4–0.9
 
-Каждая атака: `{Distance, Pitch, Type, Subtype, AmmoType, IsHeavy, Cooldown, Probability}`
+Each attack: `{Distance, Pitch, Type, Subtype, AmmoType, IsHeavy, Cooldown, Probability}`
 
-AmmoType берётся из конфига: `CfgVehicles → <class> → AttackActions → AttackShort/AttackLong/AttackRun → ammoType`
+AmmoType is taken from the config: `CfgVehicles → <class> → AttackActions → AttackShort/AttackLong/AttackRun → ammoType`
 
-#### Выбор атаки (ChooseAttack)
+#### Attack selection (ChooseAttack)
 
-Utility-функция: `ComputeAttackUtility(attack, distance, pitch, random)`
-1. Pitch не совпадает → 0
-2. Цель дальше чем дистанция атаки → 0
-3. `utilityDistance = (1 - (attackDist - targetDist) / 10) * 100` — ближайшая атака приоритетнее
-4. `utilityProbability = (1 - (attackProb - random)) * 10` — случайный фактор
-5. Побеждает атака с максимальной суммарной utility
+Utility function: `ComputeAttackUtility(attack, distance, pitch, random)`
+1. Pitch doesn't match → 0
+2. Target is farther than the attack distance → 0
+3. `utilityDistance = (1 - (attackDist - targetDist) / 10) * 100` — the closest attack has priority
+4. `utilityProbability = (1 - (attackProb - random)) * 10` — random factor
+5. The attack with the maximum total utility wins
 
-#### Pitch — выбор высоты атаки
+#### Pitch — choosing attack height
 
-`GetAttackPitch(target)`: сравнивает Y-позицию головы зомби (pos + 1.8м) с `DefaultHitPosition` цели. Разница <0.3м → center (0), зомби выше → down (-1), ниже → up (1).
+`GetAttackPitch(target)`: compares the Y position of the zombie's head (pos + 1.8m) with the target's `DefaultHitPosition`. Difference <0.3m → center (0), zombie above → down (-1), below → up (1).
 
-#### Логика Chase vs Fight
+#### Chase vs Fight logic
 
 **ChaseAttackLogic** (MINDSTATE_CHASE):
-1. Получить цель из InputController
-2. Пропустить если цель в машине
-3. `CanAttackToPosition()` — proto native проверка достижимости
+1. Get the target from InputController
+2. Skip if the target is in a vehicle
+3. `CanAttackToPosition()` — proto native reachability check
 4. `ChooseAttack(CHASE, distance, pitch)`
-5. `GetMeleeTarget()` — проверка конуса 20° вокруг направления зомби
-6. Если цель в конусе → `StartCommand_Attack(target, type, subtype)`
+5. `GetMeleeTarget()` — check a 20° cone around the zombie's heading
+6. If the target is in the cone → `StartCommand_Attack(target, type, subtype)`
 
 **FightAttackLogic** (MINDSTATE_FIGHT):
-- Аналогично, но конус шире (30°), плюс **cooldown** между атаками (`m_AttackCooldownTime`)
-- Cooldown уменьшается с множителем `GameConstants.AI_ATTACKSPEED`
+- Same as above, but the cone is wider (30°), plus a **cooldown** between attacks (`m_AttackCooldownTime`)
+- Cooldown decreases with multiplier `GameConstants.AI_ATTACKSPEED`
 
-#### Нанесение урона
+#### Dealing damage
 
-При `WasHit()` в команде атаки:
-1. Проверка дистанции до цели ≤ `m_Distance²`
-2. Если игрок блокирует (`IsInBlock()`) и смотрит на зомби (±`AI_MAX_BLOCKABLE_ANGLE`):
-   - Heavy атака → наносится как `"MeleeZombie"` (уменьшенный урон)
-   - Light атака → `"Dummy_Light"` (нулевой урон, только анимация)
-3. Иначе → полный урон `m_AmmoType`
+On `WasHit()` in the attack command:
+1. Check the distance to the target ≤ `m_Distance²`
+2. If the player is blocking (`IsInBlock()`) and looking at the zombie (±`AI_MAX_BLOCKABLE_ANGLE`):
+   - Heavy attack → dealt as `"MeleeZombie"` (reduced damage)
+   - Light attack → `"Dummy_Light"` (zero damage, animation only)
+3. Otherwise → full damage `m_AmmoType`
 
-Урон применяется через `DamageSystem.CloseCombatDamageName()`, зона попадания — `GetHitComponentForAI()`.
+Damage is applied via `DamageSystem.CloseCombatDamageName()`, the hit zone is `GetHitComponentForAI()`.
 
-#### HitComponents — зоны попадания зомби
+#### HitComponents — zombie hit zones
 
-Определены в `DayZInfectedType.RegisterHitComponentsForAI()` с весами:
+Defined in `DayZInfectedType.RegisterHitComponentsForAI()` with weights:
 
-| Зона | Вес | Вероятность |
-|------|-----|------------|
+| Zone | Weight | Probability |
+|------|--------|-------------|
 | Head | 2 | ~0.7% |
 | LeftArm | 50 | ~18.7% |
 | Torso | 65 | ~24.3% |
@@ -141,75 +141,75 @@ Utility-функция: `ComputeAttackUtility(attack, distance, pitch, random)`
 | LeftLeg | 50 | ~18.7% |
 | RightLeg | 50 | ~18.7% |
 
-Default: `Torso`. Finisher-зоны: Head, Neck, Torso.
+Default: `Torso`. Finisher zones: Head, Neck, Torso.
 
 ---
 
-### Получение урона (EEHitBy)
+### Taking damage (EEHitBy)
 
-При попадании в зомби:
+When a zombie is hit:
 
-1. **Shock → Health конверсия**: если ammo имеет `transferShockToDamage = 1`, Shock конвертируется в Health (множитель `NL_DAMAGE_CLOSECOMBAT/FIREARM_CONVERSION_INFECTED`)
-2. **Спецзоны** (`HandleSpecialZoneDamage`): урон ≥74 по ногам → здоровье ноги = 0 (калечит). Торс/Голова → `m_HeavyHitOverride = true`
-3. **Если мёртв** → `EvaluateDeathAnimation()`: выбор анимации смерти, физический импульс если `doPhxImpulse` в ammo. Фиксация killer data, headshot detection
-4. **Если жив**: проверка перехода в ползание (нога уничтожена), иначе — оценка hit-анимации
+1. **Shock → Health conversion**: if the ammo has `transferShockToDamage = 1`, Shock is converted into Health (multiplier `NL_DAMAGE_CLOSECOMBAT/FIREARM_CONVERSION_INFECTED`)
+2. **Special zones** (`HandleSpecialZoneDamage`): damage ≥74 to the legs → leg health = 0 (cripples). Torso/Head → `m_HeavyHitOverride = true`
+3. **If dead** → `EvaluateDeathAnimation()`: pick a death animation, physical impulse if `doPhxImpulse` is set in the ammo. Records killer data, headshot detection
+4. **If alive**: check the crawl transition (leg destroyed), otherwise — evaluate the hit animation
 
-#### Stun-система
+#### Stun system
 
-`HandleDamageHit()` решает, будет ли зомби stunned:
-- Throttling: минимум 0.3с между hit-анимациями
-- Вероятность стана: `random(0–100) ≤ SHOCK_TO_STUN_MULTIPLIER(2.82) * shockDamage`
-- Heavy hit или Calm/Disturbed состояние → гарантированный стан
+`HandleDamageHit()` decides whether the zombie will be stunned:
+- Throttling: minimum 0.3s between hit animations
+- Stun probability: `random(0–100) ≤ SHOCK_TO_STUN_MULTIPLIER(2.82) * shockDamage`
+- Heavy hit or Calm/Disturbed state → guaranteed stun
 
 ---
 
-### Crawl — переход в ползание
+### Crawl — transition to crawling
 
-Необратимый переход при уничтожении ноги:
-1. `EvaluateCrawlTransitionAnimation()` — проверяет здоровье LeftLeg/RightLeg = 0
-2. Тип анимации: 0/2 = левая/правая нога, +1 если удар спереди
+An irreversible transition when a leg is destroyed:
+1. `EvaluateCrawlTransitionAnimation()` — checks LeftLeg/RightLeg health = 0
+2. Animation type: 0/2 = left/right leg, +1 if hit from the front
 3. `StartCommand_Crawl(type)` → `m_IsCrawling = true`
-4. После перехода зомби остаётся в `CommandMove`, но `m_IsCrawling` синхронизирован
+4. After the transition the zombie stays in `CommandMove`, but `m_IsCrawling` is synchronized
 
 ---
 
 ### Vault
 
-Высота определяет тип:
-| Высота | Тип |
-|--------|-----|
-| ≤ 0.6м | 0 |
-| ≤ 1.1м | 1 |
-| ≤ 1.6м | 2 |
-| > 1.6м | 3 |
+Height determines the type:
+| Height | Type |
+|--------|------|
+| ≤ 0.6m | 0 |
+| ≤ 1.1m | 1 |
+| ≤ 1.6m | 2 |
+| > 1.6m | 3 |
 
-После приземления (`WasLand()`) — 2с таймер перед завершением vault-команды.
+After landing (`WasLand()`) — a 2s timer before the vault command completes.
 
 ---
 
-### Backstab (финишер)
+### Backstab (finisher)
 
 `SetBeingBackstabbed(backstabType)`:
-1. `GetAIAgent().SetKeepInIdle(true)` — AI отключается
-2. Выбор анимации: BACKSTAB / NECKSTAB / DEFAULT
-3. `m_FinisherInProgress = true` → `CanBeTargetedByAI()` вернёт false для атакующего
+1. `GetAIAgent().SetKeepInIdle(true)` — AI is disabled
+2. Animation choice: BACKSTAB / NECKSTAB / DEFAULT
+3. `m_FinisherInProgress = true` → `CanBeTargetedByAI()` will return false for the attacker
 
-`OnRecoverFromDeath()` — если backstab не удался:
-1. `SetKeepInIdle(false)` — AI включается обратно
+`OnRecoverFromDeath()` — if the backstab failed:
+1. `SetKeepInIdle(false)` — AI is re-enabled
 2. `m_FinisherInProgress = false`
 
 ---
 
-### Звуковой автомат (клиент)
+### Sound state machine (client)
 
-`HandleSoundEvents()` — вызывается при `OnVariablesSynchronized()`. Зависит от синхронизированного `m_MindState`:
+`HandleSoundEvents()` — invoked on `OnVariablesSynchronized()`. Depends on the synchronized `m_MindState`:
 
-| MindState | Звуковое событие |
-|-----------|-----------------|
+| MindState | Sound event |
+|-----------|-------------|
 | CALM | `MINDSTATE_CALM_MOVE` |
 | ALERTED | `MINDSTATE_ALERTED_MOVE` |
 | DISTURBED | `MINDSTATE_DISTURBED_IDLE` |
 | CHASE | `MINDSTATE_CHASE_MOVE` |
 | FIGHT | Stop |
 
-Голосовые анимационные события (`OnSoundVoiceEvent`) прерывают state-звук, затем он восстанавливается.
+Voice animation events (`OnSoundVoiceEvent`) interrupt the state sound, after which it is restored.

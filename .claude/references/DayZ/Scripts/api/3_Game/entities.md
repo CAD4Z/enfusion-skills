@@ -1,95 +1,95 @@
-Иерархия сущностей игрового слоя. Источники: `entities/*.c`
+Entity hierarchy of the game layer. Sources: `entities/*.c`
 
-### Иерархия наследования
+### Inheritance hierarchy
 
 ```
 IEntity (1_Core)
 └── ObjectTyped
     └── Entity
         └── EntityAI
-            ├── Man (игрок)
-            ├── Building (здания)
-            ├── InventoryItem (предметы)
+            ├── Man (player)
+            ├── Building (buildings)
+            ├── InventoryItem (items)
             ├── DayZCreatureAI
-            │   ├── DayZInfected (зомби)
-            │   └── DayZAnimal (животные)
+            │   ├── DayZInfected (zombies)
+            │   └── DayZAnimal (animals)
             ├── ScriptedEntity
             └── EntityLightSource
-        └── Object (физический объект)
-        └── Camera (камера)
-        └── Pawn (сетевая сверка, см. примечание)
+        └── Object (physical object)
+        └── Camera (camera)
+        └── Pawn (network reconciliation, see note)
 ```
 
-Примечание: `Man` наследует `Pawn` при `FEATURE_NETWORK_RECONCILIATION`, иначе `EntityAI` напрямую.
+Note: `Man` inherits `Pawn` when `FEATURE_NETWORK_RECONCILIATION` is enabled, otherwise inherits `EntityAI` directly.
 
 ### Entity
 
-Наследует `ObjectTyped`. Источник: `entities/entity.c`
+Inherits `ObjectTyped`. Source: `entities/entity.c`
 
-#### Симуляция и анимация (proto native)
+#### Simulation and animation (proto native)
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `DisableSimulation(bool disable)` | `void` | Вкл/выкл симуляцию |
-| `GetIsSimulationDisabled()` | `bool` | Проверка состояния |
-| `GetSimulationTimeStamp()` | `int` | Тик симуляции |
-| `GetAnimationPhase(animation)` | `float` | Фаза анимации |
-| `SetAnimationPhase(animation, phase)` | `void` | Установить фазу |
-| `ResetAnimationPhase(animation, phase)` | `void` | Сбросить немедленно |
-| `GetBoneIndex(proxySelectionName)` | `int` | Индекс кости по имени |
-| `GetBoneObject(boneIndex)` | `Object` | Proxy-объект кости |
-| `SetInvisible(invisible)` | `void` | Невидимость |
-| `MoveInTime(targetTransform[4], deltaT)` | `void` | Серверная телепортация / клиентская интерполяция |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `DisableSimulation(bool disable)` | `void` | Enable/disable simulation |
+| `GetIsSimulationDisabled()` | `bool` | Check state |
+| `GetSimulationTimeStamp()` | `int` | Simulation tick |
+| `GetAnimationPhase(animation)` | `float` | Animation phase |
+| `SetAnimationPhase(animation, phase)` | `void` | Set phase |
+| `ResetAnimationPhase(animation, phase)` | `void` | Reset immediately |
+| `GetBoneIndex(proxySelectionName)` | `int` | Bone index by name |
+| `GetBoneObject(boneIndex)` | `Object` | Bone proxy object |
+| `SetInvisible(invisible)` | `void` | Invisibility |
+| `MoveInTime(targetTransform[4], deltaT)` | `void` | Server teleport / client interpolation |
 
-#### Callback-и
+#### Callbacks
 
-| Метод | Описание |
-|-------|----------|
-| `OnAnimationPhaseStarted(animSource, phase)` | Начало фазы анимации |
-| `OnCreatePhysics()` | Создание физики при добавлении в мир |
-| `OnNetworkTransformUpdate(out pos, out ypr)` | Обновление трансформа по сети. `true` = визуальный срез |
+| Method | Description |
+|--------|-------------|
+| `OnAnimationPhaseStarted(animSource, phase)` | Start of animation phase |
+| `OnCreatePhysics()` | Physics creation when added to the world |
+| `OnNetworkTransformUpdate(out pos, out ypr)` | Transform update over network. `true` = visual snapshot |
 
 ### EntityAI
 
-Наследует `Entity`. Основной класс сущностей с инвентарём, уроном, весом и компонентами. Источник: `entities/entityai.c`
+Inherits `Entity`. Main class of entities with inventory, damage, weight, and components. Source: `entities/entityai.c`
 
-#### Ключевые поля
+#### Key fields
 
-| Поле | Тип | Описание |
-|------|-----|----------|
-| `m_KillerData` | `KillerData` | Данные убийцы |
-| `m_EM` | `ComponentEnergyManager` | Энергетический компонент |
-| `m_DamageZoneMap` | `DamageZoneMap` | Карта зон урона |
-| `m_Weight` / `m_WeightEx` | `float` | Текущий / дополнительный вес |
-| `m_VarTemperature` | `float` | Температура предмета |
-| `m_IsFrozen` | `bool` | Заморожен |
+| Field | Type | Description |
+|-------|------|-------------|
+| `m_KillerData` | `KillerData` | Killer data |
+| `m_EM` | `ComponentEnergyManager` | Energy component |
+| `m_DamageZoneMap` | `DamageZoneMap` | Damage zone map |
+| `m_Weight` / `m_WeightEx` | `float` | Current / additional weight |
+| `m_VarTemperature` | `float` | Item temperature |
+| `m_IsFrozen` | `bool` | Frozen |
 
-#### Компоненты
+#### Components
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `CreateComponent(comp_type, extended_class_name)` | `Component` | Создать компонент |
-| `GetComponent(comp_type, extended_class_name)` | `Component` | Получить (или создать) |
-| `DeleteComponent(comp_type)` | `bool` | Удалить компонент |
-| `HasComponent(comp_type)` | `bool` | Проверка наличия |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `CreateComponent(comp_type, extended_class_name)` | `Component` | Create component |
+| `GetComponent(comp_type, extended_class_name)` | `Component` | Get (or create) |
+| `DeleteComponent(comp_type)` | `bool` | Delete component |
+| `HasComponent(comp_type)` | `bool` | Check presence |
 
-#### ScriptInvoker-ы
+#### ScriptInvokers
 
-| Геттер | Когда вызывается |
-|--------|------------------|
-| `GetOnItemAttached()` | Предмет прикреплён к этой сущности |
-| `GetOnItemDetached()` | Предмет откреплён |
-| `GetOnItemAddedIntoCargo()` | Предмет добавлен в карго |
-| `GetOnItemRemovedFromCargo()` | Предмет удалён из карго |
-| `GetOnItemMovedInCargo()` | Предмет перемещён в карго |
-| `GetOnItemFlipped()` | Предмет повёрнут |
-| `GetOnViewIndexChanged()` | Изменён индекс вида |
-| `GetOnSetLock()` / `GetOnReleaseLock()` | Резервирование карго |
-| `GetOnAttachmentSetLock()` / `GetOnAttachmentReleaseLock()` | Резервирование аттачмента |
-| `GetOnHitByInvoker()` | Сущность получила урон |
-| `GetOnKilledInvoker()` | Сущность убита |
+| Getter | When invoked |
+|--------|--------------|
+| `GetOnItemAttached()` | Item attached to this entity |
+| `GetOnItemDetached()` | Item detached |
+| `GetOnItemAddedIntoCargo()` | Item added to cargo |
+| `GetOnItemRemovedFromCargo()` | Item removed from cargo |
+| `GetOnItemMovedInCargo()` | Item moved within cargo |
+| `GetOnItemFlipped()` | Item flipped |
+| `GetOnViewIndexChanged()` | View index changed |
+| `GetOnSetLock()` / `GetOnReleaseLock()` | Cargo reservation |
+| `GetOnAttachmentSetLock()` / `GetOnAttachmentReleaseLock()` | Attachment reservation |
+| `GetOnHitByInvoker()` | Entity took damage |
+| `GetOnKilledInvoker()` | Entity killed |
 
-#### Enum-ы
+#### Enums
 
 `EWetnessLevel`: `DRY`, `DAMP`, `WET`, `SOAKING`, `DRENCHED`
 
@@ -99,107 +99,107 @@ IEntity (1_Core)
 
 `EItemManipulationContext`: `UPDATE`, `ATTACHING`, `DETACHING`
 
-`EInventoryIconVisibility` (битовая маска): `ALWAYS(0)`, `HIDE_VICINITY(1)`, `HIDE_PLAYER_CONTAINER(2)`, `HIDE_HANDS_SLOT(4)`
+`EInventoryIconVisibility` (bitmask): `ALWAYS(0)`, `HIDE_VICINITY(1)`, `HIDE_PLAYER_CONTAINER(2)`, `HIDE_HANDS_SLOT(4)`
 
-`EAttExclusions`: ограничения комбинаций аттачментов — `EXCLUSION_HEADGEAR_HELMET_0`, `EXCLUSION_MASK_0..3`, `EXCLUSION_GLASSES_REGULAR_0`, `EXCLUSION_GLASSES_TIGHT_0` и др.
+`EAttExclusions`: attachment combination restrictions — `EXCLUSION_HEADGEAR_HELMET_0`, `EXCLUSION_MASK_0..3`, `EXCLUSION_GLASSES_REGULAR_0`, `EXCLUSION_GLASSES_TIGHT_0`, etc.
 
 ### Man
 
-Наследует `EntityAI` (или `Pawn`). Управляемый персонаж. Источник: `entities/man.c`
+Inherits `EntityAI` (or `Pawn`). Controlled character. Source: `entities/man.c`
 
 #### Proto native
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `GetInputInterface()` | `UAInterface` | Интерфейс ввода |
-| `GetIdentity()` | `PlayerIdentity` | Идентичность игрока (MP) |
-| `GetDrivingVehicle()` | `EntityAI` | Транспорт, которым управляет (или `NULL`) |
-| `GetHumanInventory()` | `HumanInventory` | Инвентарь игрока |
-| `GetEntityInHands()` | `EntityAI` | Предмет в руках |
-| `GetCurrentWeaponMode()` | `string` | Текущий режим оружия |
-| `SetSpeechRestricted(state)` / `IsSpeechRestricted()` | — / `bool` | Ограничение речи |
-| `SetFaceTexture(texture)` / `SetFaceMaterial(material)` | `void` | Текстура/материал лица |
-| `IsSoundInsideBuilding()` | `bool` | Звук внутри здания |
-| `IsCameraInsideVehicle()` | `bool` | Камера внутри транспорта |
-| `SetMasterAttenuation(att)` / `GetMasterAttenuation()` | — / `string` | Мастер-аттенюация звука |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `GetInputInterface()` | `UAInterface` | Input interface |
+| `GetIdentity()` | `PlayerIdentity` | Player identity (MP) |
+| `GetDrivingVehicle()` | `EntityAI` | Vehicle being driven (or `NULL`) |
+| `GetHumanInventory()` | `HumanInventory` | Player inventory |
+| `GetEntityInHands()` | `EntityAI` | Item in hands |
+| `GetCurrentWeaponMode()` | `string` | Current weapon mode |
+| `SetSpeechRestricted(state)` / `IsSpeechRestricted()` | — / `bool` | Restrict speech |
+| `SetFaceTexture(texture)` / `SetFaceMaterial(material)` | `void` | Face texture/material |
+| `IsSoundInsideBuilding()` | `bool` | Sound inside a building |
+| `IsCameraInsideVehicle()` | `bool` | Camera inside a vehicle |
+| `SetMasterAttenuation(att)` / `GetMasterAttenuation()` | — / `string` | Master sound attenuation |
 
-#### Инвентарные операции
+#### Inventory operations
 
-| Метод | Описание |
-|-------|----------|
-| `PredictiveDropEntity(item)` | Бросить предмет (клиентская предикция) |
-| `LocalDropEntity(item)` | Бросить локально |
-| `ServerDropEntity(item)` | Бросить на сервере |
-| `IsUnconscious()` | В бессознании |
+| Method | Description |
+|--------|-------------|
+| `PredictiveDropEntity(item)` | Drop item (client prediction) |
+| `LocalDropEntity(item)` | Drop locally |
+| `ServerDropEntity(item)` | Drop on server |
+| `IsUnconscious()` | Unconscious |
 
-#### ScriptInvoker-ы
+#### ScriptInvokers
 
-`GetOnItemAddedToHands()`, `GetOnItemRemovedFromHands()` — вызываются через `EEItemIntoHands()` / `EEItemOutOfHands()`.
+`GetOnItemAddedToHands()`, `GetOnItemRemovedFromHands()` — invoked via `EEItemIntoHands()` / `EEItemOutOfHands()`.
 
 ### Building
 
-Наследует `EntityAI`. Здания с дверями и лестницами. Источник: `entities/building.c`
+Inherits `EntityAI`. Buildings with doors and ladders. Source: `entities/building.c`
 
-#### Двери (proto native)
+#### Doors (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `GetDoorCount()` | Количество дверей |
-| `GetDoorIndex(componentIndex)` | Компонент → индекс двери |
-| `IsDoorOpen(index)` | Запрошено открытие (фаза > 0.5) |
-| `IsDoorOpened(index)` / `IsDoorClosed(index)` | Фаза на цели (1.0 / 0.0) |
-| `IsDoorOpening(index)` / `IsDoorClosing(index)` | В процессе анимации |
-| `IsDoorOpenedAjar(index)` / `IsDoorOpeningAjar(index)` | Приоткрыта (фаза 0.2) |
-| `IsDoorLocked(index)` | Заблокирована |
-| `OpenDoor(index)` / `CloseDoor(index)` | Открыть/закрыть |
-| `LockDoor(index, force)` | Заблокировать. `force=true` — закроет если открыта |
-| `UnlockDoor(index, animate)` | Разблокировать. `animate=true` — приоткроет |
-| `GetDoorSoundPos(index)` / `GetDoorSoundDistance(index)` | Позиция/дальность звука |
-| `PlayDoorSound(index)` | Проиграть звук двери |
+| Method | Description |
+|--------|-------------|
+| `GetDoorCount()` | Number of doors |
+| `GetDoorIndex(componentIndex)` | Component → door index |
+| `IsDoorOpen(index)` | Opening requested (phase > 0.5) |
+| `IsDoorOpened(index)` / `IsDoorClosed(index)` | Phase at target (1.0 / 0.0) |
+| `IsDoorOpening(index)` / `IsDoorClosing(index)` | In animation |
+| `IsDoorOpenedAjar(index)` / `IsDoorOpeningAjar(index)` | Slightly open (phase 0.2) |
+| `IsDoorLocked(index)` | Locked |
+| `OpenDoor(index)` / `CloseDoor(index)` | Open/close |
+| `LockDoor(index, force)` | Lock. `force=true` — closes if open |
+| `UnlockDoor(index, animate)` | Unlock. `animate=true` — opens slightly |
+| `GetDoorSoundPos(index)` / `GetDoorSoundDistance(index)` | Sound position/distance |
+| `PlayDoorSound(index)` | Play door sound |
 
-#### Лестницы (proto native)
+#### Ladders (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `GetLaddersCount()` | Количество лестниц |
-| `GetLadderPosTop(index)` / `GetLadderPosBottom(index)` | Позиции верха/низа |
+| Method | Description |
+|--------|-------------|
+| `GetLaddersCount()` | Number of ladders |
+| `GetLadderPosTop(index)` / `GetLadderPosBottom(index)` | Top/bottom positions |
 
-#### События дверей
+#### Door events
 
 `OnDoorOpenStart`, `OnDoorOpenFinish`, `OnDoorOpenAjarStart`, `OnDoorOpenAjarFinish`, `OnDoorCloseStart`, `OnDoorCloseFinish`, `OnDoorLocked`, `OnDoorUnlocked`
 
 ### DayZInfected
 
-Наследует `DayZCreatureAI`. Заражённые (зомби). Источник: `entities/dayzinfected.c`
+Inherits `DayZCreatureAI`. Infected (zombies). Source: `entities/dayzinfected.c`
 
-#### Константы
+#### Constants
 
-`DayZInfectedConstants` (команды): `COMMANDID_MOVE`, `COMMANDID_VAULT`, `COMMANDID_DEATH`, `COMMANDID_HIT`, `COMMANDID_ATTACK`, `COMMANDID_CRAWL`, `COMMANDID_SCRIPT`
+`DayZInfectedConstants` (commands): `COMMANDID_MOVE`, `COMMANDID_VAULT`, `COMMANDID_DEATH`, `COMMANDID_HIT`, `COMMANDID_ATTACK`, `COMMANDID_CRAWL`, `COMMANDID_SCRIPT`
 
-`DayZInfectedConstants` (состояния ИИ): `MINDSTATE_CALM`, `MINDSTATE_DISTURBED`, `MINDSTATE_ALERTED`, `MINDSTATE_CHASE`, `MINDSTATE_FIGHT`
+`DayZInfectedConstants` (AI states): `MINDSTATE_CALM`, `MINDSTATE_DISTURBED`, `MINDSTATE_ALERTED`, `MINDSTATE_CHASE`, `MINDSTATE_FIGHT`
 
 `DayZInfectedConstantsMovement`: `MOVEMENTSTATE_IDLE(0)`, `MOVEMENTSTATE_WALK`, `MOVEMENTSTATE_RUN`, `MOVEMENTSTATE_SPRINT`
 
 `DayZInfectedDeathAnims`: `ANIM_DEATH_DEFAULT(0)`, `ANIM_DEATH_IMPULSE(1)`, `ANIM_DEATH_BACKSTAB(2)`, `ANIM_DEATH_NECKSTAB(3)`
 
-#### Команды (proto native)
+#### Commands (proto native)
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `StartCommand_Move()` | `DayZInfectedCommandMove` | Начать движение |
-| `StartCommand_Vault(type)` | — | Перепрыгивание |
-| `StartCommand_Death(type, direction)` | — | Смерть |
-| `StartCommand_Hit(heavy, type, direction)` | — | Получение удара |
-| `StartCommand_Attack(target, type, subtype)` | `DayZInfectedCommandAttack` | Атака |
-| `StartCommand_Crawl(type)` | — | Ползание |
-| `StartCommand_Script(cmd)` / `StartCommand_ScriptInst(typename)` | `DayZInfectedCommandScript` | Скриптовая команда |
-| `GetCommand_Move()` / `GetCommand_Vault()` / `GetCommand_Attack()` / `GetCommand_Script()` | — | Получить текущую команду |
-| `CanAttackToPosition(targetPos)` | `bool` | Может ли атаковать позицию |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `StartCommand_Move()` | `DayZInfectedCommandMove` | Start moving |
+| `StartCommand_Vault(type)` | — | Vault |
+| `StartCommand_Death(type, direction)` | — | Death |
+| `StartCommand_Hit(heavy, type, direction)` | — | Take a hit |
+| `StartCommand_Attack(target, type, subtype)` | `DayZInfectedCommandAttack` | Attack |
+| `StartCommand_Crawl(type)` | — | Crawl |
+| `StartCommand_Script(cmd)` / `StartCommand_ScriptInst(typename)` | `DayZInfectedCommandScript` | Scripted command |
+| `GetCommand_Move()` / `GetCommand_Vault()` / `GetCommand_Attack()` / `GetCommand_Script()` | — | Get current command |
+| `CanAttackToPosition(targetPos)` | `bool` | Can attack the position |
 
-#### Классы команд
+#### Command classes
 
-| Класс | Ключевые методы |
-|-------|-----------------|
+| Class | Key methods |
+|-------|-------------|
 | `DayZInfectedCommandMove` | `SetStanceVariation()`, `SetIdleState()`, `StartTurn(dir, speed)`, `IsTurning()` |
 | `DayZInfectedCommandAttack` | `WasHit()` |
 | `DayZInfectedCommandVault` | `WasLand()` |
@@ -207,32 +207,32 @@ IEntity (1_Core)
 
 ### InventoryItem
 
-Наследует `EntityAI`. Предметы инвентаря. Источник: `entities/inventoryitem.c`
+Inherits `EntityAI`. Inventory items. Source: `entities/inventoryitem.c`
 
-| Метод | Описание |
-|-------|----------|
-| `SwitchOn()` / `IsOn()` | Включение/состояние |
-| `EnableCollisionsWithCharacter(state)` | Коллизии с персонажем |
-| `GetMeleeCombatData()` | Данные ближнего боя |
-| `ThrowPhysically(player, force)` | Бросить физически |
-| `ForceFarBubble(state)` | Принудительное сетевое расстояние |
+| Method | Description |
+|--------|-------------|
+| `SwitchOn()` / `IsOn()` | Turn on/state |
+| `EnableCollisionsWithCharacter(state)` | Collisions with character |
+| `GetMeleeCombatData()` | Melee combat data |
+| `ThrowPhysically(player, force)` | Throw physically |
+| `ForceFarBubble(state)` | Force network distance |
 
 ### Object
 
-Наследует `Entity`. Физический объект мира. Источник: `entities/object.c`
+Inherits `Entity`. Physical world object. Source: `entities/object.c`
 
-| Метод | Описание |
-|-------|----------|
-| `Delete()` | Удалить объект |
-| `AddProxyPhysics(proxyName)` / `RemoveProxyPhysics(proxyName)` | Управление proxy-физикой |
-| `GetLODS(out array)` | Получить LOD-ы |
+| Method | Description |
+|--------|-------------|
+| `Delete()` | Delete object |
+| `AddProxyPhysics(proxyName)` / `RemoveProxyPhysics(proxyName)` | Manage proxy physics |
+| `GetLODS(out array)` | Get LODs |
 
 ### Pawn
 
-Базовый класс сетевой сверки (`FEATURE_NETWORK_RECONCILIATION`). Источник: `entities/pawn.c`
+Base class for network reconciliation (`FEATURE_NETWORK_RECONCILIATION`). Source: `entities/pawn.c`
 
-| Класс | Описание |
-|-------|----------|
-| `PawnMove` | Данные перемещения для сверки |
-| `PawnOwnerState` | Состояние владельца |
+| Class | Description |
+|-------|-------------|
+| `PawnMove` | Movement data for reconciliation |
+| `PawnOwnerState` | Owner state |
 | `NetworkMoveStrategy` | `NONE`, `LATEST`, `PHYSICS` |

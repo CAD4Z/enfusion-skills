@@ -1,25 +1,25 @@
-`4_World` — модификаторы, агенты, симптомы. Три связанные системы: агенты (инфекция) → модификаторы (болезнь/состояние) → симптомы (проявление). Источники: `classes/playermodifiers/`, `classes/transmissionagents/`, `classes/playersymptoms/`
+`4_World` — modifiers, agents, symptoms. Three connected systems: agents (infection) → modifiers (disease/condition) → symptoms (manifestation). Sources: `classes/playermodifiers/`, `classes/transmissionagents/`, `classes/playersymptoms/`
 
-### Пайплайн
+### Pipeline
 
 ```
-Вход агентов → Рост/Убыль в AgentPool → Порог → Активация модификатора → Симптомы
+Agent intake → Growth/decline in AgentPool → Threshold → Modifier activation → Symptoms
      ↑                    ↑                                    ↓
-  Еда/Раны/       ImmuneSystem                         Stat-эффекты
-  Воздух/Зоны      (иммунитет)                        (здоровье, вода...)
+  Food/Wounds/      ImmuneSystem                         Stat effects
+  Air/Zones        (immunity)                            (health, water...)
                        ↑                                    ↓
-                  Антибиотики → Снижение агентов → Деактивация → Временный иммунитет
+                  Antibiotics → Lower agents → Deactivation → Temporary immunity
 ```
 
 ---
 
-### Агенты
+### Agents
 
-Базовый класс: `AgentBase`. Пул игрока: `PlayerAgentPool` (`m_AgentPool` в `PlayerBase`).
+Base class: `AgentBase`. Player pool: `PlayerAgentPool` (`m_AgentPool` on `PlayerBase`).
 
-#### eAgents (битовая маска)
+#### eAgents (bitmask)
 
-| Агент | Значение |
+| Agent | Value |
 |-------|----------|
 | `CHOLERA` | 1 |
 | `INFLUENZA` | 2 |
@@ -31,182 +31,182 @@
 | `NERVE_AGENT` | 128 |
 | `HEAVYMETAL` | 256 |
 
-#### AgentBase — конфигурация (задаётся в `Init()`)
+#### AgentBase — configuration (set in `Init()`)
 
-| Поле | Описание |
+| Field | Description |
 |------|----------|
-| `m_Type` | `eAgents` значение |
-| `m_Invasibility` | Скорость роста в секунду |
-| `m_TransferabilityIn/Out` | Коэффициент передачи |
-| `m_TransferabilityAirOut` | Воздушное распространение |
-| `m_Digestibility` | Множитель при переваривании (по умолчанию 0.1) |
-| `m_MaxCount` | Максимум в пуле |
-| `m_Potency` | `EStatLevels` — порог иммунитета для роста |
-| `m_DieOffSpeed` | Скорость убыли при сильном иммунитете |
-| `m_AutoinfectCount` / `m_AutoinfectProbability` | Автозаражение |
+| `m_Type` | `eAgents` value |
+| `m_Invasibility` | Growth rate per second |
+| `m_TransferabilityIn/Out` | Transfer coefficient |
+| `m_TransferabilityAirOut` | Airborne spread |
+| `m_Digestibility` | Multiplier during digestion (default 0.1) |
+| `m_MaxCount` | Pool maximum |
+| `m_Potency` | `EStatLevels` — immunity threshold for growth |
+| `m_DieOffSpeed` | Decline rate under strong immunity |
+| `m_AutoinfectCount` / `m_AutoinfectProbability` | Auto-infection |
 
-#### AgentBase — переопределяемые
+#### AgentBase — overridable
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `GetInvasibilityEx(PlayerBase)` | Динамическая скорость роста |
-| `GetPotencyEx(PlayerBase)` | Динамический порог (напр. Influenza повышает при пневмонии) |
-| `GetDieOffSpeedEx(PlayerBase)` | Динамическая убыль |
-| `GetDrugResistance(EMedicalDrugsType, PlayerBase)` | Устойчивость к лекарству (0=нет, 1=полная) |
-| `AutoinfectCheck(float deltaT, PlayerBase)` | Логика автозаражения |
-| `CanAutoinfectPlayer(PlayerBase)` | Базовая проверка автозаражения |
+| `GetInvasibilityEx(PlayerBase)` | Dynamic growth rate |
+| `GetPotencyEx(PlayerBase)` | Dynamic threshold (e.g. Influenza raises it when pneumonia is active) |
+| `GetDieOffSpeedEx(PlayerBase)` | Dynamic decline |
+| `GetDrugResistance(EMedicalDrugsType, PlayerBase)` | Drug resistance (0=none, 1=full) |
+| `AutoinfectCheck(float deltaT, PlayerBase)` | Auto-infection logic |
+| `CanAutoinfectPlayer(PlayerBase)` | Basic auto-infection eligibility |
 
-#### PlayerAgentPool — ключевые методы
+#### PlayerAgentPool — key methods
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `AddAgent(int id, float count)` | Добавить (учитывает временный иммунитет) |
-| `DigestAgent(int id, float count)` | Добавить × digestibility |
-| `RemoveAgent(int id)` | Обнулить |
-| `ReduceAgent(int id, float percent)` | Процентное снижение |
-| `GetSingleAgentCount(int id)` | Текущее кол-во |
-| `GetAgents()` | Битовая маска присутствующих |
-| `SetTemporaryResistance(int id, float seconds)` | Временный иммунитет |
-| `AntibioticsAttack(float value)` | Атака антибиотиками |
-| `DrugsAttack(EMedicalDrugsType, float value)` | Атака лекарством |
+| `AddAgent(int id, float count)` | Add (respects temporary immunity) |
+| `DigestAgent(int id, float count)` | Add × digestibility |
+| `RemoveAgent(int id)` | Clear to zero |
+| `ReduceAgent(int id, float percent)` | Percentage reduction |
+| `GetSingleAgentCount(int id)` | Current count |
+| `GetAgents()` | Bitmask of present agents |
+| `SetTemporaryResistance(int id, float seconds)` | Temporary immunity |
+| `AntibioticsAttack(float value)` | Antibiotics attack |
+| `DrugsAttack(EMedicalDrugsType, float value)` | Drug attack |
 
-#### Рост агентов (`GrowAgents`, вызов из `ImmuneSystemTick`)
+#### Agent growth (`GrowAgents`, called from `ImmuneSystemTick`)
 
 ```
-Для каждого агента в пуле:
-  если potency <= immunityLevel И нет временного иммунитета → count += invasibility × deltaT
-  иначе → count -= dieOffSpeed × deltaT
-  clamp [0, maxCount]; при 0 — удаление из пула
+For each agent in the pool:
+  if potency <= immunityLevel AND no temporary immunity → count += invasibility × deltaT
+  else → count -= dieOffSpeed × deltaT
+  clamp [0, maxCount]; on 0 — remove from pool
 ```
 
 ---
 
-### Модификаторы
+### Modifiers
 
-Базовый класс: `ModifierBase`. Менеджер: `ModifiersManager` (в `PlayerBase.m_ModifiersManager`, сервер).
+Base class: `ModifierBase`. Manager: `ModifiersManager` (on `PlayerBase.m_ModifiersManager`, server).
 
-#### eModifiers — 59 значений (MDF_TEMPERATURE=1 ... MDF_CHELATION)
+#### eModifiers — 59 values (MDF_TEMPERATURE=1 ... MDF_CHELATION)
 
-#### ModifierBase — конфигурация (задаётся в `Init()`)
+#### ModifierBase — configuration (set in `Init()`)
 
-| Поле | Описание |
+| Field | Description |
 |------|----------|
-| `m_ID` | `eModifiers` значение (>= 1) |
-| `m_TickIntervalActive` | Интервал тика при активном (по умолчанию 3с) |
-| `m_TickIntervalInactive` | Интервал проверки активации (по умолчанию 3с) |
-| `m_IsPersistent` | Сохраняется в БД |
-| `m_SyncID` | `eModifierSyncIDs` для клиентской синхронизации (макс 32) |
-| `m_TickType` | Битовая маска: `TICK=1`, `ACTIVATE_CHECK=2`, `DEACTIVATE_CHECK=4` |
+| `m_ID` | `eModifiers` value (>= 1) |
+| `m_TickIntervalActive` | Tick interval while active (default 3s) |
+| `m_TickIntervalInactive` | Activation-check interval (default 3s) |
+| `m_IsPersistent` | Saved to DB |
+| `m_SyncID` | `eModifierSyncIDs` for client sync (max 32) |
+| `m_TickType` | Bitmask: `TICK=1`, `ACTIVATE_CHECK=2`, `DEACTIVATE_CHECK=4` |
 
-#### ModifierBase — переопределяемые
+#### ModifierBase — overridable
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `Init()` | Установка m_ID, интервалов, m_SyncID |
-| `ActivateCondition(PlayerBase)` | Проверка каждые `m_TickIntervalInactive` — активировать? |
-| `DeactivateCondition(PlayerBase)` | Проверка каждые `m_TickIntervalActive` — деактивировать? |
-| `OnActivate(PlayerBase)` | При активации |
-| `OnReconnect(PlayerBase)` | При загрузке из БД |
-| `OnDeactivate(PlayerBase)` | При деактивации |
-| `OnTick(PlayerBase, float deltaT)` | Тик при активном состоянии |
+| `Init()` | Set m_ID, intervals, m_SyncID |
+| `ActivateCondition(PlayerBase)` | Checked every `m_TickIntervalInactive` — activate? |
+| `DeactivateCondition(PlayerBase)` | Checked every `m_TickIntervalActive` — deactivate? |
+| `OnActivate(PlayerBase)` | On activation |
+| `OnReconnect(PlayerBase)` | On load from DB |
+| `OnDeactivate(PlayerBase)` | On deactivation |
+| `OnTick(PlayerBase, float deltaT)` | Tick while active |
 
-#### Тик-цикл модификатора
+#### Modifier tick cycle
 
 ```
 Tick(deltaT):
-  Неактивен + ACTIVATE_CHECK:
-    накопить время → если > m_TickIntervalInactive:
+  Inactive + ACTIVATE_CHECK:
+    accumulate time → if > m_TickIntervalInactive:
       ActivateCondition()? → ActivateRequest()
-  Активен:
-    накопить время → если > m_TickIntervalActive:
+  Active:
+    accumulate time → if > m_TickIntervalActive:
       DEACTIVATE_CHECK + DeactivateCondition()? → Deactivate()
-      иначе → OnTick(player, deltaT)
+      else → OnTick(player, deltaT)
 ```
 
-#### Условия vs Болезни
+#### Conditions vs Diseases
 
-**Условия** (`modifiers/conditions/`): активируются от состояния игрока (статы, внешние события). Не вызывают `IncreaseDiseaseCount()`. Примеры: `BleedingCheckMdfr`, `WetMdfr`, `FeverMdfr`, `TremorMdfr`.
+**Conditions** (`modifiers/conditions/`): activated from player state (stats, external events). Do not call `IncreaseDiseaseCount()`. Examples: `BleedingCheckMdfr`, `WetMdfr`, `FeverMdfr`, `TremorMdfr`.
 
-**Болезни** (`modifiers/diseases/`): активируются от порога агента. Два порога — активация (выше) и деактивация (ниже, гистерезис). Вызывают `IncreaseDiseaseCount()` / `DecreaseDiseaseCount()`. Примеры: `CommonColdMdfr`, `InfluenzaMdfr`, `CholeraMdfr`.
+**Diseases** (`modifiers/diseases/`): activated from an agent threshold. Two thresholds — activation (above) and deactivation (below, hysteresis). Call `IncreaseDiseaseCount()` / `DecreaseDiseaseCount()`. Examples: `CommonColdMdfr`, `InfluenzaMdfr`, `CholeraMdfr`.
 
-Многостадийные: `WoundInfection` (Stage1/2), `Contamination` (Stage1/2/3), `HeavyMetal` (Phase1/2/3) — отдельные классы с разными порогами.
+Multi-stage: `WoundInfection` (Stage1/2), `Contamination` (Stage1/2/3), `HeavyMetal` (Phase1/2/3) — separate classes with different thresholds.
 
 #### ModifiersManager API
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `ActivateModifier(int id, bool triggerEvent)` | Принудительная активация |
-| `DeactivateModifier(int id, bool triggerEvent)` | Принудительная деактивация |
-| `IsModifierActive(eModifiers id)` | Проверка |
-| `SetModifierLock(int id, bool state)` | Блокировка (не деактивируется) |
+| `ActivateModifier(int id, bool triggerEvent)` | Force activation |
+| `DeactivateModifier(int id, bool triggerEvent)` | Force deactivation |
+| `IsModifierActive(eModifiers id)` | Check |
+| `SetModifierLock(int id, bool state)` | Lock (will not deactivate) |
 
 ---
 
-### Симптомы
+### Symptoms
 
-Базовый класс: `SymptomBase`. Менеджер: `SymptomManager` (в `PlayerBase.m_SymptomManager`).
+Base class: `SymptomBase`. Manager: `SymptomManager` (on `PlayerBase.m_SymptomManager`).
 
 #### SymptomTypes
 
-| Тип | Описание |
+| Type | Description |
 |-----|----------|
-| `PRIMARY (0)` | Полнотелые анимации, очередь с приоритетом, макс 5 |
-| `SECONDARY (1)` | Аддитивные эффекты, параллельно, без приоритета |
+| `PRIMARY (0)` | Full-body animations, priority queue, max 5 |
+| `SECONDARY (1)` | Additive effects, parallel, no priority |
 
 #### SymptomIDs
 
 `SYMPTOM_COUGH`, `SYMPTOM_VOMIT`, `SYMPTOM_BLINDNESS`, `SYMPTOM_BULLET_HIT`, `SYMPTOM_BLEEDING_SOURCE`, `SYMPTOM_BLOODLOSS`, `SYMPTOM_SNEEZE`, `SYMPTOM_FEVERBLUR`, `SYMPTOM_LAUGHTER`, `SYMPTOM_UNCONSCIOUS`, `SYMPTOM_FREEZE`, `SYMPTOM_FREEZE_RATTLE`, `SYMPTOM_HOT`, `SYMPTOM_PAIN_LIGHT`, `SYMPTOM_PAIN_HEAVY`, `SYMPTOM_HAND_SHIVER`, `SYMPTOM_DEAFNESS_COMPLETE`, `SYMPTOM_HMP_SEVERE`, `SYMPTOM_GASP`
 
-#### SymptomBase — конфигурация (`OnInit()`)
+#### SymptomBase — configuration (`OnInit()`)
 
-| Поле | Описание |
+| Field | Description |
 |------|----------|
 | `m_SymptomType` | PRIMARY / SECONDARY |
-| `m_Priority` | Приоритет в очереди primary (выше = срочнее) |
+| `m_Priority` | Priority in the primary queue (higher = more urgent) |
 | `m_ID` | `SymptomIDs` |
-| `m_MaxCount` | Макс. одновременных экземпляров (-1 = без лимита) |
-| `m_DestroyOnAnimFinish` | Автоуничтожение после анимации |
-| `m_SyncToClient` | Синхронизация через RPC |
-| `m_IsPersistent` | Сохранение в БД |
+| `m_MaxCount` | Max concurrent instances (-1 = unlimited) |
+| `m_DestroyOnAnimFinish` | Auto-destroy after animation |
+| `m_SyncToClient` | RPC sync |
+| `m_IsPersistent` | Saved to DB |
 
-#### SymptomBase — переопределяемые
+#### SymptomBase — overridable
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `OnInit()` | Настройка параметров |
-| `CanActivate()` | Сервер: можно ли запустить сейчас? |
-| `OnGetActivatedServer/Client(PlayerBase)` | При активации |
-| `OnGetDeactivatedServer/Client(PlayerBase)` | При деактивации |
-| `OnUpdateServer/Client(PlayerBase, float dt)` | Каждый кадр |
-| `SpawnAnimMetaObject()` | Вернуть `SmptAnimMetaFB` (fullbody) или `SmptAnimMetaADD` (additive) |
-| `IsSyncToRemotes()` | Видимость для других игроков |
-| `AllowInUnconscious()` | Разрешить в бессознательном |
+| `OnInit()` | Parameter setup |
+| `CanActivate()` | Server: may start now? |
+| `OnGetActivatedServer/Client(PlayerBase)` | On activation |
+| `OnGetDeactivatedServer/Client(PlayerBase)` | On deactivation |
+| `OnUpdateServer/Client(PlayerBase, float dt)` | Each frame |
+| `SpawnAnimMetaObject()` | Return `SmptAnimMetaFB` (fullbody) or `SmptAnimMetaADD` (additive) |
+| `IsSyncToRemotes()` | Visibility to other players |
+| `AllowInUnconscious()` | Allowed while unconscious |
 
-#### Очереди SymptomManager
+#### SymptomManager queues
 
-- **Primary**: упорядочена по приоритету, макс 5. Активен один — первый с `CanActivate()=true`. Низший удаляется при переполнении.
-- **Secondary**: все работают параллельно, без ограничения.
+- **Primary**: ordered by priority, max 5. One active at a time — the first with `CanActivate()=true`. The lowest is dropped on overflow.
+- **Secondary**: all run in parallel, no limit.
 
 #### SymptomManager API
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `QueueUpPrimarySymptom(int id)` | Добавить primary по приоритету |
-| `QueueUpSecondarySymptomEx(int id)` | Добавить secondary |
-| `RemoveSecondarySymptom(int id)` | Удалить первый совпавший |
-| `RequestSymptomExit(int uid)` | Запросить завершение |
+| `QueueUpPrimarySymptom(int id)` | Add a primary by priority |
+| `QueueUpSecondarySymptomEx(int id)` | Add a secondary |
+| `RemoveSecondarySymptom(int id)` | Remove the first match |
+| `RequestSymptomExit(int uid)` | Request completion |
 
 ---
 
-### Пример: цепочка Influenza
+### Example: Influenza chain
 
 ```
-1. Холод → InfluenzaAgent.AutoinfectCheck() → AddAgent(INFLUENZA, 610)
-2. GrowAgents: invasibility=0.33/с, potency=MEDIUM → рост если иммунитет ≤ MEDIUM
-3. count ≥ 100 → CommonColdMdfr активируется → чихание
-4. count ≥ 600 → InfluenzaMdfr активируется → кашель, diseaseCount++
-5. FeverMdfr видит MDF_INFLUENZA → SYMPTOM_FEVERBLUR + SYMPTOM_HOT
-6. count ≥ 1150 → PneumoniaMdfr → потеря здоровья, SYMPTOM_GASP
-7. InfluenzaAgent.GetPotencyEx: при пневмонии → potency=GREAT (сложнее побороть)
-8. Антибиотики → DrugsAttack → снижение count → деактивация → 300с иммунитет
+1. Cold → InfluenzaAgent.AutoinfectCheck() → AddAgent(INFLUENZA, 610)
+2. GrowAgents: invasibility=0.33/s, potency=MEDIUM → grows if immunity ≤ MEDIUM
+3. count ≥ 100 → CommonColdMdfr activates → sneezing
+4. count ≥ 600 → InfluenzaMdfr activates → coughing, diseaseCount++
+5. FeverMdfr sees MDF_INFLUENZA → SYMPTOM_FEVERBLUR + SYMPTOM_HOT
+6. count ≥ 1150 → PneumoniaMdfr → health loss, SYMPTOM_GASP
+7. InfluenzaAgent.GetPotencyEx: with pneumonia → potency=GREAT (harder to overcome)
+8. Antibiotics → DrugsAttack → count drops → deactivation → 300s immunity
 ```

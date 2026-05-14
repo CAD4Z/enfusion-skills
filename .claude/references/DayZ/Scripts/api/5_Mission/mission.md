@@ -1,48 +1,48 @@
-Классы миссий — hosts всего lifecycle игры (клиент+сервер+главное меню). Источники: `mission/`
+Mission classes — hosts of the entire game lifecycle (client+server+main menu). Sources: `mission/`
 
-### Фабрика
+### Factory
 
 ```c
 Mission CreateMission(string path)  // somemission.c
 ```
 
-Глобальная функция выбирает конкретный класс миссии по состоянию игры:
+The global function chooses a concrete mission class based on the game state:
 
-| Условие | Класс |
-|---------|-------|
+| Condition | Class |
+|-----------|-------|
 | `IsMultiplayer() && IsServer()` | `MissionServer` |
 | `NO_GUI` | `MissionDummy` |
-| `path` содержит `NoCutscene`/`intro` | `MissionMainMenu` |
+| `path` contains `NoCutscene`/`intro` | `MissionMainMenu` |
 | `path == ""` | `MissionDummy` |
-| иначе (клиент в игре) | `MissionGameplay` |
+| otherwise (client in game) | `MissionGameplay` |
 
-### Иерархия
+### Hierarchy
 
 ```
 MissionBaseWorld (3_Game)
-  └── MissionBase                — общий базовый (клиент+сервер)
-        ├── MissionServer        — серверная игровая миссия
-        ├── MissionGameplay      — клиентская игровая миссия
-        ├── MissionMainMenu      — клиентское главное меню
-        ├── MissionBenchmark     — оффлайн-бенчмарк (extends MissionGameplay)
-        └── MissionDummy         — заглушка (NO_GUI/пустой путь)
+  └── MissionBase                — common base (client+server)
+        ├── MissionServer        — server game mission
+        ├── MissionGameplay      — client game mission
+        ├── MissionMainMenu      — client main menu
+        ├── MissionBenchmark     — offline benchmark (extends MissionGameplay)
+        └── MissionDummy         — stub (NO_GUI/empty path)
 ```
 
 ### Lifecycle
 
-Последовательность вызовов на протяжении жизни миссии:
+Sequence of calls over the mission's lifetime:
 
 ```
-Конструктор (new MissionXxx)
-  → OnInit()              — инициализация подсистем (HUD, menus, world data)
-  → OnMissionStart()      — миссия готова, игрок может действовать
-  → OnUpdate(timeslice)   — каждый кадр
-  → OnEvent(type, params) — реакция на события (chat, respawn, resize)
-  → OnMissionFinish()     — при выходе/смене миссии
-Деструктор               — очистка
+Constructor (new MissionXxx)
+  → OnInit()              — initialize subsystems (HUD, menus, world data)
+  → OnMissionStart()      — mission is ready, the player may act
+  → OnUpdate(timeslice)   — every frame
+  → OnEvent(type, params) — react to events (chat, respawn, resize)
+  → OnMissionFinish()     — on exit/mission change
+Destructor               — cleanup
 ```
 
-Вспомогательные переопределяемые методы: `OnKeyPress/Release`, `OnMouseButtonPress/Release`, `OnItemUsed`, `OnGameplayDataHandlerLoad`, `OnPlayerRespawned`.
+Auxiliary overridable methods: `OnKeyPress/Release`, `OnMouseButtonPress/Release`, `OnItemUsed`, `OnGameplayDataHandlerLoad`, `OnPlayerRespawned`.
 
 ---
 
@@ -52,39 +52,39 @@ MissionBaseWorld (3_Game)
 class MissionBase extends MissionBaseWorld
 ```
 
-Общая база для всех миссий. Инициализирует PluginManager, DispatcherCaller, WorldData, DynamicMusicPlayer, WidgetEventHandler, SoundSetMap. Держит фабрику всех `UIScriptedMenu` через `CreateScriptedMenu(MENU_ID)`.
+Common base for all missions. Initializes PluginManager, DispatcherCaller, WorldData, DynamicMusicPlayer, WidgetEventHandler, SoundSetMap. Holds the factory for all `UIScriptedMenu`s via `CreateScriptedMenu(MENU_ID)`.
 
-#### Ключевые поля
+#### Key fields
 
-| Поле | Описание |
-|------|----------|
-| `m_WidgetEventHandler` | Глобальный обработчик событий виджетов |
-| `m_WorldData` | Данные текущего мира (`ChernarusPlusData`/`EnochData`/`SakhalData`/…) |
-| `m_WorldLighting` | Клиентское освещение (client only) |
-| `m_DynamicMusicPlayer` | Динамический музыкальный плеер (client only) |
-| `m_InventoryDropCallback` | `ObjectSnapCallback` для размещения при сбросе |
+| Field | Description |
+|-------|-------------|
+| `m_WidgetEventHandler` | Global widget event handler |
+| `m_WorldData` | Data for the current world (`ChernarusPlusData`/`EnochData`/`SakhalData`/…) |
+| `m_WorldLighting` | Client lighting (client only) |
+| `m_DynamicMusicPlayer` | Dynamic music player (client only) |
+| `m_InventoryDropCallback` | `ObjectSnapCallback` for placement on drop |
 
-#### Точки расширения
+#### Extension points
 
-| Метод | Когда переопределять |
-|-------|----------------------|
-| `CreateScriptedMenu(id)` | Добавить свой `UIScriptedMenu`-класс под новый MENU_ID |
-| `InitialiseWorldData()` | Зарегистрировать `WorldData` для кастомной карты |
-| `InitWorldYieldDataDefaults(bank)` | Переопределить дефолты рыбалки/крафта для новых ресурсов |
-| `SpawnItems()` | Серверный спаун стартовых предметов (пустая в базе) |
+| Method | When to override |
+|--------|------------------|
+| `CreateScriptedMenu(id)` | Add your own `UIScriptedMenu` class under a new MENU_ID |
+| `InitialiseWorldData()` | Register `WorldData` for a custom map |
+| `InitWorldYieldDataDefaults(bank)` | Override defaults for fishing/crafting for new resources |
+| `SpawnItems()` | Server-side spawn of starting items (empty in base) |
 
 #### DispatcherCaller
 
-`Dispatcher` — мост для вызовов из C++/движка в script. `MissionBase` устанавливает его в конструкторе: `SetDispatcher(new DispatcherCaller)`.
+`Dispatcher` — bridge for calls from C++/engine into script. `MissionBase` sets it in the constructor: `SetDispatcher(new DispatcherCaller)`.
 
-| `CallID` | Действие |
-|----------|----------|
-| `CALL_ID_SEND_LOG` | Вывод серверного лога через `PluginDeveloper` |
-| `CALL_ID_SCR_CNSL_ADD_PRINT` | Печать строки в `ScriptConsole` |
-| `CALL_ID_SCENE_EDITOR_COMMAND` | Команда в `SceneEditorMenu` |
-| `CALL_ID_HIDE_INVENTORY` | Скрыть инвентарь через `MissionGameplay` |
-| `CALL_ID_SCR_CNSL_GETSELECTEDITEM` | Возврат выбранного объекта из `ScriptConsoleItemsTab` |
-| `CALL_ID_SCR_CNSL_HISTORY_BACK/NEXT` | Навигация по истории EnfScript-вкладки |
+| `CallID` | Action |
+|----------|--------|
+| `CALL_ID_SEND_LOG` | Print the server log via `PluginDeveloper` |
+| `CALL_ID_SCR_CNSL_ADD_PRINT` | Print a string to `ScriptConsole` |
+| `CALL_ID_SCENE_EDITOR_COMMAND` | Command into `SceneEditorMenu` |
+| `CALL_ID_HIDE_INVENTORY` | Hide the inventory via `MissionGameplay` |
+| `CALL_ID_SCR_CNSL_GETSELECTEDITEM` | Return the selected object from `ScriptConsoleItemsTab` |
+| `CALL_ID_SCR_CNSL_HISTORY_BACK/NEXT` | Navigate the EnfScript tab history |
 
 ---
 
@@ -94,65 +94,65 @@ class MissionBase extends MissionBaseWorld
 class MissionServer extends MissionBase
 ```
 
-Серверная миссия. Хранит список игроков, обрабатывает коннект/реконнект/дисконнект, управляет респауном, спаунит стартовое снаряжение, обрабатывает корпсы и off-map артиллерию.
+Server mission. Maintains the player list, handles connect/reconnect/disconnect, manages respawn, spawns starting equipment, processes corpses and off-map artillery.
 
-#### Ключевые поля
+#### Key fields
 
-| Поле | Описание |
-|------|----------|
-| `m_Players` | `array<Man>` — активные игроки на сервере |
-| `m_DeadPlayersArray` | `array<ref CorpseData>` — трупы в мире |
-| `m_LogoutPlayers` / `m_NewLogoutPlayers` | Игроки в процессе logout'а (таймер) |
-| `m_RespawnMode` | Режим респауна из `CfgGameplayHandler` |
-| `m_RainProcHandler` | Обработчик сбора дождевой воды в контейнеры |
-| `m_FiringPos` | Позиции off-map артиллерии (заполняется в `Init.c`) |
-| `SCHEDULER_PLAYERS_PER_TICK = 5` | Сколько игроков тикают за один кадр |
+| Field | Description |
+|-------|-------------|
+| `m_Players` | `array<Man>` — active players on the server |
+| `m_DeadPlayersArray` | `array<ref CorpseData>` — corpses in the world |
+| `m_LogoutPlayers` / `m_NewLogoutPlayers` | Players currently logging out (timer) |
+| `m_RespawnMode` | Respawn mode from `CfgGameplayHandler` |
+| `m_RainProcHandler` | Handler for collecting rainwater into containers |
+| `m_FiringPos` | Positions of off-map artillery (filled in `Init.c`) |
+| `SCHEDULER_PLAYERS_PER_TICK = 5` | How many players tick per frame |
 
-#### Pipeline коннекта игрока
+#### Player connect pipeline
 
 ```
-ClientPrepareEvent    → OnClientPrepareEvent  (готовит hive/non-hive, выставляет pos/yaw)
-                      → CfgGameplayHandler.SyncDataSendEx (шлёт конфиг клиенту)
-ClientNewEvent        → OnClientNewEvent      (создаёт PlayerBase)
+ClientPrepareEvent    → OnClientPrepareEvent  (prepares hive/non-hive, sets pos/yaw)
+                      → CfgGameplayHandler.SyncDataSendEx (sends config to the client)
+ClientNewEvent        → OnClientNewEvent      (creates PlayerBase)
                       → CreateCharacter
-                      → EquipCharacter        (одежда из MenuDefaultCharacterData)
-                      → StartingEquipSetup    (точка расширения для стартовых предметов)
+                      → EquipCharacter        (clothing from MenuDefaultCharacterData)
+                      → StartingEquipSetup    (extension point for starting items)
                       → InvokeOnConnect       (player.OnConnect)
 ClientReadyEvent      → OnClientReadyEvent    (SelectPlayer)
-ClientRespawnEvent    → OnClientRespawnEvent  (kill если unconscious/restrained)
+ClientRespawnEvent    → OnClientRespawnEvent  (kill if unconscious/restrained)
 ClientReconnectEvent  → OnClientReconnectEvent (player.OnReconnect)
-ClientDisconnectedEvent → OnClientDisconnectedEvent → (через таймер) PlayerDisconnected
+ClientDisconnectedEvent → OnClientDisconnectedEvent → (via timer) PlayerDisconnected
 ```
 
-#### Точки расширения (наиболее переопределяемые)
+#### Extension points (most commonly overridden)
 
-| Метод | Для чего |
-|-------|----------|
-| `StartingEquipSetup(player, clothesChosen)` | Выдать стартовые предметы при спауне (init.c hook) |
-| `OnClientPrepareEvent(identity, out useDB, out pos, out yaw, out preloadTimeout)` | Стартовая позиция/yaw без DB |
-| `OnClientNewEvent(identity, pos, ctx)` | Полная логика создания персонажа (учитывает `PlayerSpawnHandler`) |
-| `EquipCharacter(char_data)` | Экипировка по слотам, рандомизация при невалидных данных |
-| `InvokeOnConnect/OnDisconnect(player, identity)` | Хуки до/после connect/disconnect |
-| `HandleBody(player)` | Что делать с телом игрока при дисконнекте (kill или delete) |
-| `ShouldPlayerBeKilled(player)` | Решение о kill'е бессознательного/связанного при дисконнекте |
+| Method | What for |
+|--------|----------|
+| `StartingEquipSetup(player, clothesChosen)` | Give starting items on spawn (init.c hook) |
+| `OnClientPrepareEvent(identity, out useDB, out pos, out yaw, out preloadTimeout)` | Starting position/yaw without DB |
+| `OnClientNewEvent(identity, pos, ctx)` | Full character creation logic (honors `PlayerSpawnHandler`) |
+| `EquipCharacter(char_data)` | Equip per slot, randomize on invalid data |
+| `InvokeOnConnect/OnDisconnect(player, identity)` | Hooks before/after connect/disconnect |
+| `HandleBody(player)` | What to do with the player's body on disconnect (kill or delete) |
+| `ShouldPlayerBeKilled(player)` | Decision to kill an unconscious/restrained player on disconnect |
 
-#### Артиллерия (off-map barrage)
+#### Artillery (off-map barrage)
 
 ```c
-m_PlayArty              // включить barrage (в init.c)
-m_ArtyDelay             // интервал между залпами
+m_PlayArty              // enable barrage (in init.c)
+m_ArtyDelay             // interval between volleys
 m_MinSimultaneousStrikes/m_MaxSimultaneousStrikes
-m_FiringPos             // координаты (CHERNARUS_STRIKE_POS/LIVONIA_STRIKE_POS)
+m_FiringPos             // coordinates (CHERNARUS_STRIKE_POS/LIVONIA_STRIKE_POS)
 ```
 
-Реализация: `RandomArtillery(deltaTime)` рассылает `RPC_SOUND_ARTILLERY` клиентам.
+Implementation: `RandomArtillery(deltaTime)` broadcasts `RPC_SOUND_ARTILLERY` to clients.
 
-#### Прочее
+#### Miscellaneous
 
-- `UpdatePlayersStats()` — каждые 30с: `STAT_PLAYTIME`, `STAT_DISTANCE`, `PluginLifespan.UpdateLifespan`.
-- `UpdateCorpseStatesServer()` — обновление стадий разложения каждые 30с.
-- `TickScheduler(timeslice)` — round-robin тик `PlayerBase.OnTick()` по 5 игроков за кадр.
-- `ControlPersonalLight/SyncGlobalLighting(player)` — RPC выставления света на коннекте.
+- `UpdatePlayersStats()` — every 30s: `STAT_PLAYTIME`, `STAT_DISTANCE`, `PluginLifespan.UpdateLifespan`.
+- `UpdateCorpseStatesServer()` — decay-stage updates every 30s.
+- `TickScheduler(timeslice)` — round-robin tick of `PlayerBase.OnTick()` for 5 players per frame.
+- `ControlPersonalLight/SyncGlobalLighting(player)` — RPC to set lighting on connect.
 
 ---
 
@@ -162,28 +162,28 @@ m_FiringPos             // координаты (CHERNARUS_STRIKE_POS/LIVONIA_ST
 class MissionGameplay extends MissionBase
 ```
 
-Клиентская миссия «в игре». Владеет HUD, Chat, ActionMenu, InventoryMenu, GameplayEffectWidgets, всеми input excludes и обработкой горячих клавиш.
+Client "in-game" mission. Owns the HUD, Chat, ActionMenu, InventoryMenu, GameplayEffectWidgets, all input excludes, and hotkey handling.
 
-#### Ключевые поля
+#### Key fields
 
-| Поле | Описание |
-|------|----------|
-| `m_HudRootWidget` | Корневой widget из `gui/layouts/day_z_hud.layout` |
-| `m_Hud : IngameHud` | Главный HUD (stats/quickbar/иконки) |
-| `m_HudDebug` | `HudDebug` (только `#ifdef DEVELOPER`) |
-| `m_Chat : Chat` | Система чата |
-| `m_ActionMenu` | Меню действий (правый нижний угол) |
-| `m_InventoryMenu` | Ref на `InventoryMenu` (создаётся лениво через `InitInventory`) |
-| `m_EffectWidgets : GameplayEffectWidgets` | Виджеты геймплейных эффектов |
-| `m_DebugMonitor` | Debug monitor (через `CreateDebugMonitor`) |
+| Field | Description |
+|-------|-------------|
+| `m_HudRootWidget` | Root widget from `gui/layouts/day_z_hud.layout` |
+| `m_Hud : IngameHud` | Main HUD (stats/quickbar/icons) |
+| `m_HudDebug` | `HudDebug` (only `#ifdef DEVELOPER`) |
+| `m_Chat : Chat` | Chat system |
+| `m_ActionMenu` | Action menu (bottom-right corner) |
+| `m_InventoryMenu` | Ref to `InventoryMenu` (lazily created via `InitInventory`) |
+| `m_EffectWidgets : GameplayEffectWidgets` | Gameplay effect widgets |
+| `m_DebugMonitor` | Debug monitor (via `CreateDebugMonitor`) |
 | `m_Watermark` | Experimental watermark (`BUILD_EXPERIMENTAL`) |
-| `m_LifeState` | Кэшированный `EPlayerStates` игрока |
-| `m_ActiveInputExcludeGroups/m_ActiveInputRestrictions` | Стек активных input excludes |
+| `m_LifeState` | Cached player `EPlayerStates` |
+| `m_ActiveInputExcludeGroups/m_ActiveInputRestrictions` | Stack of active input excludes |
 
-#### Lifecycle HUD
+#### HUD lifecycle
 
 ```
-OnInit() → создаёт day_z_hud.layout → передаёт подвиджеты в:
+OnInit() → creates day_z_hud.layout → passes sub-widgets to:
    m_Chat.Init(ChatFrameWidget)
    m_ActionMenu.Init(ActionsPanel, DefaultActionWidget)
    m_Hud.Init(HudPanel)
@@ -196,59 +196,59 @@ OnMissionFinish() → m_Chat.Destroy(), delete m_HudRootWidget, DestroyAllMenus(
 
 #### Input excludes / restrictions
 
-Система слоистого блока инпута для menu/inventory/map/radial:
+Layered input-blocking system for menu/inventory/map/radial:
 
-| Метод | Назначение |
-|-------|------------|
-| `AddActiveInputExcludes(array<string>)` | Добавить группу(ы) из `specific.xml` (например `"inventory"`, `"menu"`, `"radialmenu"`, `"map"`) |
-| `RemoveActiveInputExcludes(array<string>, bForceSupress)` | Снять группы |
-| `AddActiveInputRestriction(int)` / `RemoveActiveInputRestriction` | Доп. скриптовые ограничения (`EInputRestrictors.INVENTORY`, `MAP`) |
-| `RefreshExcludes()` | Отложенный `PerformRefreshExcludes()` (вызывается в `OnUpdate`) |
-| `EnableAllInputs(bForceSupress)` | Сбросить всё |
-| `IsInputExcludeActive(string)` / `IsInputRestrictionActive(int)` | Проверка |
-| `IsControlDisabled()` | Любая из перечисленных блокировок активна |
+| Method | Purpose |
+|--------|---------|
+| `AddActiveInputExcludes(array<string>)` | Add group(s) from `specific.xml` (e.g., `"inventory"`, `"menu"`, `"radialmenu"`, `"map"`) |
+| `RemoveActiveInputExcludes(array<string>, bForceSupress)` | Remove groups |
+| `AddActiveInputRestriction(int)` / `RemoveActiveInputRestriction` | Additional script-side restrictions (`EInputRestrictors.INVENTORY`, `MAP`) |
+| `RefreshExcludes()` | Deferred `PerformRefreshExcludes()` (called in `OnUpdate`) |
+| `EnableAllInputs(bForceSupress)` | Reset everything |
+| `IsInputExcludeActive(string)` / `IsInputRestrictionActive(int)` | Checks |
+| `IsControlDisabled()` | Any of the listed blocks active |
 
-#### Управление меню/паузой/инвентарём
+#### Menu/pause/inventory management
 
-| Метод | Что делает |
-|-------|------------|
-| `Pause()` / `Continue()` | Открыть/закрыть `MENU_INGAME` (пауза) |
-| `IsPaused()` | `MENU_INGAME` открыт |
-| `ShowInventory()` / `HideInventory()` / `DestroyInventory()` | Lifecycle инвентаря |
-| `InitInventory()` | Лениво создаёт `InventoryMenu` |
-| `ShowChat()` / `HideChat()` | Открыть `MENU_CHAT_INPUT` |
-| `ShowVehicleInfo()` / `HideVehicleInfo()` | Проксируется в `IngameHud` |
+| Method | What it does |
+|--------|--------------|
+| `Pause()` / `Continue()` | Open/close `MENU_INGAME` (pause) |
+| `IsPaused()` | `MENU_INGAME` is open |
+| `ShowInventory()` / `HideInventory()` / `DestroyInventory()` | Inventory lifecycle |
+| `InitInventory()` | Lazily creates `InventoryMenu` |
+| `ShowChat()` / `HideChat()` | Open `MENU_CHAT_INPUT` |
+| `ShowVehicleInfo()` / `HideVehicleInfo()` | Proxied to `IngameHud` |
 | `CreateLogoutMenu(parent)` / `StartLogoutMenu(time)` | Logout flow |
 | `CreateDebugMonitor()` / `HideDebugMonitor()` / `UpdateDebugMonitor()` | DebugMonitor lifecycle |
-| `CloseAllMenus()` / `DestroyAllMenus()` | Массовые операции |
+| `CloseAllMenus()` / `DestroyAllMenus()` | Bulk operations |
 
-#### Обработка событий (`OnEvent`)
+#### Event handling (`OnEvent`)
 
-| Event | Действие |
-|-------|----------|
-| `ChatMessageEventTypeID` | Добавить сообщение в `m_Chat` |
-| `ChatChannelEventTypeID` | Обновить индикатор канала (fade timer) |
+| Event | Action |
+|-------|--------|
+| `ChatMessageEventTypeID` | Add a message into `m_Chat` |
+| `ChatChannelEventTypeID` | Update the channel indicator (fade timer) |
 | `WindowsResizeEventTypeID` | `DestroyAllMenus() + m_Hud.OnResizeScreen()` |
 | `SetFreeCameraEventTypeID` | `PluginDeveloper.OnSetFreeCameraEvent` |
-| `NetworkInputBufferEventTypeID` | Открыть `MENU_CONNECTION_DIALOGUE` при переполнении input buffer |
+| `NetworkInputBufferEventTypeID` | Open `MENU_CONNECTION_DIALOGUE` on input buffer overflow |
 
-#### Горячие клавиши (OnUpdate)
+#### Hotkeys (OnUpdate)
 
-Обработка в `OnUpdate` по `GetUApi().GetInputByID(UA*)`:
+Processing in `OnUpdate` via `GetUApi().GetInputByID(UA*)`:
 
-| Input | Действие |
-|-------|----------|
-| `UAGear` | Toggle инвентарь |
+| Input | Action |
+|-------|--------|
+| `UAGear` | Toggle inventory |
 | `UAUIGesturesOpen` | Open/close `GesturesMenu` |
 | `UAUIQuickbarRadialOpen` | Open/close `RadialQuickbarMenu` |
 | `UAChat` | Open `ChatInputMenu` (non-console) |
 | `UAUIQuickbarToggle` | Show/hide quickbar |
 | `UAZeroingUp/Down`, `UAToggleWeapons` | `m_Hud.ZeroingKeyPress()` |
-| `UANextAction/PrevAction`, `UANextActionCategory/Prev…` | Навигация в `ActionMenu` |
-| `UAMapToggle` | Open `MapMenu` (если ignore ownership) |
+| `UANextAction/PrevAction`, `UANextActionCategory/Prev…` | Navigation in `ActionMenu` |
+| `UAMapToggle` | Open `MapMenu` (if ignore ownership) |
 | `UAUIMenu` | Pause |
 
-См. [hud.md](hud.md), [menus.md](menus.md), [inventory.md](inventory.md).
+See [hud.md](hud.md), [menus.md](menus.md), [inventory.md](inventory.md).
 
 ---
 
@@ -258,16 +258,16 @@ OnMissionFinish() → m_Chat.Destroy(), delete m_HudRootWidget, DestroyAllMenus(
 class MissionMainMenu extends MissionBase
 ```
 
-Главное меню игры. На `OnInit` создаёт интро-сцену (`DayZIntroScenePC`/`DayZIntroSceneXbox`) и открывает корневое меню (`MENU_MAIN` на PC, `MENU_TITLE_SCREEN` на консолях).
+Game main menu. On `OnInit` creates the intro scene (`DayZIntroScenePC`/`DayZIntroSceneXbox`) and opens the root menu (`MENU_MAIN` on PC, `MENU_TITLE_SCREEN` on consoles).
 
-| Поле | Описание |
-|------|----------|
-| `m_mainmenu` | Ref на корневое `UIScriptedMenu` |
-| `m_IntroScenePC` / `m_IntroSceneXbox` | Платформенная интро-сцена |
-| `m_CreditsMenu` | Ref на открытые титры (для обновления по событию input device) |
-| `m_NoCutscene` | Пропустить интро (путь содержит `NoCutscene`) |
+| Field | Description |
+|-------|-------------|
+| `m_mainmenu` | Ref to the root `UIScriptedMenu` |
+| `m_IntroScenePC` / `m_IntroSceneXbox` | Platform-specific intro scene |
+| `m_CreditsMenu` | Ref to open credits (for updating on input-device event) |
+| `m_NoCutscene` | Skip intro (path contains `NoCutscene`) |
 
-Ключевое: `OnUpdate` вызывает `m_IntroScenePC.Update()`, `Reset()` пересоздаёт сцену, `OnMenuEnter(menu_id)` кеширует ref на `CreditsMenu`. Подробности подменю — см. [mainmenu.md](mainmenu.md).
+Key points: `OnUpdate` calls `m_IntroScenePC.Update()`, `Reset()` recreates the scene, `OnMenuEnter(menu_id)` caches the ref to `CreditsMenu`. Submenu details — see [mainmenu.md](mainmenu.md).
 
 ---
 
@@ -277,7 +277,7 @@ class MissionMainMenu extends MissionBase
 class MissionBenchmark extends MissionGameplay
 ```
 
-Оффлайн-бенчмарк: серия `BenchmarkLocation` (позиция + look-at + скорость камеры), по которым камера пролетает через `BenchmarkConfig`. Выводит FPS-метрики в RPT/CSV. Запускается через CLI-параметр; в геймплее не используется.
+Offline benchmark: a series of `BenchmarkLocation`s (position + look-at + camera speed) through which the camera flies via `BenchmarkConfig`. Outputs FPS metrics to RPT/CSV. Launched via CLI parameter; not used in gameplay.
 
 ---
 
@@ -287,4 +287,4 @@ class MissionBenchmark extends MissionGameplay
 class MissionDummy extends MissionBase
 ```
 
-Пустая заглушка для `NO_GUI` сборок и пустого пути. Никакой собственной логики.
+Empty stub for `NO_GUI` builds and empty path. No logic of its own.

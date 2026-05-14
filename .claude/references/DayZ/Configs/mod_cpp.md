@@ -1,6 +1,6 @@
-Отдельный файл в корне папки мода (не в PBO). Отвечает за отображение в главном меню.
+A standalone file at the root of the mod folder (not in the PBO). Responsible for the main menu presentation.
 
-### Структура
+### Structure
 
 ```cpp
 name = "Mod name";

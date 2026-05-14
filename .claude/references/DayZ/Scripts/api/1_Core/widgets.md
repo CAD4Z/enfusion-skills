@@ -1,110 +1,110 @@
-UI система виджетов. Источник: `proto/enwidgets.c`
+UI widget system. Source: `proto/enwidgets.c`
 
-Виджеты загружаются из `.layout` файлов через `WorkspaceWidget.CreateWidgets()` или создаются программно через `CreateWidget()`.
+Widgets are loaded from `.layout` files via `WorkspaceWidget.CreateWidgets()` or created programmatically via `CreateWidget()`.
 
-### Widget — базовый класс
+### Widget — base class
 
-Все виджеты наследуют от `Widget : Managed`.
+All widgets inherit from `Widget : Managed`.
 
-**Иерархия и поиск:**
+**Hierarchy and lookup:**
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `GetParent()` | Родительский виджет |
-| `GetChildren()` | Первый дочерний |
-| `GetSibling()` | Следующий на том же уровне |
-| `AddChild(child)` | Добавить дочерний |
-| `RemoveChild(child)` | Удалить дочерний |
-| `FindWidget("path.to.widget")` | Найти по пути |
-| `FindAnyWidget("name")` | Найти по имени (рекурсивно) |
-| `FindAnyWidgetById(user_id)` | Найти по userID |
-| `Unlink()` | Уничтожить виджет и всех детей |
+| `GetParent()` | Parent widget |
+| `GetChildren()` | First child |
+| `GetSibling()` | Next on the same level |
+| `AddChild(child)` | Add a child |
+| `RemoveChild(child)` | Remove a child |
+| `FindWidget("path.to.widget")` | Find by path |
+| `FindAnyWidget("name")` | Find by name (recursive) |
+| `FindAnyWidgetById(user_id)` | Find by userID |
+| `Unlink()` | Destroy the widget and all of its children |
 
-**Свойства:**
+**Properties:**
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `GetName()` / `SetName(name)` | Имя |
-| `GetTypeName()` | Имя типа |
-| `Show(show, immedUpdate)` | Показать/скрыть |
-| `IsVisible()` / `IsVisibleHierarchy()` | Видимость |
-| `Enable(enable)` | Включить/выключить |
-| `SetPos(x, y)` / `GetPos(out x, out y)` | Позиция (относительная) |
-| `SetSize(w, h)` / `GetSize(out w, out h)` | Размер (относительный) |
-| `SetScreenPos(x, y)` / `GetScreenPos(out x, out y)` | Экранная позиция |
-| `SetScreenSize(w, h)` / `GetScreenSize(out w, out h)` | Экранный размер |
-| `SetColor(color)` / `GetColor()` | Цвет (ARGB int) |
-| `SetAlpha(alpha)` / `GetAlpha()` | Прозрачность (0.0-1.0) |
-| `SetRotation(roll, pitch, yaw)` / `GetRotation()` | Вращение |
-| `GetFlags()` / `SetFlags(flags)` / `ClearFlags(flags)` | Флаги |
-| `GetSort()` / `SetSort(sort)` | Z-порядок |
-| `SetUserData(data)` / `GetUserData(out data)` | Пользовательские данные |
-| `SetUserID(id)` / `GetUserID()` | Пользовательский ID |
-| `SetHandler(handler)` | Обработчик событий (`ScriptedWidgetEventHandler`) |
-| `Update()` | Принудительное обновление |
-| `TranslateString(stringId)` | **static** — перевод строки локализации |
+| `GetName()` / `SetName(name)` | Name |
+| `GetTypeName()` | Type name |
+| `Show(show, immedUpdate)` | Show/hide |
+| `IsVisible()` / `IsVisibleHierarchy()` | Visibility |
+| `Enable(enable)` | Enable/disable |
+| `SetPos(x, y)` / `GetPos(out x, out y)` | Position (relative) |
+| `SetSize(w, h)` / `GetSize(out w, out h)` | Size (relative) |
+| `SetScreenPos(x, y)` / `GetScreenPos(out x, out y)` | Screen position |
+| `SetScreenSize(w, h)` / `GetScreenSize(out w, out h)` | Screen size |
+| `SetColor(color)` / `GetColor()` | Color (ARGB int) |
+| `SetAlpha(alpha)` / `GetAlpha()` | Transparency (0.0-1.0) |
+| `SetRotation(roll, pitch, yaw)` / `GetRotation()` | Rotation |
+| `GetFlags()` / `SetFlags(flags)` / `ClearFlags(flags)` | Flags |
+| `GetSort()` / `SetSort(sort)` | Z-order |
+| `SetUserData(data)` / `GetUserData(out data)` | User data |
+| `SetUserID(id)` / `GetUserID()` | User ID |
+| `SetHandler(handler)` | Event handler (`ScriptedWidgetEventHandler`) |
+| `Update()` | Force update |
+| `TranslateString(stringId)` | **static** — translate a localization string |
 
 **WidgetFlags:** `VISIBLE`, `BLEND`, `ADDITIVE`, `SOURCEALPHA`, `STRETCH`, `CENTER`, `VCENTER`, `EXACTPOS`, `EXACTSIZE`, `HEXACTSIZE`, `VEXACTSIZE`, `NOFILTER`, `RALIGN`, `FLIPU`, `FLIPV`, `CUSTOMUV`, `IGNOREPOINTER`, `DISABLED`, `NOFOCUS`, `CLIPCHILDREN`, `DRAGGABLE`
 
-### Типы виджетов
+### Widget types
 
-**TextWidget** — однострочный текст:
+**TextWidget** — single-line text:
 `SetText(text)`, `SetTextFormat(fmt, p1..p9)`, `GetTextSize(out sx, out sy)`, `SetOutline(size, argb)`, `SetShadow(size, argb, opacity, offX, offY)`, `SetBold(bool)`, `SetItalic(bool)`, `SetTextExactSize(size)`, `SetTextProportion(val)`
 
-**MultilineTextWidget** — многострочный текст. Наследует TextWidget.
+**MultilineTextWidget** — multi-line text. Inherits from TextWidget.
 
-**RichTextWidget** — текст с изображениями:
+**RichTextWidget** — text with images:
 `GetContentHeight()`, `GetContentOffset()`, `SetContentOffset(offset)`, `GetNumLines()`, `GetLineWidth(line)`, `ElideText(line, maxWidth, str)`
 
-**ImageWidget** — изображение:
+**ImageWidget** — image:
 `LoadImageFile(num, name, noCache)`, `SetImage(num)`, `GetImage()`, `GetImageSize(image, out sx, out sy)`, `SetUV(uv[4][2])`, `LoadMaskTexture(resource)`, `SetMaskProgress(value)`, `SetMaskTransitionWidth(value)`
 
-**ButtonWidget** — кнопка:
+**ButtonWidget** — button:
 `GetState()`, `SetState(state)`, `SetText(text)`, `GetText(out text)`
 
-**EditBoxWidget** — поле ввода:
+**EditBoxWidget** — input field:
 `GetText()`, `SetText(str)`
 
-**CheckBoxWidget** — флажок:
+**CheckBoxWidget** — checkbox:
 `IsChecked()`, `SetChecked(checked)`, `SetText(str)`
 
-**SliderWidget** — ползунок:
+**SliderWidget** — slider:
 `SetMinMax(min, max)`, `GetCurrent()`, `SetCurrent(val)`, `GetStep()`, `SetStep(step)`
 
-**SimpleProgressBarWidget** / **ProgressBarWidget** — прогресс-бар:
+**SimpleProgressBarWidget** / **ProgressBarWidget** — progress bar:
 `GetMin()`, `GetMax()`, `GetCurrent()`, `SetCurrent(val)`
 
-**XComboBoxWidget** — выпадающий список:
+**XComboBoxWidget** — dropdown:
 `AddItem(item)`, `ClearAll()`, `SetItem(idx, value)`, `RemoveItem(idx)`, `GetNumItems()`, `SetCurrentItem(n)`, `GetCurrentItem()`
 
-**TextListboxWidget** — таблица:
+**TextListboxWidget** — table:
 `AddItem(text, data, column, row)`, `SetItem(pos, text, data, column)`, `GetItemText(row, col, out text)`, `GetItemData(row, col, out data)`, `GetNumItems()`, `SelectRow(row)`, `GetSelectedRow()`, `ClearItems()`
 
-**ScrollWidget** — прокрутка:
+**ScrollWidget** — scrolling:
 `GetVScrollPos()`, `VScrollToPos(pos)`, `VScrollToWidget(child)`, `GetHScrollPos()`, `HScrollStep(steps)`, `GetContentHeight()`, `GetContentWidth()`
 
-**CanvasWidget** — рисование:
+**CanvasWidget** — drawing:
 `DrawLine(x1, y1, x2, y2, width, color)`, `Clear()`
 
-**RenderTargetWidget** — рендер в текстуру:
+**RenderTargetWidget** — render-to-texture:
 `SetRefresh(period, offset)`, `SetResolutionScale(x, y)`
 
-**VideoWidget** — видеоплеер:
+**VideoWidget** — video player:
 `Load(name, looping, startTime)`, `Unload()`, `Play()`, `Pause()`, `Stop()`, `SetTime(time, preload)`, `GetTime()`, `GetTotalTime()`, `IsPlaying()`, `GetState()`, `SetLooping(bool)`, `SetCallback(VideoCallback, fn)`
 
-**SpacerWidget** / **GridSpacerWidget** / **WrapSpacerWidget** — лейаут-контейнеры.
+**SpacerWidget** / **GridSpacerWidget** / **WrapSpacerWidget** — layout containers.
 
-**WorkspaceWidget** — корневой виджет:
+**WorkspaceWidget** — root widget:
 `CreateWidget(type, left, top, w, h, flags, color, sort, parent)`, `CreateWidgets(layout, parent)`
 
-### Глобальные функции
+### Global functions
 
-| Функция | Описание |
+| Function | Description |
 |---------|----------|
-| `GetWidgetUnderCursor()` | Виджет под курсором |
-| `GetDragWidget()` | Текущий перетаскиваемый виджет |
-| `CancelWidgetDragging()` | Отменить перетаскивание |
+| `GetWidgetUnderCursor()` | Widget under the cursor |
+| `GetDragWidget()` | Currently dragged widget |
+| `CancelWidgetDragging()` | Cancel dragging |
 
 ### ScriptedWidgetEventHandler
 
-Базовый класс обработчика. Устанавливается через `widget.SetHandler(handler)`. Переопределяйте методы событий (OnClick, OnMouseEnter, OnChange и т.п.) в наследнике.
+Base handler class. Set via `widget.SetHandler(handler)`. Override event methods (OnClick, OnMouseEnter, OnChange, etc.) in a subclass.

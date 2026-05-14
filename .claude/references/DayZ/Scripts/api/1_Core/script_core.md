@@ -1,23 +1,23 @@
-Ядро скриптовой системы. Источник: `proto/enscript.c`, `proto/proto.c`, `param.c`
+Script system core. Source: `proto/enscript.c`, `proto/proto.c`, `param.c`
 
 ### Class
 
-Суперкорень всех классов в Enforce Script.
+Super-root of all classes in Enforce Script.
 
-| Метод | Возврат | Описание |
+| Method | Return | Description |
 |-------|---------|----------|
-| `IsInherited(type)` | `bool` | Проверка наследования |
-| `ClassName()` | `string` | Имя класса |
-| `GetDebugName()` | `string` | По умолчанию = `ClassName()`, переопределяем |
-| `Type()` | `typename` | typename объекта |
-| `StaticType()` | `typename` | typename переменной (не объекта) |
-| `ToString()` | `string` | Строковое представление |
-| `Cast(from)` | `Class` | **static** — безопасный downcast, null при неудаче |
-| `CastTo(out to, from)` | `bool` | **static** — downcast с проверкой |
+| `IsInherited(type)` | `bool` | Inheritance check |
+| `ClassName()` | `string` | Class name |
+| `GetDebugName()` | `string` | By default = `ClassName()`, can be overridden |
+| `Type()` | `typename` | typename of the object |
+| `StaticType()` | `typename` | typename of the variable (not the object) |
+| `ToString()` | `string` | String representation |
+| `Cast(from)` | `Class` | **static** — safe downcast, null on failure |
+| `CastTo(out to, from)` | `bool` | **static** — downcast with check |
 
 ```cpp
 // Паттерн каста
-Object obj = GetGame().GetPlayer();
+Object obj = g_Game.GetPlayer();
 Man player;
 if (Class.CastTo(player, obj))
 {
@@ -27,33 +27,33 @@ if (Class.CastTo(player, obj))
 
 ### Managed
 
-Базовый класс для объектов управляемых ARC (Automatic Reference Counting). Наследуйте от `Managed` когда нужен подсчёт ссылок через `ref`.
+Base class for objects managed by ARC (Automatic Reference Counting). Inherit from `Managed` when reference counting via `ref` is needed.
 
 ### ScriptModule
 
-Компилированный скриптовый модуль. Позволяет динамический вызов функций.
+A compiled script module. Allows dynamic function invocation.
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `Call(inst, function, parm)` | Динамический вызов (новый поток) |
-| `CallFunction(inst, function, out returnVal, parm)` | Динамический вызов (текущий поток) |
-| `CallFunctionParams(inst, function, out returnVal, parms)` | То же с Param-объектом |
-| `LoadScript(parent, scriptFile, listing)` | **static** — загрузить скрипт |
+| `Call(inst, function, parm)` | Dynamic invocation (new thread) |
+| `CallFunction(inst, function, out returnVal, parm)` | Dynamic invocation (current thread) |
+| `CallFunctionParams(inst, function, out returnVal, parms)` | Same with a Param object |
+| `LoadScript(parent, scriptFile, listing)` | **static** — load a script |
 
 ### EnScript
 
-Рефлексия — динамический доступ к переменным.
+Reflection — dynamic access to variables.
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `GetClassVar(inst, varname, index, out result)` | Чтение переменной по имени |
-| `SetClassVar(inst, varname, index, input)` | Запись переменной по имени |
-| `SetVar(out var, value)` | Установить переменную из строки |
-| `Watch(var, flags)` | Отладочное наблюдение за переменной |
+| `GetClassVar(inst, varname, index, out result)` | Read a variable by name |
+| `SetClassVar(inst, varname, index, input)` | Write a variable by name |
+| `SetVar(out var, value)` | Set a variable from a string |
+| `Watch(var, flags)` | Debug watch on a variable |
 
 ### Param1..Param10
 
-Шаблонные контейнеры для передачи параметров. Наследуют от `Param : Managed`. Поддерживают сериализацию.
+Template containers for passing parameters. Inherit from `Param : Managed`. Support serialization.
 
 ```cpp
 Param param = new Param2<float, string>(3.14, "Pi");
@@ -61,54 +61,54 @@ Param param = new Param2<float, string>(3.14, "Pi");
 // param.param2 == "Pi"
 ```
 
-Доступные: `Param1<T1>` ... `Param10<T1..T10>`. Все содержат публичные поля `param1`..`paramN` и методы `Serialize(ctx)` / `Deserializer(ctx)`.
+Available: `Param1<T1>` ... `Param10<T1..T10>`. All contain public fields `param1`..`paramN` and methods `Serialize(ctx)` / `Deserializer(ctx)`.
 
-### Глобальные функции
+### Global functions
 
-| Функция | Описание |
+| Function | Description |
 |---------|----------|
-| `Sort(array[], num)` | Сортировка статического массива (int/float/string) |
-| `reversearray(array)` | Обратить порядок |
-| `copyarray(dest, src)` | Копировать массив |
-| `ParseStringEx(inout input, out token)` | Токенизация строки (глобальная версия) |
-| `ParseString(input, out tokens[])` | Разбор в массив токенов |
-| `KillThread(owner, name)` | Убить поток |
-| `ThreadFunction(owner, name, backtrace, out line)` | Текущая функция потока |
-| `String(s)` | Helper для передачи string в void параметр |
-| `PrintString(s)` | Helper для Print со строкой |
+| `Sort(array[], num)` | Sort a static array (int/float/string) |
+| `reversearray(array)` | Reverse order |
+| `copyarray(dest, src)` | Copy an array |
+| `ParseStringEx(inout input, out token)` | String tokenization (global version) |
+| `ParseString(input, out tokens[])` | Parse into an array of tokens |
+| `KillThread(owner, name)` | Kill a thread |
+| `ThreadFunction(owner, name, backtrace, out line)` | Current thread function |
+| `String(s)` | Helper for passing a string as a void parameter |
+| `PrintString(s)` | Helper for Print with a string |
 
-### Сетевые адаптеры
+### Network adapters
 
-`PacketOutputAdapter` / `PacketInputAdapter` — сериализация для сети.
+`PacketOutputAdapter` / `PacketInputAdapter` — network serialization.
 
-**Write:** `WriteBool`, `WriteInt`, `WriteFloat`, `WriteString`, `WriteVector`, `WriteIntAsByte` (1 байт), `WriteIntAsUByte`, `WriteIntAsHalf` (2 байта), `WriteFloatAsByte(val, min, max)`, `WriteFloatAsHalf(val, min, max)`
+**Write:** `WriteBool`, `WriteInt`, `WriteFloat`, `WriteString`, `WriteVector`, `WriteIntAsByte` (1 byte), `WriteIntAsUByte`, `WriteIntAsHalf` (2 bytes), `WriteFloatAsByte(val, min, max)`, `WriteFloatAsHalf(val, min, max)`
 
-**Read:** аналогичные `Read*` методы.
+**Read:** corresponding `Read*` methods.
 
 ### Link\<T\>
 
-Обёртка-ссылка на объект: `Init(obj)`, `Ptr()`, `Release()`, `IsNull()`.
+Wrapper reference to an object: `Init(obj)`, `Ptr()`, `Release()`, `IsNull()`.
 
-### Утилиты цвета
+### Color utilities
 
-| Функция | Описание |
+| Function | Description |
 |---------|----------|
-| `ARGB(a, r, g, b)` | Сборка цвета из 0-255 компонент |
-| `ARGBF(fa, fr, fg, fb)` | Сборка цвета из 0.0-1.0 |
-| `LerpARGB(c1, c2)` | Линейная интерполяция цветов |
+| `ARGB(a, r, g, b)` | Compose a color from 0-255 components |
+| `ARGBF(fa, fr, fg, fb)` | Compose a color from 0.0-1.0 |
+| `LerpARGB(c1, c2)` | Linear interpolation of colors |
 
 ### Material
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `SetParam(name, value)` | Установить параметр материала |
-| `ResetParam(name)` | Сбросить к дефолту |
-| `GetParamIndex(name)` | Индекс для быстрого доступа |
-| `SetParamByIndex(index, value)` | Установить по индексу |
+| `SetParam(name, value)` | Set a material parameter |
+| `ResetParam(name)` | Reset to default |
+| `GetParamIndex(name)` | Index for fast access |
+| `SetParamByIndex(index, value)` | Set by index |
 
 ### Obsolete
 
-Атрибут для пометки устаревших методов — генерирует предупреждение компилятора при использовании.
+Attribute for marking deprecated methods — generates a compiler warning when used.
 
 ```cpp
 [Obsolete("Use NewMethod instead")]

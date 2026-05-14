@@ -1,21 +1,21 @@
-Реестр оружия. Константа в скриптах: `CFG_WEAPONSPATH = "CfgWeapons"`.
+Weapon registry. Script constant: `CFG_WEAPONSPATH = "CfgWeapons"`.
 
-### Иерархия базовых классов
+### Base class hierarchy
 
 ```
 DefaultWeapon
 ├── RifleCore
-│   └── Rifle_Base               — все винтовки, автоматы, дробовики
+│   └── Rifle_Base               — all rifles, assault rifles, shotguns
 │       ├── BoltActionRifle_Base
 │       │   ├── BoltActionRifle_InnerMagazine_Base
 │       │   └── BoltActionRifle_ExternalMagazine_Base
 │       └── Shotgun_Base
 ├── PistolCore
-│   └── Pistol_Base              — все пистолеты
-└── LauncherCore                 — гранатомёты
+│   └── Pistol_Base              — all pistols
+└── LauncherCore                 — launchers
 ```
 
-### Ключевые свойства Rifle_Base
+### Key properties of Rifle_Base
 
 ```cpp
 class MyRifle: Rifle_Base
@@ -25,44 +25,44 @@ class MyRifle: Rifle_Base
     descriptionShort = "$STR_MyRifleDesc";
     model = "\mymod\rifle.p3d";
 
-    // Слоты
+    // Slots
     inventorySlot[] = { "Shoulder", "Melee" };
     attachments[] = { "weaponOptics", "weaponFlashlight", "suppressorImpro" };
     itemSize[] = {6, 3};
 
-    // Баллистика
-    chamberSize = 1;                        // размер каморы
-    chamberedRound = "";                    // патрон по умолчанию
-    magazines[] = { "Mag_MyRifle_30Rnd" };  // совместимые магазины
-    chamberableFrom[] = { "Ammo_556x45" };  // совместимые россыпные патроны
-    ejectType = 1;                          // тип выброса гильз
+    // Ballistics
+    chamberSize = 1;                        // chamber size
+    chamberedRound = "";                    // default chambered round
+    magazines[] = { "Mag_MyRifle_30Rnd" };  // compatible magazines
+    chamberableFrom[] = { "Ammo_556x45" };  // compatible loose rounds
+    ejectType = 1;                          // casing ejection type
 
-    // Физика стрельбы
+    // Firing physics
     recoilModifier[] = {1, 1, 1};
     swayModifier[] = {1.1, 1.1, 0.5};
-    WeaponLength = 0.8;                     // длина оружия
-    barrelArmor = 400;                      // прочность ствола
-    damagePerShot = 0.05;                   // износ за выстрел
-    unjamTime[] = {6, 10};                  // время расклинивания (мин, макс)
+    WeaponLength = 0.8;                     // weapon length
+    barrelArmor = 400;                      // barrel durability
+    damagePerShot = 0.05;                   // wear per shot
+    unjamTime[] = {6, 10};                  // unjam time (min, max)
 
-    // Оптика
-    discreteDistance[] = {50, 100, 200, 300};    // дистанции пристрелки
-    discreteDistanceInitIndex = 1;               // начальная пристрелка
+    // Optics
+    discreteDistance[] = {50, 100, 200, 300};    // zeroing distances
+    discreteDistanceInitIndex = 1;               // initial zeroing
 
-    // Режимы стрельбы
+    // Fire modes
     modes[] = { "SemiAuto", "FullAuto" };
     class SemiAuto: Mode_SemiAuto
     {
         soundSetShot[] = { "MyRifle_Shot_SoundSet", "MyRifle_Tail_SoundSet" };
         reloadTime = 0.1;
         recoil = "recoil_MyRifle";
-        dispersion = 0.002;                 // разброс в радианах
+        dispersion = 0.002;                 // dispersion in radians
         magazineSlot = "magazine";
     };
 
     class NoiseShoot
     {
-        strength = 100;                     // сила шума (дальность обнаружения AI)
+        strength = 100;                     // noise strength (AI detection range)
         type = "shot";
     };
 
@@ -78,7 +78,7 @@ class MyRifle: Rifle_Base
 
     class Reliability
     {
-        ChanceToJam[] = {0, 0.001, 0.01, 0.1, 1};  // шанс заклинивания по уровню износа
+        ChanceToJam[] = {0, 0.001, 0.01, 0.1, 1};  // jam chance by wear level
     };
 
     class MeleeModes
@@ -90,7 +90,7 @@ class MyRifle: Rifle_Base
 };
 ```
 
-### Пример — пистолет (Glock19)
+### Example — pistol (Glock19)
 
 ```cpp
 class cfgWeapons

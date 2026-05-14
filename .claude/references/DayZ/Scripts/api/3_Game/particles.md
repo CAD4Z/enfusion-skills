@@ -1,28 +1,28 @@
-Система партиклов. Источники: `particles/`
+Particle system. Sources: `particles/`
 
 ### ParticleManager
 
-Синглтон-менеджер пула партиклов. Источник: `particles/particlemanager.c`
+Singleton manager of the particle pool. Source: `particles/particlemanager.c`
 
-#### Создание и управление
+#### Creation and management
 
-| Метод | Описание |
-|-------|----------|
-| `CreateParticle(particleId, pos, playOnCreation, parent, ori, forceWorldRotation)` | Создать партикл |
-| `CreateParticleEx(particleId, pos, flags, parent, ori)` | Создать с флагами |
-| `PlayParticle(particleId, pos, parent)` | Создать и запустить |
-| `StopParticle(particle)` | Остановить |
-| `DeleteParticle(particle)` | Удалить |
+| Method | Description |
+|--------|-------------|
+| `CreateParticle(particleId, pos, playOnCreation, parent, ori, forceWorldRotation)` | Create a particle |
+| `CreateParticleEx(particleId, pos, flags, parent, ori)` | Create with flags |
+| `PlayParticle(particleId, pos, parent)` | Create and play |
+| `StopParticle(particle)` | Stop |
+| `DeleteParticle(particle)` | Delete |
 
 #### Lifecycle
 
-| Метод | Описание |
-|-------|----------|
-| `CleanupInstance()` | Уничтожить синглтон |
+| Method | Description |
+|--------|-------------|
+| `CleanupInstance()` | Destroy the singleton |
 
-#### Настройки
+#### Settings
 
-`ParticleManagerSettings` — конфигурация пула.
+`ParticleManagerSettings` — pool configuration.
 
 `ParticleManagerSettingsFlags`:
 ```
@@ -31,23 +31,23 @@ NONE, FIXED_INDEX, BLOCKING, DISABLE_VIRTUAL, REUSE_OWNED
 
 ### ParticleSource
 
-Источник-эмиттер партиклов. Proto native.
+Particle emitter source. Proto native.
 
-| Метод | Описание |
-|-------|----------|
-| `Play()` / `Stop()` | Воспроизведение |
-| `IsPlaying()` | Активен |
+| Method | Description |
+|--------|-------------|
+| `Play()` / `Stop()` | Playback |
+| `IsPlaying()` | Active |
 
 ### ParticleProperties
 
-Свойства партикла.
+Particle properties.
 
 `ParticlePropertiesFlags`:
 ```
-PLAY_ON_CREATION — автозапуск
-FORCE_WORLD_ROT — принудительно мировое вращение
+PLAY_ON_CREATION — autostart
+FORCE_WORLD_ROT — force world rotation
 ```
 
 ### ParticleList
 
-Реестр ID партиклов. Proto native. Содержит константы-идентификаторы всех партиклов в игре.
+Registry of particle IDs. Proto native. Contains identifier constants for all in-game particles.

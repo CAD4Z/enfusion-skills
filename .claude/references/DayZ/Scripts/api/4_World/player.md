@@ -1,47 +1,47 @@
-`4_World` — игрок. Иерархия: `ManBase` (C++) → `PlayerBase` → `PlayerBaseClient` → `SurvivorBase`. Все персонажи наследуют `SurvivorBase`. Источники: `entities/manbase/`
+`4_World` — player. Hierarchy: `ManBase` (C++) → `PlayerBase` → `PlayerBaseClient` → `SurvivorBase`. All characters inherit from `SurvivorBase`. Sources: `entities/manbase/`
 
-### Подсистемы
+### Subsystems
 
-`PlayerBase` владеет всеми менеджерами, создаёт их в `Init()`:
+`PlayerBase` owns all managers, creating them in `Init()`:
 
-| Поле | Тип | Сторона |
+| Field | Type | Side |
 |------|-----|---------|
-| `m_PlayerStats` | `PlayerStats` | Обе |
-| `m_ModifiersManager` | `ModifiersManager` | Сервер |
-| `m_NotifiersManager` | `NotifiersManager` | Сервер |
-| `m_ActionManager` | `ActionManagerBase` | Обе |
-| `m_BleedingManagerServer` | `BleedingSourcesManagerServer` | Сервер |
-| `m_Environment` | `Environment` | Обе |
-| `m_StaminaHandler` | `StaminaHandler` | Обе |
-| `m_ShockHandler` | `ShockHandler` | Обе |
-| `m_EmoteManager` | `EmoteManager` | Обе |
-| `m_SymptomManager` | `SymptomManager` | Обе |
-| `m_SoftSkillsManager` | `SoftSkillsManager` | Обе |
-| `m_PlayerStomach` | `PlayerStomach` | Сервер |
-| `m_AgentPool` | `PlayerAgentPool` | Сервер |
+| `m_PlayerStats` | `PlayerStats` | Both |
+| `m_ModifiersManager` | `ModifiersManager` | Server |
+| `m_NotifiersManager` | `NotifiersManager` | Server |
+| `m_ActionManager` | `ActionManagerBase` | Both |
+| `m_BleedingManagerServer` | `BleedingSourcesManagerServer` | Server |
+| `m_Environment` | `Environment` | Both |
+| `m_StaminaHandler` | `StaminaHandler` | Both |
+| `m_ShockHandler` | `ShockHandler` | Both |
+| `m_EmoteManager` | `EmoteManager` | Both |
+| `m_SymptomManager` | `SymptomManager` | Both |
+| `m_SoftSkillsManager` | `SoftSkillsManager` | Both |
+| `m_PlayerStomach` | `PlayerStomach` | Server |
+| `m_AgentPool` | `PlayerAgentPool` | Server |
 
 ### Lifecycle
 
-| Метод | Контекст | Когда |
+| Method | Context | When |
 |-------|----------|-------|
-| `Init()` | Обе | Конструктор — создание всех подсистем |
-| `OnPlayerLoaded()` | Обе | После спауна (deferred через CallQueue) — HUD, камера, окружение |
-| `CommandHandler(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)` | Обе | Каждый кадр — основной тик всех систем |
-| `OnCommandHandlerTick(float pDt, int pCurrentCommandID)` | Обе | Хук в конце `CommandHandler` |
-| `OnScheduledTick(float deltaT)` | Обе | Таймерный тик — модификаторы, нотификаторы, окружение, кровотечение |
-| `EEKilled(Object killer)` | Сервер | Смерть — лог, hive, VoN, труп |
-| `EEHitBy(TotalDamageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)` | Обе | Попадание — шок, кровотечение, переломы |
+| `Init()` | Both | Constructor — creates all subsystems |
+| `OnPlayerLoaded()` | Both | After spawn (deferred via CallQueue) — HUD, camera, environment |
+| `CommandHandler(float pDt, int pCurrentCommandID, bool pCurrentCommandFinished)` | Both | Every frame — main tick for all systems |
+| `OnCommandHandlerTick(float pDt, int pCurrentCommandID)` | Both | Hook at the end of `CommandHandler` |
+| `OnScheduledTick(float deltaT)` | Both | Timer tick — modifiers, notifiers, environment, bleeding |
+| `EEKilled(Object killer)` | Server | Death — log, hive, VoN, corpse |
+| `EEHitBy(TotalDamageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)` | Both | Hit — shock, bleeding, fractures |
 
-### Tick-схема
+### Tick layout
 
 ```
-CommandHandler(dt) [каждый кадр]
+CommandHandler(dt) [every frame]
  ├── StaminaHandler.Update(dt)
  ├── ShockHandler.Update(dt)
  ├── InjuryHandler.Update(dt)
  └── ActionManager.Update(commandID)
 
-OnScheduledTick(dt) [по таймеру]
+OnScheduledTick(dt) [on timer]
  ├── ModifiersManager.OnScheduledTick(dt)
  ├── NotifiersManager.OnScheduledTick()
  ├── TransferValues.OnScheduledTick(dt)
@@ -50,108 +50,108 @@ OnScheduledTick(dt) [по таймеру]
  └── Environment.Update(dt)
 ```
 
-### EE-события предметов
+### Item EE events
 
-| Метод | Когда |
+| Method | When |
 |-------|-------|
-| `EEItemAttached(EntityAI item, string slot_name)` | Предмет надет — quickbar, противогаз, NVG, волосы |
-| `EEItemDetached(EntityAI item, string slot_name)` | Предмет снят |
-| `EEItemIntoHands(EntityAI item)` | Предмет в руки — сброс оружия, тяжёлый предмет |
-| `EEItemOutOfHands(EntityAI item)` | Предмет из рук |
+| `EEItemAttached(EntityAI item, string slot_name)` | Item equipped — quickbar, gas mask, NVG, hair |
+| `EEItemDetached(EntityAI item, string slot_name)` | Item removed |
+| `EEItemIntoHands(EntityAI item)` | Item into hands — reset weapon, heavy item |
+| `EEItemOutOfHands(EntityAI item)` | Item out of hands |
 
-### Переопределяемые проверки
+### Overridable checks
 
-| Метод | Что проверяет |
+| Method | What it checks |
 |-------|---------------|
-| `CanSprint()` | Поднятое оружие, тяжёлый предмет, травма, перелом |
-| `CanJump()` | Перелом, стамина, травма |
-| `CanClimb(int climbType, SHumanCommandClimbResult)` | Перелом, стамина, травма |
-| `CanRoll()` | Стамина, эмоут |
-| `CanChangeStance(int prev, int next)` | Уровень воды |
+| `CanSprint()` | Raised weapon, heavy item, injury, fracture |
+| `CanJump()` | Fracture, stamina, injury |
+| `CanClimb(int climbType, SHumanCommandClimbResult)` | Fracture, stamina, injury |
+| `CanRoll()` | Stamina, emote |
+| `CanChangeStance(int prev, int next)` | Water level |
 
-### Состояния команд
+### Command states
 
-| Метод | Когда |
+| Method | When |
 |-------|-------|
-| `OnCommandSwimStart/Finish()` | Плавание — блокировка инвентаря |
-| `OnCommandLadderStart/Finish()` | Лестница |
-| `OnCommandFallStart/Finish()` | Падение |
-| `OnCommandClimbStart/Finish()` | Подъём |
-| `OnCommandVehicleStart/Finish()` | Транспорт |
-| `OnCommandDeathStart()` | Смерть |
-| `OnUnconsciousStart/Stop(int)` | Бессознательное — HUD, VoN |
+| `OnCommandSwimStart/Finish()` | Swimming — inventory lock |
+| `OnCommandLadderStart/Finish()` | Ladder |
+| `OnCommandFallStart/Finish()` | Falling |
+| `OnCommandClimbStart/Finish()` | Climbing |
+| `OnCommandVehicleStart/Finish()` | Vehicle |
+| `OnCommandDeathStart()` | Death |
+| `OnUnconsciousStart/Stop(int)` | Unconscious — HUD, VoN |
 
-### Зоны и области
+### Zones and areas
 
-| Метод | Сторона | Назначение |
+| Method | Side | Purpose |
 |-------|---------|------------|
-| `OnContaminatedAreaEnterServer()` | Сервер | Активирует `MDF_AREAEXPOSURE` |
-| `OnContaminatedAreaExitServer()` | Сервер | Деактивирует `MDF_AREAEXPOSURE` |
-| `OnPlayerIsNowInsideEffectAreaBeginServer/Client()` | Обе | Вход в зону эффекта |
-| `OnPlayerIsNowInsideEffectAreaEndServer/Client()` | Обе | Выход из зоны эффекта |
+| `OnContaminatedAreaEnterServer()` | Server | Activates `MDF_AREAEXPOSURE` |
+| `OnContaminatedAreaExitServer()` | Server | Deactivates `MDF_AREAEXPOSURE` |
+| `OnPlayerIsNowInsideEffectAreaBeginServer/Client()` | Both | Effect-zone entry |
+| `OnPlayerIsNowInsideEffectAreaEndServer/Client()` | Both | Effect-zone exit |
 
 ### ScriptInvokers
 
 ```
-GetOnUnconsciousStart()   // подписка: игрок теряет сознание
-GetOnUnconsciousStop()    // подписка: игрок приходит в себя
+GetOnUnconsciousStart()   // subscribe: player goes unconscious
+GetOnUnconsciousStop()    // subscribe: player comes to
 ```
 
-### Действия
+### Actions
 
 ```
-SetActions(out TInputActionMap map)             // переопределить для добавления действий на игроке-контроллере
-SetActionsRemoteTarget(out TInputActionMap map) // действия на игроке-цели
+SetActions(out TInputActionMap map)             // override to add actions on the controlling player
+SetActionsRemoteTarget(out TInputActionMap map) // actions on the target player
 ```
 
-### Персистентность
+### Persistence
 
-`OnStoreSave/OnStoreLoad` сохраняют: stats, modifiers, agents, symptoms, bleeding, stomach, broken legs, arrows. Версионирование через `GAME_STORAGE_VERSION`.
+`OnStoreSave/OnStoreLoad` save: stats, modifiers, agents, symptoms, bleeding, stomach, broken legs, arrows. Versioned via `GAME_STORAGE_VERSION`.
 
 ### PlayerStats
 
-Контейнер статов. Версионирование через PCO: `PlayerStatsPCO_current` extends `PlayerStatsPCO_v115`.
+Stats container. Versioned via PCO: `PlayerStatsPCO_current` extends `PlayerStatsPCO_v115`.
 
-| Стат | Тип | Диапазон | Начальное | Sync |
+| Stat | Type | Range | Initial | Sync |
 |------|-----|----------|-----------|------|
-| `HEATCOMFORT` | float | -1..1 | 0 | Нет |
-| `TREMOR` | float | 0..1 | 0 | Нет |
-| `WET` | int | 0..1 | 0 | Нет |
-| `ENERGY` | float | 0..max | 600 | Нет |
-| `WATER` | float | 0..max | 600 | Нет |
-| `DIET` | float | 0..5000 | 2500 | Нет |
-| `STAMINA` | float | 0..max | 100 | Нет |
-| `SPECIALTY` | float | -1..1 | 0 | Нет |
-| `BLOODTYPE` | int | 0..128 | random | Нет |
-| `TOXICITY` | float | 0..100 | 0 | Нет |
-| `HEATBUFFER` | float | -30..30 | 0 | Да |
+| `HEATCOMFORT` | float | -1..1 | 0 | No |
+| `TREMOR` | float | 0..1 | 0 | No |
+| `WET` | int | 0..1 | 0 | No |
+| `ENERGY` | float | 0..max | 600 | No |
+| `WATER` | float | 0..max | 600 | No |
+| `DIET` | float | 0..5000 | 2500 | No |
+| `STAMINA` | float | 0..max | 100 | No |
+| `SPECIALTY` | float | -1..1 | 0 | No |
+| `BLOODTYPE` | int | 0..128 | random | No |
+| `TOXICITY` | float | 0..100 | 0 | No |
+| `HEATBUFFER` | float | -30..30 | 0 | Yes |
 
-`Blood` и `Health` — не PlayerStats, а зоны `DamageSystem`: `GetHealth("", "Blood")`.
+`Blood` and `Health` are not PlayerStats but `DamageSystem` zones: `GetHealth("", "Blood")`.
 
 #### PlayerStat API
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `Set(T value)` | Установить (clamp); RPC на клиент если synced |
+| `Set(T value)` | Set (clamps); RPC to client if synced |
 | `Add(T value)` | Set(current + value) |
-| `Get()` | Текущее значение |
+| `Get()` | Current value |
 | `GetNormalized()` | 0..1 |
 
-#### Уровни статов
+#### Stat levels
 
 `EStatLevels`: `GREAT, HIGH, MEDIUM, LOW, CRITICAL`
 
 ```
-GetStatLevelHealth/Blood/Energy/Water/Toxicity()  // уровень конкретного стата
-GetImmunityLevel()     // композитный из energy+water+health+blood
+GetStatLevelHealth/Blood/Energy/Water/Toxicity()  // level of a specific stat
+GetImmunityLevel()     // composite of energy+water+health+blood
 GetImmunity()          // 0..1
 ```
 
 ### Notifiers
 
-Система уведомлений HUD. Сервер. `NotifiersManager` тикает round-robin — один нотификатор за вызов.
+HUD notification system. Server-side. `NotifiersManager` ticks round-robin — one notifier per call.
 
-| Нотификатор | ID | Что отслеживает |
+| Notifier | ID | What it tracks |
 |-------------|----|----|
 | `HealthNotfr` | NTF_HEALTHY | Health |
 | `HungerNotfr` | NTF_HUNGRY | Energy |
@@ -159,21 +159,21 @@ GetImmunity()          // 0..1
 | `BloodNotfr` | NTF_BLOOD | Blood |
 | `WarmthNotfr` | NTF_WARMTH | HeatComfort (SMA) |
 | `WetnessNotfr` | NTF_WETNESS | Wet |
-| `SickNotfr` | NTF_SICK | Болезни |
-| `FeverNotfr` | NTF_FEVERISH | Лихорадка |
-| `BleedingNotfr` | NTF_BLEEDISH | Кровотечение |
-| `HeartbeatNotfr` | NTF_HEARTBEAT | Blood (пульс) |
-| `FracturedLegNotfr` | NTF_FRACTURE | Перелом |
+| `SickNotfr` | NTF_SICK | Diseases |
+| `FeverNotfr` | NTF_FEVERISH | Fever |
+| `BleedingNotfr` | NTF_BLEEDISH | Bleeding |
+| `HeartbeatNotfr` | NTF_HEARTBEAT | Blood (pulse) |
+| `FracturedLegNotfr` | NTF_FRACTURE | Fracture |
 
 #### NotifierBase API
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `GetNotifierType()` | Вернуть `eNotifiers` ID |
-| `GetObservedValue()` | Текущее значение отслеживаемого стата |
-| `OnTick(int currentTime)` | Основной тик — запись, badge, tendency |
-| `DisplayBadge()` / `HideBadge()` | Иконка на VirtualHud |
-| `DisplayTendency(float delta)` | Стрелка тенденции |
-| `SetActive(bool)` | Вкл/выкл |
+| `GetNotifierType()` | Return the `eNotifiers` ID |
+| `GetObservedValue()` | Current value of the tracked stat |
+| `OnTick(int currentTime)` | Main tick — log, badge, tendency |
+| `DisplayBadge()` / `HideBadge()` | Icon on VirtualHud |
+| `DisplayTendency(float delta)` | Tendency arrow |
+| `SetActive(bool)` | Enable/disable |
 
-Тенденция рассчитывается через циклический буфер (30 значений), усреднение → `TENDENCY_STABLE / INC_LOW/MED/HIGH / DEC_LOW/MED/HIGH`.
+The tendency is computed via a ring buffer (30 values), averaged → `TENDENCY_STABLE / INC_LOW/MED/HIGH / DEC_LOW/MED/HIGH`.

@@ -1,129 +1,129 @@
-`4_World` — предметы. Базовые классы для всех игровых предметов. Источники: `entities/itembase/`, `entities/core/`
+`4_World` — items. Base classes for all in-game items. Sources: `entities/itembase/`, `entities/core/`
 
 ### ItemBase
 
-Иерархия: `InventoryItem` (3_Game) → `ItemBase`. Алиас: `typedef ItemBase Inventory_Base`.
+Hierarchy: `InventoryItem` (3_Game) → `ItemBase`. Alias: `typedef ItemBase Inventory_Base`.
 
-#### EE-события (lifecycle)
+#### EE events (lifecycle)
 
-| Метод | Когда | Описание |
+| Method | When | Description |
 |-------|-------|----------|
-| `EEInit()` | Появление в мире | Инициализация (переопределяется в подклассах) |
-| `EEDelete(EntityAI parent)` | Удаление | Очистка quickbar, блокировок |
-| `EEKilled(Object killer)` | HP → 0 | Взрыв патронов в костре |
-| `EEHitBy(...)` | Получение урона | Каскадный урон на карго/аттачменты |
-| `EEHealthLevelChanged(int old, int new, string zone)` | Смена уровня HP | Сброс карго при ruined |
-| `EEOnCECreate()` | Создание Central Economy | Установка quantity, урон зон |
-| `EEItemAttached/Detached(EntityAI, string slot)` | Аттач/отсоединение | — |
-| `OnWasAttached/OnWasDetached(EntityAI, int slot_id)` | После аттача | Звуки, net-sync |
-| `OnInventoryEnter/Exit(Man player)` | Вход/выход из инвентаря | Quickbar shortcut |
-| `OnVariablesSynchronized()` | Синхронизация с сервера | Звуки удара, quantity, wetness |
-| `OnStoreSave/OnStoreLoad(ctx, version)` | Персистентность | Все переменные |
-| `ProcessVariables()` | Периодический тик | Wetness, температура, порча еды |
+| `EEInit()` | Spawned into the world | Initialization (overridden in subclasses) |
+| `EEDelete(EntityAI parent)` | Deletion | Clear quickbar, locks |
+| `EEKilled(Object killer)` | HP → 0 | Ammo cook-off in fireplace |
+| `EEHitBy(...)` | Damage taken | Cascade damage to cargo/attachments |
+| `EEHealthLevelChanged(int old, int new, string zone)` | HP level change | Drop cargo on ruined |
+| `EEOnCECreate()` | Created by Central Economy | Set quantity, zone damage |
+| `EEItemAttached/Detached(EntityAI, string slot)` | Attach/detach | — |
+| `OnWasAttached/OnWasDetached(EntityAI, int slot_id)` | After attachment | Sounds, net-sync |
+| `OnInventoryEnter/Exit(Man player)` | Inventory in/out | Quickbar shortcut |
+| `OnVariablesSynchronized()` | Sync from the server | Impact sounds, quantity, wetness |
+| `OnStoreSave/OnStoreLoad(ctx, version)` | Persistence | All variables |
+| `ProcessVariables()` | Periodic tick | Wetness, temperature, food spoilage |
 
-#### Количество (Quantity)
+#### Quantity
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `SetQuantity(float, destroy_config, destroy_forced)` | Установить (сервер) |
-| `SetQuantityNormalized(float 0..1)` | Нормализованное |
-| `AddQuantity(float delta)` | Дельта |
-| `CanBeSplit()` / `SplitIntoStackMax(...)` | Разделение стаков |
+| `SetQuantity(float, destroy_config, destroy_forced)` | Set (server) |
+| `SetQuantityNormalized(float 0..1)` | Normalized |
+| `AddQuantity(float delta)` | Delta |
+| `CanBeSplit()` / `SplitIntoStackMax(...)` | Stack splitting |
 
-#### Действия
+#### Actions
 
 ```
 override void SetActions()
 {
     super.SetActions();
-    AddAction(MyAction);         // добавить
-    RemoveAction(ActionTakeItem); // убрать
+    AddAction(MyAction);         // add
+    RemoveAction(ActionTakeItem); // remove
 }
 ```
 
-`SetActionAnimOverrides()` — переопределение анимаций действий для конкретного типа предмета.
+`SetActionAnimOverrides()` — overrides action animations for a specific item type.
 
-#### Проверки инвентаря (переопределяемые)
+#### Inventory checks (overridable)
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `CanPutInCargo(EntityAI parent)` | Можно положить в карго |
-| `CanPutAsAttachment(EntityAI parent)` | Можно повесить |
-| `CanReceiveItemIntoCargo(EntityAI item)` | Может принять в карго |
-| `CanReceiveAttachment(EntityAI, int slotId)` | Может принять аттачмент |
-| `CanReleaseAttachment(EntityAI)` | Можно отсоединить |
-| `ChangeIntoOnAttach(string slot)` | Морфинг в другой класс при аттаче |
-| `ChangeIntoOnDetach()` | Морфинг обратно |
+| `CanPutInCargo(EntityAI parent)` | May be placed in cargo |
+| `CanPutAsAttachment(EntityAI parent)` | May be hung as attachment |
+| `CanReceiveItemIntoCargo(EntityAI item)` | May accept into cargo |
+| `CanReceiveAttachment(EntityAI, int slotId)` | May accept an attachment |
+| `CanReleaseAttachment(EntityAI)` | May be detached |
+| `ChangeIntoOnAttach(string slot)` | Morph into a different class on attach |
+| `ChangeIntoOnDetach()` | Morph back |
 
-#### Запросы типа (переопределяемые)
+#### Type queries (overridable)
 
 `IsLiquidContainer()`, `IsBloodContainer()`, `IsNVG()`, `IsExplosive()`, `IsLightSource()`, `CanBeRepairedByCrafting()`, `CanBeDigged()`, `CanMakeGardenplot()`, `CanBeDisinfected()`, `Open()` / `Close()` / `IsOpen()`
 
-#### InitItemVariables — регистрация из конфига
+#### InitItemVariables — registration from config
 
-Quantity (`varQuantityInit/Min/Max`, `varStackMax`), Wetness (`varWetInit/Min/Max`), Cleanness, `liquidContainerType`, `canBeSplit`, `itemBehaviour`, `compatibleLocks`, `lockType`. Всё регистрируется для net-sync.
+Quantity (`varQuantityInit/Min/Max`, `varStackMax`), Wetness (`varWetInit/Min/Max`), Cleanness, `liquidContainerType`, `canBeSplit`, `itemBehaviour`, `compatibleLocks`, `lockType`. Everything is registered for net-sync.
 
 ---
 
 ### Edible_Base
 
-`Edible_Base extends ItemBase`. Еда с системой стадий готовки.
+`Edible_Base extends ItemBase`. Food with a cooking-stage system.
 
-#### Ключевые методы
+#### Key methods
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `Consume(float amount, PlayerBase)` | Уменьшить количество, вызвать OnConsume |
-| `OnConsume(float, PlayerBase)` | Переопределить — урон от горячей еды |
-| `CanBeCooked()` | Переопределить → `true` |
-| `CanBeCookedOnStick()` | Переопределить → `true` |
-| `OnFoodStageChange(stageOld, stageNew)` | Хук при смене стадии |
-| `IsMeat()` / `IsCorpse()` / `IsFruit()` / `IsMushroom()` | Тип еды |
-| `FilterAgents(int agentsIn)` | Подавить/разрешить агентов по стадии |
-| `GetFoodStageType()` | Текущая стадия |
-| `IsFoodRaw/Baked/Boiled/Dried/Burned()` | Проверки стадии |
+| `Consume(float amount, PlayerBase)` | Reduce quantity, call OnConsume |
+| `OnConsume(float, PlayerBase)` | Override — damage from hot food |
+| `CanBeCooked()` | Override → `true` |
+| `CanBeCookedOnStick()` | Override → `true` |
+| `OnFoodStageChange(stageOld, stageNew)` | Hook on stage change |
+| `IsMeat()` / `IsCorpse()` / `IsFruit()` / `IsMushroom()` | Food type |
+| `FilterAgents(int agentsIn)` | Suppress/allow agents based on stage |
+| `GetFoodStageType()` | Current stage |
+| `IsFoodRaw/Baked/Boiled/Dried/Burned()` | Stage checks |
 
-Нутриенты (статические): `GetFoodEnergy()`, `GetFoodWater()`, `GetFoodToxicity()`, `GetFoodAgents()`, `GetNutritionalProfile()`.
+Nutrients (static): `GetFoodEnergy()`, `GetFoodWater()`, `GetFoodToxicity()`, `GetFoodAgents()`, `GetNutritionalProfile()`.
 
 ---
 
 ### ClothingBase
 
-`Clothing extends Clothing_Base` (C++). Алиас: `typedef Clothing ClothingBase`.
+`Clothing extends Clothing_Base` (C++). Alias: `typedef Clothing ClothingBase`.
 
-Подклассы: `Belt_Base`, `Backpack_Base`, `Glasses_Base`, `Gloves_Base`, `HeadGear_Base`, `Mask_Base`, `Pants_Base`, `Shoes_Base`, `Top_Base`, `Vest_Base`.
+Subclasses: `Belt_Base`, `Backpack_Base`, `Glasses_Base`, `Gloves_Base`, `HeadGear_Base`, `Mask_Base`, `Pants_Base`, `Shoes_Base`, `Top_Base`, `Vest_Base`.
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
 | `IsClothing()` | `true` |
 | `CanHaveWetness()` | `true` |
-| `GetGlassesEffectID()` | ID эффекта очков |
-| `GetEffectWidgetTypes()` | Типы HUD-виджетов эффектов |
-| `SmershException(EntityAI)` | Исключение вложенности Smersh |
+| `GetGlassesEffectID()` | Glasses effect ID |
+| `GetEffectWidgetTypes()` | HUD widget types for effects |
+| `SmershException(EntityAI)` | Smersh nesting exception |
 
 ---
 
 ### Container_Base
 
-`Container_Base extends ItemBase`. Контейнеры.
+`Container_Base extends ItemBase`. Containers.
 
 - `IsContainer()` → `true`
-- Запрет вложенности одинаковых контейнеров
-- `DeployableContainer_Base` — размещаемые: `ActionTogglePlaceObject`, сброс карго при ruined
+- Prevents nesting of identical containers
+- `DeployableContainer_Base` — deployable: `ActionTogglePlaceObject`, drops cargo on ruined
 
 ---
 
 ### FireplaceBase
 
-`FireplaceBase extends ItemBase`. Полная симуляция огня.
+`FireplaceBase extends ItemBase`. Full fire simulation.
 
-#### Состояния (FireplaceFireState)
+#### States (FireplaceFireState)
 
 `NO_FIRE → START_FIRE → SMALL_FIRE → NORMAL_FIRE → END_FIRE → EXTINGUISHING_FIRE → EXTINGUISHED_FIRE`
 
-#### Ключевые константы
+#### Key constants
 
-| Константа | Значение |
+| Constant | Value |
 |-----------|----------|
 | `PARAM_SMALL_FIRE_TEMPERATURE` | 150°C |
 | `PARAM_NORMAL_FIRE_TEMPERATURE` | 1000°C |
@@ -133,45 +133,45 @@ Quantity (`varQuantityInit/Min/Max`, `varStackMax`), Wetness (`varWetInit/Min/Ma
 | `PARAM_FULL_HEAT_RADIUS` | 2.0 |
 | `PARAM_HEAT_RADIUS` | 4.0 |
 
-Топливо/растопка определяются через статическую карту `m_FireConsumableTypes`.
+Fuel/kindling are resolved via the static `m_FireConsumableTypes` map.
 
 ---
 
 ### TentBase
 
-`TentBase extends ItemBase`. Два состояния: `PACKED (0)` / `PITCHED (1)`.
+`TentBase extends ItemBase`. Two states: `PACKED (0)` / `PITCHED (1)`.
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `TryPitch(bool from_storage)` | Развернуть |
-| `Pack(bool from_storage)` | Свернуть |
-| `HasClutterCutter()` / `GetClutterCutter()` | Обрезка растительности |
+| `TryPitch(bool from_storage)` | Pitch |
+| `Pack(bool from_storage)` | Pack |
+| `HasClutterCutter()` / `GetClutterCutter()` | Vegetation cutter |
 | `IsItemTent()` | `true` |
 
-Система масок открытий (`m_OpeningMask`) — битовая маска для дверей/окон.
+Opening mask system (`m_OpeningMask`) — bitmask for doors/windows.
 
 ---
 
 ### TrapBase
 
-`TrapBase extends ItemBase`. Ловушки с двумя состояниями (inactive/active).
+`TrapBase extends ItemBase`. Traps with two states (inactive/active).
 
-#### Конфигурация (в конструкторе)
+#### Configuration (in the constructor)
 
-| Поле | Описание | По умолчанию |
+| Field | Description | Default |
 |------|----------|-------------|
-| `m_InitWaitTime` | Задержка активации (сек) | 5 |
-| `m_DefectRate` | Урон ловушке за срабатывание | 15 |
-| `m_DamagePlayers` | Урон игрокам | 25 |
-| `m_DamageOthers` | Урон животным/заражённым | 100 |
-| `m_NeedActivation` | Нужна ручная активация | true |
+| `m_InitWaitTime` | Activation delay (s) | 5 |
+| `m_DefectRate` | Damage to the trap per trigger | 15 |
+| `m_DamagePlayers` | Damage to players | 25 |
+| `m_DamageOthers` | Damage to animals/infected | 100 |
+| `m_NeedActivation` | Requires manual activation | true |
 
-#### Переопределяемые
+#### Overridable
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `OnUpdate(EntityAI victim)` | Основной эффект при срабатывании |
-| `StartActivate(PlayerBase)` | Начало активации |
-| `SetActive()` | Пометить как взведённую |
-| `Deactivate(PlayerBase)` | Разрядить |
-| `IsPlaceableAtPosition(vector)` | Проверка размещения |
+| `OnUpdate(EntityAI victim)` | Main effect on trigger |
+| `StartActivate(PlayerBase)` | Start activation |
+| `SetActive()` | Mark as armed |
+| `Deactivate(PlayerBase)` | Disarm |
+| `IsPlaceableAtPosition(vector)` | Placement check |

@@ -1,6 +1,6 @@
-Реестр снарядов/пуль. Определяет физику полёта и наносимый урон. Не имеет константы в скриптах — доступ через `"CfgAmmo"`.
+Registry of projectiles/bullets. Defines flight physics and inflicted damage. Has no constant in scripts — accessed via `"CfgAmmo"`.
 
-### Ключевые свойства Bullet_Base
+### Key properties of Bullet_Base
 
 ```cpp
 class Bullet_9x19: Bullet_Base
@@ -8,61 +8,61 @@ class Bullet_9x19: Bullet_Base
     scope = 1;
     model = "\dz\weapons\projectiles\empty.p3d";
 
-    // Связь
-    casing = "FxCartridge_9mm";         // эффект гильзы
-    round = "FxRound_9mm";             // эффект патрона
-    spawnPileType = "Ammo_9x19";       // класс россыпи в CfgMagazines
+    // Linkage
+    casing = "FxCartridge_9mm";         // casing effect
+    round = "FxRound_9mm";             // round effect
+    spawnPileType = "Ammo_9x19";       // loose-pile class in CfgMagazines
 
-    // Баллистика
-    hit = 7;                            // базовый урон
-    indirectHit = 0;                    // непрямой урон
-    indirectHitRange = 0;               // радиус непрямого урона
-    initSpeed = 370;                    // начальная скорость м/с
-    typicalSpeed = 390;                 // типичная скорость
-    airFriction = -0.0025;              // сопротивление воздуха
-    caliber = 1;                        // коэффициент пробития
-    deflecting = 30;                    // вероятность рикошета (градусы)
-    airLock = 1;                        // звук пролёта
+    // Ballistics
+    hit = 7;                            // base damage
+    indirectHit = 0;                    // splash damage
+    indirectHitRange = 0;               // splash damage radius
+    initSpeed = 370;                    // initial speed m/s
+    typicalSpeed = 390;                 // typical speed
+    airFriction = -0.0025;              // air resistance
+    caliber = 1;                        // penetration coefficient
+    deflecting = 30;                    // ricochet probability (degrees)
+    airLock = 1;                        // fly-by sound
 
-    // Износ ствола
-    damageBarrel = 187.5;               // урон стволу за выстрел
-    damageBarrelDestroyed = 187.5;      // урон разрушенному стволу
+    // Barrel wear
+    damageBarrel = 187.5;               // barrel damage per shot
+    damageBarrelDestroyed = 187.5;      // damage to a destroyed barrel
 
-    weight = 0.0102;                    // вес пули в кг
+    weight = 0.0102;                    // bullet weight in kg
     impactBehaviour = 0;
     hitAnimation = 1;
 
-    // Трассер
+    // Tracer
     tracerScale = 1;
-    tracerStartTime = -1;               // -1 = не трассер
+    tracerStartTime = -1;               // -1 = not a tracer
     tracerEndTime = 1;
 
-    // Система урона
+    // Damage system
     class DamageApplied
     {
-        type = "Projectile";            // тип урона
-        dispersion = 0;                 // разброс урона
-        bleedThreshold = 1;             // порог кровотечения
+        type = "Projectile";            // damage type
+        dispersion = 0;                 // damage spread
+        bleedThreshold = 1;             // bleeding threshold
 
-        defaultDamageOverride[] =       // переопределение множителя урона
+        defaultDamageOverride[] =       // damage multiplier override
         {
-            {0.85, 1}                   // {множитель, вероятность}
+            {0.85, 1}                   // {multiplier, probability}
         };
 
-        class Health { damage = 65; };  // урон здоровью
-        class Blood  { damage = 100; }; // урон крови
-        class Shock  { damage = 90; };  // урон шоку
+        class Health { damage = 65; };  // health damage
+        class Blood  { damage = 100; }; // blood damage
+        class Shock  { damage = 90; };  // shock damage
     };
 
     class NoiseHit
     {
-        strength = 10;                  // шум при попадании
+        strength = 10;                  // noise on hit
         type = "sound";
     };
 };
 ```
 
-### Пример — .308 Win (винтовочный патрон)
+### Example — .308 Win (rifle round)
 
 ```cpp
 class Bullet_308Win: Bullet_Base

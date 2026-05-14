@@ -1,63 +1,63 @@
-Система отложенных вызовов и callback'ов. Условие: `GAME_TEMPLATE`. Источник: `tools.c`
+Deferred call and callback system. Condition: `GAME_TEMPLATE`. Source: `tools.c`
 
-Активно используются в 3_Game и выше (20+ файлов). Три класса: очередь вызовов, список подписчиков, одиночный вызов.
+Heavily used in 3_Game and above (20+ files). Three classes: call queue, subscriber list, single call.
 
 ### ScriptCallQueue
 
-Очередь "ленивых" вызовов — выполняются не сразу, а при следующем `Tick()`. Основное применение — UI и отложенная логика.
+Queue of "lazy" calls — executed not immediately, but on the next `Tick()`. Primarily used for UI and deferred logic.
 
-| Метод | Описание |
-|-------|----------|
-| `Tick(float timeslice)` | Выполнить готовые вызовы. Вызывать каждый кадр из `OnUpdate` |
-| `Call(func fn, ...)` | Добавить вызов, выполнится на следующем `Tick` |
-| `CallByName(Class obj, string fnName, Param params)` | Вызов по имени метода |
-| `CallLater(func fn, int delay, bool repeat, ...)` | Отложенный вызов: `delay` мс, `repeat` = повторять |
-| `CallLaterByName(Class obj, string fnName, int delay, bool repeat, Param params)` | Отложенный по имени |
-| `Remove(func fn)` | Удалить вызов из очереди |
-| `RemoveByName(Class obj, string fnName)` | Удалить по имени |
-| `GetRemainingTime(func fn)` | `int` — мс до выполнения |
-| `GetRemainingTimeByName(Class obj, string fnName)` | `int` — мс до выполнения по имени |
-| `Clear()` | Очистить всю очередь |
+| Method | Description |
+|--------|-------------|
+| `Tick(float timeslice)` | Execute pending calls. Call every frame from `OnUpdate` |
+| `Call(func fn, ...)` | Add a call, will execute on the next `Tick` |
+| `CallByName(Class obj, string fnName, Param params)` | Call by method name |
+| `CallLater(func fn, int delay, bool repeat, ...)` | Deferred call: `delay` ms, `repeat` = repeat |
+| `CallLaterByName(Class obj, string fnName, int delay, bool repeat, Param params)` | Deferred call by name |
+| `Remove(func fn)` | Remove call from queue |
+| `RemoveByName(Class obj, string fnName)` | Remove by name |
+| `GetRemainingTime(func fn)` | `int` — ms until execution |
+| `GetRemainingTimeByName(Class obj, string fnName)` | `int` — ms until execution, by name |
+| `Clear()` | Clear the entire queue |
 
-Все методы `Call*` принимают до 9 аргументов (`param1`..`param9`), аргументы хранятся в памяти до выполнения/удаления.
+All `Call*` methods accept up to 9 arguments (`param1`..`param9`); arguments are kept in memory until execution/removal.
 
 ### ScriptInvoker
 
-Список callback'ов (паттерн Observer). Вызов `Invoke` исполняет все зарегистрированные функции.
+Callback list (Observer pattern). Calling `Invoke` runs all registered functions.
 
-| Метод | Описание |
-|-------|----------|
-| `Invoke(...)` | Вызвать все подписанные методы (до 9 аргументов) |
-| `Insert(func fn, int flags)` | Подписать метод. Флаги: `EScriptInvokerInsertFlags` |
-| `Remove(func fn, int flags)` | Отписать метод. Флаги: `EScriptInvokerRemoveFlags` |
-| `Count(func fn)` | `int` — сколько раз fn присутствует |
-| `Clear()` | Удалить все подписки |
+| Method | Description |
+|--------|-------------|
+| `Invoke(...)` | Call all subscribed methods (up to 9 arguments) |
+| `Insert(func fn, int flags)` | Subscribe a method. Flags: `EScriptInvokerInsertFlags` |
+| `Remove(func fn, int flags)` | Unsubscribe a method. Flags: `EScriptInvokerRemoveFlags` |
+| `Count(func fn)` | `int` — how many times fn is present |
+| `Clear()` | Remove all subscriptions |
 
 #### EScriptInvokerInsertFlags
 
-| Флаг | Описание |
-|------|----------|
-| `NONE` | Добавляется после текущего цикла Invoke |
-| `IMMEDIATE` | **(по умолчанию)** Добавляется сразу, вызовется в текущем Invoke. Внимание: может вызвать бесконечную цепочку Insert |
-| `UNIQUE` | Только одна подписка на instance+method. VME при повторном добавлении |
+| Flag | Description |
+|------|-------------|
+| `NONE` | Added after the current Invoke cycle |
+| `IMMEDIATE` | **(default)** Added immediately, will be called in the current Invoke. Warning: may cause an infinite chain of Inserts |
+| `UNIQUE` | Only one subscription per instance+method. VME on repeated insertion |
 
 #### EScriptInvokerRemoveFlags
 
-| Флаг | Описание |
-|------|----------|
-| `NONE` | Удалить только последнюю вставку |
-| `ALL` | **(по умолчанию)** Удалить все вхождения |
+| Flag | Description |
+|------|-------------|
+| `NONE` | Remove only the last insertion |
+| `ALL` | **(default)** Remove all occurrences |
 
 ### ScriptCaller
 
-Хранит одну валидную ссылку на функцию. Создаётся через фабрику.
+Holds a single valid function reference. Created via factory.
 
-| Метод | Описание |
-|-------|----------|
-| `Create(func fn)` | **static** — создать ScriptCaller |
-| `Init(func fn)` | Заменить зарегистрированную функцию |
-| `Invoke(...)` | Вызвать (до 9 аргументов) |
-| `IsValid()` | `bool` — валидна ли ссылка |
-| `Equals(ScriptCaller other)` | `bool` — сравнение по instance+method (не по адресу объекта) |
+| Method | Description |
+|--------|-------------|
+| `Create(func fn)` | **static** — create a ScriptCaller |
+| `Init(func fn)` | Replace the registered function |
+| `Invoke(...)` | Call (up to 9 arguments) |
+| `IsValid()` | `bool` — whether the reference is valid |
+| `Equals(ScriptCaller other)` | `bool` — comparison by instance+method (not by object address) |
 
-Конструктор `private` — использовать только `ScriptCaller.Create()`.
+Constructor is `private` — use only `ScriptCaller.Create()`.

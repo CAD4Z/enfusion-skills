@@ -1,21 +1,21 @@
-HUD и оверлейные виджеты поверх игрового мира. Источники: `gui/`, `gui/vehicles/`, `mission/gameplayeffectwidgets/`
+HUD and overlay widgets on top of the game world. Sources: `gui/`, `gui/vehicles/`, `mission/gameplayeffectwidgets/`
 
-### Точка входа
+### Entry point
 
-`MissionGameplay.OnInit()` создаёт корневой widget из `gui/layouts/day_z_hud.layout` и передаёт подпанели компонентам:
+`MissionGameplay.OnInit()` creates the root widget from `gui/layouts/day_z_hud.layout` and passes sub-panels to components:
 
 ```
 MissionGameplay
-  ├── IngameHud         (HudPanel)          — главный HUD
-  ├── HudDebug          (day_z_hud_debug.layout)  — dev-оверлей [DEVELOPER]
-  ├── ActionMenu        (ActionsPanel)      — текстовое меню действий
-  ├── Chat              (ChatFrameWidget)   — см. chat.md
+  ├── IngameHud         (HudPanel)          — main HUD
+  ├── HudDebug          (day_z_hud_debug.layout)  — dev overlay [DEVELOPER]
+  ├── ActionMenu        (ActionsPanel)      — textual action menu
+  ├── Chat              (ChatFrameWidget)   — see chat.md
   ├── DebugMonitor      (day_z_debug_monitor.layout) — FPS/health monitor
-  ├── Watermark         — надпись на experimental сборках
-  └── GameplayEffectWidgets — слои пост-эффектов (bleeding, breath, occluders)
+  ├── Watermark         — caption on experimental builds
+  └── GameplayEffectWidgets — post-effect layers (bleeding, breath, occluders)
 ```
 
-Скрытие/показ всего HUD: `IngameHud.ShowHud(bool)`. Реакция на ресайз: `WindowsResizeEventTypeID` → `DestroyAllMenus() + m_Hud.OnResizeScreen()`.
+Hide/show the entire HUD: `IngameHud.ShowHud(bool)`. Reaction to resize: `WindowsResizeEventTypeID` → `DestroyAllMenus() + m_Hud.OnResizeScreen()`.
 
 ---
 
@@ -25,83 +25,83 @@ MissionGameplay
 class IngameHud extends Hud
 ```
 
-Главный слой: stats игрока, stance, quickbar, иконки статусов/бейджей, crosshair, cursor, action icons, vehicle HUD, heat buffer, hit direction effects, walkie-talkie overlay.
+Main layer: player stats, stance, quickbar, status/badge icons, crosshair, cursor, action icons, vehicle HUD, heat buffer, hit direction effects, walkie-talkie overlay.
 
-#### Жизненный цикл
+#### Lifecycle
 
-| Метод | Описание |
-|-------|----------|
-| `Init(Widget hudPanel)` | Создаёт дочерние виджеты, регистрирует `CarHud`/`BoatHud`, инициализирует `IngameHudVisibility`, запускает отложенный `InitQuickbar` через 1с |
-| `OnPlayerLoaded()` | Перепривязка notifiers/badges к `PlayerBase` |
-| `OnResizeScreen()` | Пересоздание на смену разрешения |
-| `Update(timeslice)` | Каждый кадр: blink критических tendencies, таймеры temperature/stamina, hit-dir effects, vehicle HUD, heat buffer, player tags (PS4) |
-| `InitHeatBufferUI(Man player)` | Лениво создаёт `IngameHudHeatBuffer` |
+| Method | Description |
+|--------|-------------|
+| `Init(Widget hudPanel)` | Creates child widgets, registers `CarHud`/`BoatHud`, initializes `IngameHudVisibility`, schedules deferred `InitQuickbar` after 1s |
+| `OnPlayerLoaded()` | Rebind notifiers/badges to `PlayerBase` |
+| `OnResizeScreen()` | Recreate on resolution change |
+| `Update(timeslice)` | Every frame: blink critical tendencies, temperature/stamina timers, hit-dir effects, vehicle HUD, heat buffer, player tags (PS4) |
+| `InitHeatBufferUI(Man player)` | Lazily creates `IngameHudHeatBuffer` |
 
 #### Stats / Notifiers / Badges
 
-| Метод | Описание |
-|-------|----------|
-| `DisplayNotifier(key, tendency, status)` | Обновить иконку статуса с учётом tendency (normal/temp режим) |
-| `DisplayBadge(key, value)` | Обновить иконку бейджа (poisoned/sick/encumbered/…) |
-| `SetTemperature(string)` / `HideTemperature()` | Всплывающая индикация температуры на `m_TemperatureShowTime` |
-| `SetStamina(value, range)` / `SetStaminaBarVisibility(bool)` | Прогресс-бар выносливости |
-| `DisplayStance(stance)` / `DisplayPresence()` | Поза и уровень «presence» (шум/видимость) |
-| `SetStomachState(state)` | Иконка состояния желудка |
-| `UpdateBloodName()` | Текст группы крови |
+| Method | Description |
+|--------|-------------|
+| `DisplayNotifier(key, tendency, status)` | Update a status icon honoring tendency (normal/temp mode) |
+| `DisplayBadge(key, value)` | Update a badge icon (poisoned/sick/encumbered/…) |
+| `SetTemperature(string)` / `HideTemperature()` | Pop-up temperature indicator for `m_TemperatureShowTime` |
+| `SetStamina(value, range)` / `SetStaminaBarVisibility(bool)` | Stamina progress bar |
+| `DisplayStance(stance)` / `DisplayPresence()` | Stance and "presence" level (noise/visibility) |
+| `SetStomachState(state)` | Stomach state icon |
+| `UpdateBloodName()` | Blood group text |
 
 #### Quickbar / HUD visibility API
 
-Бинарные toggles для разных «слоёв»:
+Binary toggles for various "layers":
 
-| Метод | Что скрывает |
-|-------|--------------|
-| `ShowHud(bool)` | Всё целиком |
-| `ShowHudUI(bool)` | HUD кроме quickbar (через опции) |
-| `ShowHudPlayer(bool)` | HUD кроме quickbar (через hotkey) |
-| `ShowHudInventory(bool)` | HUD при открытии инвентаря |
-| `ShowQuickbarUI(bool)` / `ShowQuickbarPlayer(bool)` / `ShowQuickBar(bool)` | Разные layers квикбара |
-| `UpdateQuickbarGlobalVisibility()` | Платформозависимая видимость |
-| `RefreshQuickbar(itemChanged)` | Перезагрузка содержимого |
+| Method | What it hides |
+|--------|--------------|
+| `ShowHud(bool)` | Everything entirely |
+| `ShowHudUI(bool)` | HUD except quickbar (via options) |
+| `ShowHudPlayer(bool)` | HUD except quickbar (via hotkey) |
+| `ShowHudInventory(bool)` | HUD when opening the inventory |
+| `ShowQuickbarUI(bool)` / `ShowQuickbarPlayer(bool)` / `ShowQuickBar(bool)` | Different quickbar layers |
+| `UpdateQuickbarGlobalVisibility()` | Platform-dependent visibility |
+| `RefreshQuickbar(itemChanged)` | Reload content |
 
-Внутри делегирует в `IngameHudVisibility` через context-флаги.
+Internally delegates to `IngameHudVisibility` via context flags.
 
 #### Crosshair / Cursor / Actions
 
-| Метод | Описание |
-|-------|----------|
-| `SetPermanentCrossHair(bool)` | Вечный crosshair |
-| `ShowCursor()` / `HideCursor()` / `SetCursorIcon(icon)` | Активный курсор взаимодействия |
-| `SetCursorIconScale/Offset/Size(type, …)` | Параметры курсора |
-| `ZeroingKeyPress()` | Fade индикатора zeroing |
-| `ShowVehicleInfo()` / `HideVehicleInfo()` | Открыть/закрыть vehicle HUD |
-| `SpawnHitDirEffect(player, dir, intensity)` | Индикатор получения урона (направленный) |
-| `SetConnectivityStatIcon(type, level)` | Иконка high ping / low server perf / connection lost |
+| Method | Description |
+|--------|-------------|
+| `SetPermanentCrossHair(bool)` | Always-on crosshair |
+| `ShowCursor()` / `HideCursor()` / `SetCursorIcon(icon)` | Active interaction cursor |
+| `SetCursorIconScale/Offset/Size(type, …)` | Cursor parameters |
+| `ZeroingKeyPress()` | Fade in the zeroing indicator |
+| `ShowVehicleInfo()` / `HideVehicleInfo()` | Open/close the vehicle HUD |
+| `SpawnHitDirEffect(player, dir, intensity)` | Damage hit indicator (directional) |
+| `SetConnectivityStatIcon(type, level)` | High ping / low server perf / connection lost icon |
 
-#### Vehicle HUD (внутри IngameHud)
+#### Vehicle HUD (inside IngameHud)
 
-`IngameHud` держит `m_VehicleHudMap : map<string, ref VehicleHudBase>`. В `Init` регистрируются:
+`IngameHud` keeps `m_VehicleHudMap : map<string, ref VehicleHudBase>`. In `Init` it registers:
 
 ```
 "VehicleTypeCar"  → CarHud   (gui/layouts/day_z_hud_cars.layout)
 "VehicleTypeBoat" → BoatHud
 ```
 
-`ShowVehicleInfo()` ищет тип по `HumanCommandVehicle`, активирует `m_ActiveVehicleHUD`, `RefreshVehicleHud(timeslice)` обновляет его раз в кадр.
+`ShowVehicleInfo()` looks up the type via `HumanCommandVehicle`, activates `m_ActiveVehicleHUD`, `RefreshVehicleHud(timeslice)` updates it every frame.
 
 ```c
 class VehicleHudBase : Managed
 ```
 
-| Метод | Описание |
-|-------|----------|
-| `Init(vehicleHudPanels)` | Создать layout под этот тип |
-| `ShowVehicleInfo(player)` / `HideVehicleInfo()` | При посадке/выходе |
-| `ShowPanel()` / `HidePanel()` | Переключение видимости |
-| `RefreshVehicleHud(timeslice)` | Обновление dial'ов |
+| Method | Description |
+|--------|-------------|
+| `Init(vehicleHudPanels)` | Create the layout for this type |
+| `ShowVehicleInfo(player)` / `HideVehicleInfo()` | On boarding/disembark |
+| `ShowPanel()` / `HidePanel()` | Toggle visibility |
+| `RefreshVehicleHud(timeslice)` | Update dials |
 
-`CarHud`: RPM pointer/dial/redline, speed pointer, gear indicators (`m_VehicleGearTable`/`m_VehicleGearTableAuto` — ручная/автоматическая КПП), температура, топливо, лампы (battery/engine/oil/handbrake/wheel).
+`CarHud`: RPM pointer/dial/redline, speed pointer, gear indicators (`m_VehicleGearTable`/`m_VehicleGearTableAuto` — manual/automatic transmission), temperature, fuel, lamps (battery/engine/oil/handbrake/wheel).
 
-`BoatHud`: упрощённый набор — скорость, RPM, топливо, лампы.
+`BoatHud`: simplified set — speed, RPM, fuel, lamps.
 
 ---
 
@@ -111,7 +111,7 @@ class VehicleHudBase : Managed
 class IngameHudVisibility : Managed
 ```
 
-Менеджер видимости групп HUD-элементов по битовым флагам контекста. Заменяет множество разрозненных `Show(bool)` вызовов.
+Manager for HUD element group visibility via context bit flags. Replaces a sprawling set of disjoint `Show(bool)` calls.
 
 #### EHudElement (widgets)
 
@@ -119,18 +119,18 @@ class IngameHudVisibility : Managed
 
 #### EHudContextFlags (rules)
 
-| Флаг | Значение | Эффект |
-|------|----------|--------|
-| `HUD_DISABLE` | 1 | Отключено в опциях |
-| `HUD_HIDE` | 2 | Скрыто хоткеем |
-| `VEHICLE_DISABLE` | 4 | Vehicle HUD off в опциях |
-| `DRIVER` | 8 | Игрок — водитель (показать veh HUD) |
-| `VEHICLE` | 16 | В транспорте (спрятать left stats) |
-| `MENU_OPEN` | 32 | Открыто меню |
-| `NO_BADGE` | 64 | Нет бейджей (скрыть divider) |
-| `QUICKBAR_DISABLE/HIDE/GLOBAL` | 128/256/512 | Layers квикбара |
-| `INVENTORY_OPEN` | 1024 | Инвентарь открыт (HUD всегда видим) |
-| `UNCONSCIOUS` | 2048 | Без сознания |
+| Flag | Value | Effect |
+|------|-------|--------|
+| `HUD_DISABLE` | 1 | Disabled in options |
+| `HUD_HIDE` | 2 | Hidden by hotkey |
+| `VEHICLE_DISABLE` | 4 | Vehicle HUD off in options |
+| `DRIVER` | 8 | Player is the driver (show veh HUD) |
+| `VEHICLE` | 16 | In a vehicle (hide left stats) |
+| `MENU_OPEN` | 32 | A menu is open |
+| `NO_BADGE` | 64 | No badges (hide divider) |
+| `QUICKBAR_DISABLE/HIDE/GLOBAL` | 128/256/512 | Quickbar layers |
+| `INVENTORY_OPEN` | 1024 | Inventory open (HUD always visible) |
+| `UNCONSCIOUS` | 2048 | Unconscious |
 
 #### API
 
@@ -140,7 +140,7 @@ bool IsElementVisible(EHudElement element)
 bool IsContextFlagActive(EHudContextFlags flag)
 ```
 
-Установка флага автоматически пересчитывает все связанные элементы через `m_ElementLinkMap`.
+Setting a flag automatically recalculates all linked elements via `m_ElementLinkMap`.
 
 ---
 
@@ -150,7 +150,7 @@ bool IsContextFlagActive(EHudContextFlags flag)
 class IngameHudHeatBuffer
 ```
 
-Индикатор «теплового буфера» (накопленное тепло от одежды). Мигает в стадиях `m_FlashingThresholds` (1: 0.002, 2: 0.332, 3: 0.662). Останавливается при `OnDeathStart`/`OnUnconsciousStart`, возобновляется при `OnUnconsciousStop`. Апдейт вызывается из `IngameHud.Update` через `CanUpdate()`.
+"Heat buffer" indicator (heat accumulated from clothing). Blinks in stages from `m_FlashingThresholds` (1: 0.002, 2: 0.332, 3: 0.662). Stopped on `OnDeathStart`/`OnUnconsciousStart`, resumed on `OnUnconsciousStop`. Update is called from `IngameHud.Update` via `CanUpdate()`.
 
 ---
 
@@ -160,22 +160,22 @@ class IngameHudHeatBuffer
 class HudDebug extends Hud
 ```
 
-Dev-оверлей `#ifdef DEVELOPER`. Контейнер «окон» (`HudDebugWinBase`), зарегистрированных в `Init` из widget'ов `day_z_hud_debug.layout`.
+Dev overlay `#ifdef DEVELOPER`. Container of "windows" (`HudDebugWinBase`), registered in `Init` from widgets in `day_z_hud_debug.layout`.
 
-| HUD_WIN_* | Окно |
-|-----------|------|
-| `CHAR_STATS` | Статы персонажа (hydration, energy, blood, heat, …) |
-| `CHAR_MODIFIERS` | Активные модификаторы |
-| `CHAR_AGENTS` | Агенты (бактерии/вирусы) |
-| `CHAR_DEBUG` | Отладочные значения |
-| `CHAR_LEVELS` | Уровни статов |
-| `CHAR_STOMACH` | Содержимое желудка |
-| `VERSION` | Версия билда |
-| `TEMPERATURE` | Температура тела/окружения |
-| `HEALTH` | Здоровье по зонам |
-| `HORTICULTURE` | Состояние растений |
+| HUD_WIN_* | Window |
+|-----------|--------|
+| `CHAR_STATS` | Character stats (hydration, energy, blood, heat, …) |
+| `CHAR_MODIFIERS` | Active modifiers |
+| `CHAR_AGENTS` | Agents (bacteria/viruses) |
+| `CHAR_DEBUG` | Debug values |
+| `CHAR_LEVELS` | Stat levels |
+| `CHAR_STOMACH` | Stomach contents |
+| `VERSION` | Build version |
+| `TEMPERATURE` | Body/environment temperature |
+| `HEALTH` | Health by zones |
+| `HORTICULTURE` | Plant state |
 
-Видимость каждого окна хранится в `PluginConfigDebugProfile` → `RefreshByLocalProfile()`. Update всех видимых окон по таймеру раз в секунду.
+Visibility of each window is stored in `PluginConfigDebugProfile` → `RefreshByLocalProfile()`. Updates of all visible windows on a one-second timer.
 
 ---
 
@@ -185,15 +185,15 @@ Dev-оверлей `#ifdef DEVELOPER`. Контейнер «окон» (`HudDebu
 class DebugMonitor
 ```
 
-Отдельный monitor поверх HUD (`gui/layouts/debug/day_z_debug_monitor.layout`). Включается через `g_Game.SetDebugMonitorEnabled` (серверный параметр `enableDebugMonitor`). Создаётся через `MissionGameplay.CreateDebugMonitor()`, обновляется из `MissionGameplay.UpdateDebugMonitor()`.
+Separate monitor on top of the HUD (`gui/layouts/debug/day_z_debug_monitor.layout`). Enabled via `g_Game.SetDebugMonitorEnabled` (server parameter `enableDebugMonitor`). Created via `MissionGameplay.CreateDebugMonitor()`, updated from `MissionGameplay.UpdateDebugMonitor()`.
 
-Отображает: версию, health, blood, last damage source, map tile (A1/A2/…), позицию (копирование в clipboard по `UAUICopyDebugMonitorPos`), FPS (current/min/max/avg с цветовой градацией по платформе).
+Displays: version, health, blood, last damage source, map tile (A1/A2/…), position (copy to clipboard via `UAUICopyDebugMonitorPos`), FPS (current/min/max/avg with platform-dependent color grading).
 
 ---
 
 ### ItemActionsWidget
 
-Правый нижний виджет с подсказками действий. Управляется через `widget script` (`ScriptedWidgetEventHandler`), самообновляется раз в кадр через `CALL_CATEGORY_GUI` update queue. Считывает `ActionManagerClient` игрока, показывает `Interact`/`ContinuousInteract`/`Single`/`Continuous` action'ы в hands, управляет fade по `m_FadeTimer`. Иконки кнопок подставляются через `InputUtils.GetRichtextButtonIconFromInputAction` под текущее устройство ввода.
+Bottom-right widget with action hints. Driven by a `widget script` (`ScriptedWidgetEventHandler`), self-updates every frame through the `CALL_CATEGORY_GUI` update queue. Reads the player's `ActionManagerClient`, displays `Interact`/`ContinuousInteract`/`Single`/`Continuous` actions in hands, manages fade via `m_FadeTimer`. Button icons are substituted via `InputUtils.GetRichtextButtonIconFromInputAction` to match the current input device.
 
 ---
 
@@ -203,32 +203,32 @@ class DebugMonitor
 class ActionMenu
 ```
 
-Текстовое меню перебираемых действий (ниже ItemActionsWidget). Работает только `#ifdef DIAG_DEVELOPER` (новый AT selection). Инициализируется в `MissionGameplay.OnInit` с виджетами `ActionsPanel` и `DefaultActionWidget`. `NextAction/PrevAction/NextActionCategory/PrevActionCategory` → `player.GetActionManager().Select*`. Автоскрытие через `HIDE_MENU_TIME = 5s`.
+Textual menu of cyclable actions (below ItemActionsWidget). Only active `#ifdef DIAG_DEVELOPER` (new AT selection). Initialized in `MissionGameplay.OnInit` with widgets `ActionsPanel` and `DefaultActionWidget`. `NextAction/PrevAction/NextActionCategory/PrevActionCategory` → `player.GetActionManager().Select*`. Auto-hides via `HIDE_MENU_TIME = 5s`.
 
 ---
 
 ### Crosshair / Action targets cursor
 
-| Класс | Роль |
+| Class | Role |
 |-------|------|
-| `CrossHairSelector` | Хэндлер widget'а из XML, переключает набор crosshair'ов (`set<ref CrossHair>`) по состоянию игрока/оружия. Обновляется в `PostUpdateQueue(CALL_CATEGORY_GUI)` |
-| `ProjectedCrosshair` | Вспомогательный crosshair для weapon debug (`DiagMenuIDs.WEAPON_DEBUG`) |
-| `ActionTargetsCursor` | Cursor action target + tooltip справа. Кеширует object через `ATCCachedObject`. Учитывает PPE vision obstructions (burlap sack, flashbang) |
-| `ContinuousActionProgress` | Круговой прогресс-бар вокруг cursor'а для continuous actions. Подавляется если активен `HUD_HIDE_FLAGS` |
+| `CrossHairSelector` | Handler for the widget from XML, switches the crosshair set (`set<ref CrossHair>`) based on player/weapon state. Updates via `PostUpdateQueue(CALL_CATEGORY_GUI)` |
+| `ProjectedCrosshair` | Auxiliary crosshair for weapon debug (`DiagMenuIDs.WEAPON_DEBUG`) |
+| `ActionTargetsCursor` | Cursor of the action target + tooltip on the right. Caches the object via `ATCCachedObject`. Honors PPE vision obstructions (burlap sack, flashbang) |
+| `ContinuousActionProgress` | Circular progress bar around the cursor for continuous actions. Suppressed if `HUD_HIDE_FLAGS` are active |
 
 ---
 
 ### Map markers / Object follower
 
-`MapMarkerTypes` — статический реестр иконок для локаций на карте (`eMapMarkerTypes`: `BORDER_CROSS`, `BROADLEAF`, `CAMP`, `FACTORY`, `FIR`, `FIREDEP`, `GOVOFFICE`, `HILL`, `MONUMENT`, `PALM`, `POLICE`, `STATION`, `STORE`, `TOURISM`, `TRANSMITTER`, `TSHELTER`, `TSIGN`, `VIEWPOINT`, `VINEYARD`, `WATERPUMP`). Инициализируется в `MissionGameplay.OnInit` через `MapMarkerTypes.Init()`.
+`MapMarkerTypes` — static registry of icons for map locations (`eMapMarkerTypes`: `BORDER_CROSS`, `BROADLEAF`, `CAMP`, `FACTORY`, `FIR`, `FIREDEP`, `GOVOFFICE`, `HILL`, `MONUMENT`, `PALM`, `POLICE`, `STATION`, `STORE`, `TOURISM`, `TRANSMITTER`, `TSHELTER`, `TSIGN`, `VIEWPOINT`, `VINEYARD`, `WATERPUMP`). Initialized in `MissionGameplay.OnInit` via `MapMarkerTypes.Init()`.
 
-`ObjectFollower` — widget, следующий за `Object` в экранных координатах (используется для маркеров и меток).
+`ObjectFollower` — widget that follows an `Object` in screen coordinates (used for markers and labels).
 
 ---
 
 ### InventoryQuickbar
 
-Hotbar 0-9 слотов живёт в `IngameHud` (`m_Quickbar`), инициализируется через отложенный `InitQuickbar()` из `IngameHud.Init`. Управление видимостью через `IngameHudVisibility` (`EHudElement.QUICKBAR`, флаги `QUICKBAR_*`). Подробности UI контейнера — см. [inventory.md](inventory.md) раздел Quickbar.
+Hotbar 0-9 slots lives in `IngameHud` (`m_Quickbar`), initialized via a deferred `InitQuickbar()` from `IngameHud.Init`. Visibility is controlled by `IngameHudVisibility` (`EHudElement.QUICKBAR`, flags `QUICKBAR_*`). For details of the container UI — see [inventory.md](inventory.md) Quickbar section.
 
 ---
 
@@ -238,39 +238,39 @@ Hotbar 0-9 слотов живёт в `IngameHud` (`m_Quickbar`), инициал
 class GameplayEffectWidgets extends GameplayEffectWidgets_base
 ```
 
-Хост оверлейных эффектов поверх экрана. Инстанс в `MissionGameplay.m_EffectWidgets`, доступ через `GetMission().GetEffectWidgets()`. Основной входной API — `AddActiveEffects(array<int>)` / `RemoveActiveEffects(array<int>)`.
+Host for overlay effects on top of the screen. Instance in `MissionGameplay.m_EffectWidgets`, accessible via `GetMission().GetEffectWidgets()`. Main entry API — `AddActiveEffects(array<int>)` / `RemoveActiveEffects(array<int>)`.
 
 #### Registered layouts
 
-В `InitLayouts`:
+In `InitLayouts`:
 - `gui/layouts/gameplay/CameraEffects.layout` — occluders, breath, flashbang cover
-- `gui/layouts/gameplay/BleedingEffects.layout` — слой индикаторов кровотечения
+- `gui/layouts/gameplay/BleedingEffects.layout` — bleeding indicator layer
 
 #### Widget sets (EffectWidgetsTypes)
 
-| Группа | Типы |
-|--------|------|
-| **Breath** | `MASK_BREATH`, `HELMET_BREATH`, `MOTO_BREATH` — делят `WIDGETSET_BREATH` |
+| Group | Types |
+|-------|-------|
+| **Breath** | `MASK_BREATH`, `HELMET_BREATH`, `MOTO_BREATH` — share `WIDGETSET_BREATH` |
 | **Occluders** | `MASK_OCCLUDER`, `HELMET_OCCLUDER`, `HELMET2_OCCLUDER`, `MOTO_OCCLUDER`, `NVG_OCCLUDER`, `PUMPKIN_OCCLUDER` (alias `NVG_OCCLUDER`), `EYEPATCH_OCCLUDER` |
 | **Cover** | `COVER_FLASHBANG` |
-| **Bleeding** | `BLEEDING_LAYER` (специализированный обработчик через `GameplayEffectsDataBleeding`) |
+| **Bleeding** | `BLEEDING_LAYER` (specialized handler via `GameplayEffectsDataBleeding`) |
 
 #### API
 
-| Метод | Описание |
-|-------|----------|
-| `AddActiveEffects(effects)` | Активировать список ID |
-| `RemoveActiveEffects(effects)` | Деактивировать |
-| `StopAllEffects()` | Выключить все |
-| `IsAnyEffectRunning()` | Есть ли активные |
-| `AddSuspendRequest(request_id)` / `RemoveSuspendRequest` / `ClearSuspendRequests` / `GetSuspendRequestCount` | Приостановка отрисовки (не удаляя) |
-| `UpdateWidgets(type, timeSlice, p, handle)` | Апдейт конкретного типа/handle |
-| `Update(timeSlice)` | Общий tick (вызывает breath, прогресс, bleeding) |
-| `SetBreathIntensityStamina(cap, current)` | Интенсивность breath по выносливости |
-| `OnVoiceEvent(breathing_resistance)` | Hook голосового чата |
-| `RegisterGameplayEffectData(id, p)` | Регистрация данных для effect ID |
+| Method | Description |
+|--------|-------------|
+| `AddActiveEffects(effects)` | Activate the listed IDs |
+| `RemoveActiveEffects(effects)` | Deactivate |
+| `StopAllEffects()` | Turn everything off |
+| `IsAnyEffectRunning()` | Whether anything is active |
+| `AddSuspendRequest(request_id)` / `RemoveSuspendRequest` / `ClearSuspendRequests` / `GetSuspendRequestCount` | Suspend drawing (without removing) |
+| `UpdateWidgets(type, timeSlice, p, handle)` | Update a specific type/handle |
+| `Update(timeSlice)` | Common tick (calls breath, progress, bleeding) |
+| `SetBreathIntensityStamina(cap, current)` | Breath intensity from stamina |
+| `OnVoiceEvent(breathing_resistance)` | Voice chat hook |
+| `RegisterGameplayEffectData(id, p)` | Register data for an effect ID |
 
-Metadata-классы: `GameplayEffectsData` (base) → `GameplayEffectsDataImage` (для ImageWidget с оригинальными цветами) → `GameplayEffectsDataBleeding` (специализация). Тип данных определяется через `m_IDToTypeMap : map<int,typename>`.
+Metadata classes: `GameplayEffectsData` (base) → `GameplayEffectsDataImage` (for ImageWidget with original colors) → `GameplayEffectsDataBleeding` (specialization). Data type is resolved via `m_IDToTypeMap : map<int,typename>`.
 
 #### BleedingIndicator
 
@@ -278,4 +278,4 @@ Metadata-классы: `GameplayEffectsData` (base) → `GameplayEffectsDataImag
 class BleedingIndicator extends Managed
 ```
 
-Один wrapper на bleeding source. Хранит severity (`LOW`/`MEDIUM`/`HIGH`), probability array, spawn timings, активные drops (`BleedingIndicatorDropData`). Управляется из `GameplayEffectsDataBleeding` (переопределяет `Update` родителя) — добавляет/удаляет `BleedingIndicator` при изменении `BleedingSourcesManagerRemote`.
+One wrapper per bleeding source. Stores severity (`LOW`/`MEDIUM`/`HIGH`), probability array, spawn timings, active drops (`BleedingIndicatorDropData`). Managed by `GameplayEffectsDataBleeding` (overrides the parent's `Update`) — adds/removes `BleedingIndicator` when `BleedingSourcesManagerRemote` changes.

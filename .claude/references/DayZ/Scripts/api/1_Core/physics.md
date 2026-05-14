@@ -1,20 +1,20 @@
-Физическая система. Источник: `proto/enphysics.c`, `physics/`
+Physics system. Source: `proto/enphysics.c`, `physics/`
 
-### Physics — обёртка физического тела
+### Physics — physical body wrapper
 
-Получается через `IEntity.GetPhysics()`. Два типа: static (коллизия) и dynamic (rigid body).
+Obtained via `IEntity.GetPhysics()`. Two types: static (collision) and dynamic (rigid body).
 
-**Константы:** `Physics.KMH2MS`, `Physics.MS2KMH`, `Physics.STANDARD_GRAVITY` (9.81), `Physics.VGravity` ("0 -9.81 0")
+**Constants:** `Physics.KMH2MS`, `Physics.MS2KMH`, `Physics.STANDARD_GRAVITY` (9.81), `Physics.VGravity` ("0 -9.81 0")
 
-**Создание тел (static):**
+**Creating bodies (static):**
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `Physics.CreateStatic(ent, layerMask)` | Из геометрии VObject |
-| `Physics.CreateStaticEx(ent, geoms[])` | Из кастомных геометрий |
-| `Physics.CreateDynamic(ent, mass, layerMask)` | Динамическое из VObject |
-| `Physics.CreateDynamicEx(ent, centerOfMass, mass, geoms[])` | Динамическое из кастомных |
-| `Physics.CreateGhostEx(ent, geoms[])` | Ghost (триггер) |
+| `Physics.CreateStatic(ent, layerMask)` | From VObject geometry |
+| `Physics.CreateStaticEx(ent, geoms[])` | From custom geometries |
+| `Physics.CreateDynamic(ent, mass, layerMask)` | Dynamic from VObject |
+| `Physics.CreateDynamicEx(ent, centerOfMass, mass, geoms[])` | Dynamic from custom ones |
+| `Physics.CreateGhostEx(ent, geoms[])` | Ghost (trigger) |
 
 ```cpp
 PhysicsGeom geom = PhysicsGeom.CreateBox("1 1 1");
@@ -22,69 +22,69 @@ PhysicsGeomDef geoms[] = {PhysicsGeomDef("", geom, "material/default", 0xfffffff
 Physics.CreateStaticEx(this, geoms);
 ```
 
-**Состояние:**
+**State:**
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `Destroy()` | Уничтожить тело |
-| `IsActive()` | Симулируется ли (не спит) |
-| `IsDynamic()` | Динамическое ли |
-| `IsKinematic()` | Кинематическое ли (анимированное) |
-| `SetActive(ActiveState)` | Изменить состояние активации |
-| `ChangeSimulationState(SimulationState)` | Изменить состояние симуляции |
-| `EnableGravity(enable)` | Вкл/выкл гравитацию |
-| `EnableCCD(maxMotion, sphereRadius)` | Continuous Collision Detection (-1 = выкл) |
+| `Destroy()` | Destroy the body |
+| `IsActive()` | Whether simulated (not sleeping) |
+| `IsDynamic()` | Whether dynamic |
+| `IsKinematic()` | Whether kinematic (animated) |
+| `SetActive(ActiveState)` | Change activation state |
+| `ChangeSimulationState(SimulationState)` | Change simulation state |
+| `EnableGravity(enable)` | Enable/disable gravity |
+| `EnableCCD(maxMotion, sphereRadius)` | Continuous Collision Detection (-1 = off) |
 
-**Динамика:**
+**Dynamics:**
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `GetVelocity()` / `SetVelocity(vel)` | Линейная скорость |
-| `GetAngularVelocity()` / `SetAngularVelocity(vel)` | Угловая скорость |
-| `GetMass()` / `SetMass(mass)` | Масса |
-| `GetCenterOfMass()` | Смещение центра масс |
-| `ApplyImpulse(impulse)` | Импульс (в центре) |
-| `ApplyImpulseAt(pos, impulse)` | Импульс в точке (мировые координаты) |
-| `ApplyForce(force)` | Постоянная сила |
-| `ApplyForceAt(pos, force)` | Сила в точке |
-| `ApplyTorque(torque)` | Крутящий момент |
-| `ClearForces()` | Сбросить все силы |
-| `GetTotalForce()` / `GetTotalTorque()` | Текущие суммарные силы |
-| `SetDamping(linear, angular)` | Демпфирование |
-| `SetSleepingTreshold(linear, angular)` | Порог засыпания |
-| `SetLinearFactor(vec)` | Масштаб осей (0 = заблокировать ось, для 2D физики) |
-| `SetTargetMatrix(mat[4], timeslice)` | Целевая трансформация (кинематика) |
-| `SetInertiaTensorV(v)` | Тензор инерции (диагональ) |
+| `GetVelocity()` / `SetVelocity(vel)` | Linear velocity |
+| `GetAngularVelocity()` / `SetAngularVelocity(vel)` | Angular velocity |
+| `GetMass()` / `SetMass(mass)` | Mass |
+| `GetCenterOfMass()` | Center of mass offset |
+| `ApplyImpulse(impulse)` | Impulse (at the center) |
+| `ApplyImpulseAt(pos, impulse)` | Impulse at a point (world coordinates) |
+| `ApplyForce(force)` | Continuous force |
+| `ApplyForceAt(pos, force)` | Force at a point |
+| `ApplyTorque(torque)` | Torque |
+| `ClearForces()` | Clear all forces |
+| `GetTotalForce()` / `GetTotalTorque()` | Current total forces |
+| `SetDamping(linear, angular)` | Damping |
+| `SetSleepingTreshold(linear, angular)` | Sleep threshold |
+| `SetLinearFactor(vec)` | Axis scale (0 = lock axis, for 2D physics) |
+| `SetTargetMatrix(mat[4], timeslice)` | Target transform (kinematic) |
+| `SetInertiaTensorV(v)` | Inertia tensor (diagonal) |
 
-**Слои взаимодействия:**
+**Interaction layers:**
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `SetInteractionLayer(mask)` / `GetInteractionLayer()` | Маска слоёв тела |
-| `SetGeomInteractionLayer(idx, mask)` / `GetGeomInteractionLayer(idx)` | Маска слоёв геометрии |
+| `SetInteractionLayer(mask)` / `GetInteractionLayer()` | Body layer mask |
+| `SetGeomInteractionLayer(idx, mask)` / `GetGeomInteractionLayer(idx)` | Geometry layer mask |
 
-**Геометрии:**
+**Geometries:**
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `GetNumGeoms()` | Кол-во геометрий |
-| `GetGeom(name)` | Найти по имени (возвращает индекс) |
-| `AddGeom(name, geom, frame[4], material, layer)` | Добавить геометрию |
-| `GetGeomWorldPosition(idx)` / `GetGeomPosition(idx)` | Позиция геометрии |
-| `GetGeomWorldTransform(idx, out mat[4])` | Мировая трансформация |
+| `GetNumGeoms()` | Number of geometries |
+| `GetGeom(name)` | Find by name (returns index) |
+| `AddGeom(name, geom, frame[4], material, layer)` | Add geometry |
+| `GetGeomWorldPosition(idx)` / `GetGeomPosition(idx)` | Geometry position |
+| `GetGeomWorldTransform(idx, out mat[4])` | World transform |
 
-### PhysicsGeom — геометрические формы
+### PhysicsGeom — geometric shapes
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `PhysicsGeom.CreateBox(size)` | Бокс |
-| `PhysicsGeom.CreateSphere(radius)` | Сфера |
-| `PhysicsGeom.CreateCapsule(radius, height)` | Капсула |
-| `PhysicsGeom.CreateCylinder(radius, height)` | Цилиндр |
-| `PhysicsGeom.CreateTriMesh(verts[], inds[], nVerts, nInds)` | Произвольный меш |
-| `geom.Destroy()` | Уничтожить |
+| `PhysicsGeom.CreateBox(size)` | Box |
+| `PhysicsGeom.CreateSphere(radius)` | Sphere |
+| `PhysicsGeom.CreateCapsule(radius, height)` | Capsule |
+| `PhysicsGeom.CreateCylinder(radius, height)` | Cylinder |
+| `PhysicsGeom.CreateTriMesh(verts[], inds[], nVerts, nInds)` | Arbitrary mesh |
+| `geom.Destroy()` | Destroy |
 
-### PhysicsGeomDef — описание элемента
+### PhysicsGeomDef — element descriptor
 
 ```cpp
 class PhysicsGeomDef: Managed
@@ -98,40 +98,40 @@ class PhysicsGeomDef: Managed
 }
 ```
 
-### PhysicsJoint — соединения тел
+### PhysicsJoint — body connections
 
-Создание через `PhysicsJoint.CreateXXX(ent1, ent2, ..., disableCollisions, breakThreshold)`. `breakThreshold = -1` = неразрушимый.
+Creation via `PhysicsJoint.CreateXXX(ent1, ent2, ..., disableCollisions, breakThreshold)`. `breakThreshold = -1` = unbreakable.
 
-| Тип | Описание |
+| Type | Description |
 |-----|----------|
-| `CreateHinge(ent1, ent2, point1, axis1, point2, axis2, ...)` | Петля (1 ось вращения) |
-| `CreateHinge2(ent1, ent2, mat1[4], mat2[4], ...)` | Петля через матрицы (ось = Z) |
-| `CreateBallSocket(ent1, ent2, point1, point2, ...)` | Шаровой шарнир |
-| `CreateFixed(ent1, ent2, point1, point2, ...)` | Жёсткое соединение |
-| `CreateConeTwist(ent1, ent2, mat1[4], mat2[4], ...)` | Конусное (twist=X, swings=Y,Z) |
-| `CreateSlider(ent1, ent2, mat1[4], mat2[4], ...)` | Слайдер (ось=X) |
-| `Create6DOF(ent1, ent2, mat1[4], mat2[4], ...)` | 6 степеней свободы |
-| `Create6DOFSpring(ent1, ent2, mat1[4], mat2[4], ...)` | 6DOF с пружинами |
+| `CreateHinge(ent1, ent2, point1, axis1, point2, axis2, ...)` | Hinge (1 rotation axis) |
+| `CreateHinge2(ent1, ent2, mat1[4], mat2[4], ...)` | Hinge via matrices (axis = Z) |
+| `CreateBallSocket(ent1, ent2, point1, point2, ...)` | Ball socket |
+| `CreateFixed(ent1, ent2, point1, point2, ...)` | Rigid connection |
+| `CreateConeTwist(ent1, ent2, mat1[4], mat2[4], ...)` | Cone twist (twist=X, swings=Y,Z) |
+| `CreateSlider(ent1, ent2, mat1[4], mat2[4], ...)` | Slider (axis=X) |
+| `Create6DOF(ent1, ent2, mat1[4], mat2[4], ...)` | 6 degrees of freedom |
+| `Create6DOFSpring(ent1, ent2, mat1[4], mat2[4], ...)` | 6DOF with springs |
 
-**Настройка joints:**
+**Joint configuration:**
 
 - `PhysicsHingeJoint`: `SetLimits(low, high, softness, bias, relaxation)`, `SetAxis(axis)`, `SetMotorTargetAngle(angle, dt, maxImpulse)`
 - `PhysicsConeTwistJoint`: `SetLimits(swing1, swing2, twist, softness, bias, relaxation)`
 - `PhysicsSliderJoint`: `SetLinearLimits(lo, hi)`, `SetAngularLimits(lo, hi)`, `SetLinearMotor(velocity, force)`
 - `Physics6DOFJoint`: `SetLinearLimits(lower, upper)`, `SetAngularLimits(lower, upper)`, `SetLimit(axis, lo, hi)`
-- `Physics6DOFSpringJoint`: + `SetSpring(axis, stiffness, damping)` (-1/-1 = выкл)
+- `Physics6DOFSpringJoint`: + `SetSpring(axis, stiffness, damping)` (-1/-1 = off)
 
-**Параметры joints** (softness, biasFactor, relaxationFactor):
-- softness 0.8-1.0: % свободного движения в пределах лимита
-- biasFactor ~0.3: сила сопротивления нарушению лимита
-- relaxationFactor ~1.0: сопротивление скоростям, нарушающим лимит
+**Joint parameters** (softness, biasFactor, relaxationFactor):
+- softness 0.8-1.0: % of free movement within the limit
+- biasFactor ~0.3: force resisting limit violation
+- relaxationFactor ~1.0: resistance to velocities violating the limit
 
-### Глобальные функции физики мира
+### World physics global functions
 
-| Функция | Описание |
+| Function | Description |
 |---------|----------|
-| `dGetGravity(worldEnt)` / `dSetGravity(worldEnt, g)` | Гравитация мира |
-| `dSetTimeSlice(worldEnt, dt)` | Шаг симуляции (default 1/40) |
-| `GetVelocity(ent)` / `SetVelocity(ent, vel)` | Скорость сущности |
-| `dBodyCollisionBlock(ent1, ent2)` | Отключить коллизии между парой |
-| `dBodyCreateStaticEx/DynamicEx/GhostEx(...)` | Legacy создание тел |
+| `dGetGravity(worldEnt)` / `dSetGravity(worldEnt, g)` | World gravity |
+| `dSetTimeSlice(worldEnt, dt)` | Simulation step (default 1/40) |
+| `GetVelocity(ent)` / `SetVelocity(ent, vel)` | Entity velocity |
+| `dBodyCollisionBlock(ent1, ent2)` | Disable collisions between a pair |
+| `dBodyCreateStaticEx/DynamicEx/GhostEx(...)` | Legacy body creation |

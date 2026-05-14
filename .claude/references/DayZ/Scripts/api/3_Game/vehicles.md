@@ -1,30 +1,30 @@
-Транспортная система. Источники: `vehicles/`
+Vehicle system. Sources: `vehicles/`
 
-### Иерархия
+### Hierarchy
 
 ```
-Pawn (сетевая сверка)
-└── Transport (базовый транспорт)
-    ├── Car (автомобили)
-    ├── Helicopter (вертолёты)
-    └── Boat (лодки)
+Pawn (network reconciliation)
+└── Transport (base transport)
+    ├── Car (cars)
+    ├── Helicopter (helicopters)
+    └── Boat (boats)
 ```
 
 ### Transport
 
-Базовый класс транспорта. Наследует `Pawn`.
+Base transport class. Inherits `Pawn`.
 
-Вспомогательные: `TransportType`, `TransportMove`, `TransportOwnerState` — для сетевой сверки.
+Helpers: `TransportType`, `TransportMove`, `TransportOwnerState` — for network reconciliation.
 
 ### Car
 
-Наследует `Transport`. Автомобили. Источник: `vehicles/car.c`
+Inherits `Transport`. Cars. Source: `vehicles/car.c`
 
-Вспомогательные: `CarType`, `CarMove`, `CarOwnerState`.
+Helpers: `CarType`, `CarMove`, `CarOwnerState`.
 
 #### CarSoundCtrl
 
-Аудио-контроллеры:
+Audio controllers:
 
 ```
 ENGINE, RPM, SPEED, DOORS, PLAYER
@@ -32,7 +32,7 @@ ENGINE, RPM, SPEED, DOORS, PLAYER
 
 #### CarFluid
 
-Жидкости:
+Fluids:
 
 ```
 FUEL, OIL, BRAKE, COOLANT, USER1, USER2, USER3, USER4
@@ -66,8 +66,8 @@ ON_LAND, IN_WATER, UNDER_WATER
 
 ### Helicopter
 
-Наследует `Transport`. Вертолёты. Источник: `vehicles/helicopter.c`
+Inherits `Transport`. Helicopters. Source: `vehicles/helicopter.c`
 
 ### Boat
 
-Наследует `Transport`. Водный транспорт. Источник: `vehicles/boat.c`
+Inherits `Transport`. Watercraft. Source: `vehicles/boat.c`

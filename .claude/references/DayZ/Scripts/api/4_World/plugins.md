@@ -1,14 +1,14 @@
-Система плагинов — сервисная шина для игровых подсистем. Источники: `plugins/`
+Plugin system — a service bus for game subsystems. Sources: `plugins/`
 
-### Архитектура
+### Architecture
 
 ```
-PluginBase               — базовый класс плагина
-PluginManager            — реестр и lifecycle менеджер всех плагинов
-  g_Plugins              — глобальный синглтон PluginManager
+PluginBase               — plugin base class
+PluginManager            — registry and lifecycle manager for all plugins
+  g_Plugins              — global PluginManager singleton
 ```
 
-Глобальная функция доступа: `GetPlugin(typename)` → `PluginBase`
+Global access function: `GetPlugin(typename)` → `PluginBase`
 
 ### PluginBase
 
@@ -16,29 +16,29 @@ PluginManager            — реестр и lifecycle менеджер всех
 class PluginBase
 ```
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `OnInit()` | Инициализация после создания |
-| `OnUpdate(float delta_time)` | Обновление каждый кадр (CALL_CATEGORY_GAMEPLAY) |
-| `OnDestroy()` | Очистка при удалении |
-| `GetModuleName()` | Имя класса (для логирования) |
-| `Log(msg, label)` | Вывод через `Debug.Log` |
+| `OnInit()` | Initialization after creation |
+| `OnUpdate(float delta_time)` | Update each frame (CALL_CATEGORY_GAMEPLAY) |
+| `OnDestroy()` | Cleanup on destruction |
+| `GetModuleName()` | Class name (for logging) |
+| `Log(msg, label)` | Output via `Debug.Log` |
 
 ### PluginManager
 
-Управляет lifecycle всех зарегистрированных плагинов.
+Manages the lifecycle of all registered plugins.
 
-#### Регистрация
+#### Registration
 
 ```c
 RegisterPlugin(className, regOnClient, regOnServer, regOnRelease=true)
-RegisterPluginDiag(...)   // только при #define DIAG_DEVELOPER
-RegisterPluginDebug(...)  // только при IsDebug()
+RegisterPluginDiag(...)   // only with #define DIAG_DEVELOPER
+RegisterPluginDebug(...)  // only when IsDebug()
 ```
 
-Порядок загрузки плагинов (из `Init()`):
+Plugin load order (from `Init()`):
 
-| Плагин | Client | Server | Тип |
+| Plugin | Client | Server | Type |
 |--------|--------|--------|-----|
 | `PluginHorticulture` | ✓ | ✓ | Release |
 | `PluginRepairing` | ✓ | ✓ | Release |
@@ -62,26 +62,26 @@ RegisterPluginDebug(...)  // только при IsDebug()
 | `PluginDayzPlayerDebug` | ✓ | ✓ | Debug |
 | `PluginCameraTools` | ✓ | ✓ | Debug |
 
-(*NO_GUI: только client)
+(*NO_GUI: client only)
 
 #### Lifecycle
 
 ```
 PluginManagerInit()
   → g_Plugins = new PluginManager
-  → Init()     — регистрация плагинов
-  → PluginsInit() — создание экземпляров + OnInit()
+  → Init()     — registers plugins
+  → PluginsInit() — instance creation + OnInit()
 
-MainOnUpdate(dt) — вызывается каждый кадр, обновляет все плагины
-PluginManagerDelete() — деструктор всех плагинов
+MainOnUpdate(dt) — called every frame, updates all plugins
+PluginManagerDelete() — destructor for all plugins
 ```
 
 #### API
 
 ```c
 PluginManager GetPluginManager()
-PluginBase    GetPlugin(typename plugin_type)         // с диагностикой
-PluginBase    GetPluginSafe(typename plugin_type)     // без диагностики
+PluginBase    GetPlugin(typename plugin_type)         // with diagnostics
+PluginBase    GetPluginSafe(typename plugin_type)     // without diagnostics
 bool          IsModuleExist(typename plugin_type)
 bool          IsPluginManagerExists()
 ```
@@ -94,36 +94,36 @@ bool          IsPluginManagerExists()
 class PluginDeveloper extends PluginBase
 ```
 
-Инструменты разработчика: телепортация, свободная камера, спаун предметов, консоль.
+Developer tooling: teleport, free camera, item spawning, console.
 
 ```c
 static PluginDeveloper GetInstance()  // shortcut
 ```
 
-#### Возможности
+#### Capabilities
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `TeleportAtCursor()` | Телепорт игрока под курсор |
-| `Teleport(player, pos)` | Телепорт в заданную позицию |
-| `SetDirection(player, dir)` | Установить направление игрока |
-| `ToggleFreeCamera()` | Переключить свободную камеру (с телепортом) |
-| `ToggleFreeCameraBackPos()` | Переключить свободную камеру (без телепорта) |
-| `IsEnabledFreeCamera()` | Состояние свободной камеры |
-| `PrintLogClient(msg)` | Вывод в Script Console |
-| `SendServerLogToClient(msg)` | Трансляция серверного лога всем клиентам |
+| `TeleportAtCursor()` | Teleport the player under the cursor |
+| `Teleport(player, pos)` | Teleport to a position |
+| `SetDirection(player, dir)` | Set player heading |
+| `ToggleFreeCamera()` | Toggle free camera (with teleport) |
+| `ToggleFreeCameraBackPos()` | Toggle free camera (no teleport) |
+| `IsEnabledFreeCamera()` | Free-camera state |
+| `PrintLogClient(msg)` | Output to Script Console |
+| `SendServerLogToClient(msg)` | Broadcast a server log to all clients |
 
-#### RPC-обработка (только `#ifdef DIAG_DEVELOPER`)
+#### RPC handling (only under `#ifdef DIAG_DEVELOPER`)
 
-| RPC | Описание |
+| RPC | Description |
 |-----|----------|
-| `DEV_RPC_SPAWN_ITEM_ON_GROUND` | Спаун предмета на земле |
-| `DEV_RPC_SPAWN_ITEM_ON_GROUND_PATTERN_GRID` | Спаун предметов сеткой |
-| `DEV_RPC_SPAWN_ITEM_ON_CURSOR` | Спаун по направлению курсора |
-| `DEV_RPC_SPAWN_ITEM_IN_INVENTORY` | Спаун в инвентарь |
-| `DEV_RPC_CLEAR_INV` | Очистить инвентарь |
-| `DEV_RPC_SPAWN_PRESET` | Спаун пресета предметов |
-| `DEV_RPC_SET_TIME` | Установить игровое время |
+| `DEV_RPC_SPAWN_ITEM_ON_GROUND` | Spawn an item on the ground |
+| `DEV_RPC_SPAWN_ITEM_ON_GROUND_PATTERN_GRID` | Spawn items in a grid pattern |
+| `DEV_RPC_SPAWN_ITEM_ON_CURSOR` | Spawn along the cursor direction |
+| `DEV_RPC_SPAWN_ITEM_IN_INVENTORY` | Spawn into the inventory |
+| `DEV_RPC_CLEAR_INV` | Clear the inventory |
+| `DEV_RPC_SPAWN_PRESET` | Spawn an item preset |
+| `DEV_RPC_SET_TIME` | Set game time |
 
 `DevSpawnItemParams` = `Param7<EntityAI, string, float, float, bool, string, FindInventoryLocationType>` (target, item_name, health, quantity, special, presetName, locationType)
 
@@ -135,25 +135,25 @@ static PluginDeveloper GetInstance()  // shortcut
 class PluginDiagMenu extends PluginBase
 ```
 
-Регистрирует диагностическое меню (`DiagMenu`). Только `#ifdef DIAG_DEVELOPER`.
+Registers the diagnostic menu (`DiagMenu`). Only under `#ifdef DIAG_DEVELOPER`.
 
-Разделяется на:
-- `PluginDiagMenuClient` — только клиент
-- `PluginDiagMenuServer` — только сервер
+Split into:
+- `PluginDiagMenuClient` — client only
+- `PluginDiagMenuServer` — server only
 
-#### Структура меню
+#### Menu structure
 
 ```
 DiagMenuIDs.SCRIPTS_MENU  ("Script")
   ├── VEHICLES          — Vehicle debug output, Crash log, Flip context
-  ├── INVENTORY_MENU    — Инвентарь
-  ├── ...               — и другие подменю
-  └── MODDED_MENU       — Для модов (PluginDiagMenuModding)
+  ├── INVENTORY_MENU    — Inventory
+  ├── ...               — and other submenus
+  └── MODDED_MENU       — For mods (PluginDiagMenuModding)
 ```
 
-#### Для модов
+#### For mods
 
-`PluginDiagMenuModding` — отдельное изолированное меню для модов, не затрагивает vanilla диаги. Модов рекомендуется использовать именно его, не переопределяя vanilla файлы.
+`PluginDiagMenuModding` — a separate, isolated menu for mods that does not affect vanilla diagnostics. Mods are encouraged to use this rather than overriding vanilla files.
 
 ---
 
@@ -163,23 +163,23 @@ DiagMenuIDs.SCRIPTS_MENU  ("Script")
 class PluginConfigHandler extends PluginFileHandler
 ```
 
-Парсер/сериализатор файла конфигурации пользователя (`CFG_FILE_USER_PROFILE`). Данные представлены как `array<ref CfgParam>`.
+Parser/serializer for the user config file (`CFG_FILE_USER_PROFILE`). Data is represented as `array<ref CfgParam>`.
 
 #### API
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `LoadConfigFile()` | Загрузить файл в `m_CfgParams` |
-| `SaveConfigToFile()` | Сериализовать `m_CfgParams` и сохранить |
-| `GetParamByName(name, type)` | Найти параметр (создаёт если нет) |
-| `GetAllParams()` | Все параметры |
-| `ParamExist(name)` | Проверить существование |
-| `RemoveParamByName(name)` | Удалить параметр |
-| `RenameParam(name, new_name)` | Переименовать |
+| `LoadConfigFile()` | Load the file into `m_CfgParams` |
+| `SaveConfigToFile()` | Serialize `m_CfgParams` and write |
+| `GetParamByName(name, type)` | Find a parameter (creates if missing) |
+| `GetAllParams()` | All parameters |
+| `ParamExist(name)` | Check existence |
+| `RemoveParamByName(name)` | Remove a parameter |
+| `RenameParam(name, new_name)` | Rename |
 
-Поддерживаемые типы: `CFG_TYPE_STRING`, `CFG_TYPE_INT`, `CFG_TYPE_FLOAT`, `CFG_TYPE_BOOL`, `CFG_TYPE_ARRAY`, `CFG_TYPE_PARAM`
+Supported types: `CFG_TYPE_STRING`, `CFG_TYPE_INT`, `CFG_TYPE_FLOAT`, `CFG_TYPE_BOOL`, `CFG_TYPE_ARRAY`, `CFG_TYPE_PARAM`
 
-Формат файла: `name=value` или `name={val1,val2}`. Парсер: `ParseText(string)` — определяет тип по контексту.
+File format: `name=value` or `name={val1,val2}`. Parser: `ParseText(string)` — type is inferred from context.
 
 ---
 
@@ -189,28 +189,28 @@ class PluginConfigHandler extends PluginFileHandler
 class PluginLocalProfile extends PluginFileHandler
 ```
 
-Хранит пользовательские настройки в файле профиля в виде нескольких карт:
+Stores user settings in a profile file as several maps:
 
 ```
-m_ConfigParams              : map<string, string>                     — простые значения
-m_ConfigParamsArray         : map<string, TStringArray>               — массивы строк
-m_ConfigParamsInArray       : map<string, map<string, string>>        — параметры внутри одного массива
-m_ConfigParamsArrayInArray  : map<string, array<map<string, string>>> — массив объектов
+m_ConfigParams              : map<string, string>                     — simple values
+m_ConfigParamsArray         : map<string, TStringArray>               — string arrays
+m_ConfigParamsInArray       : map<string, map<string, string>>        — parameters inside a single array
+m_ConfigParamsArrayInArray  : map<string, array<map<string, string>>> — array of objects
 ```
 
 #### API
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `GetParameterString/Int/Float/Bool(name)` | Чтение с автосозданием при отсутствии |
-| `SetParameterString/Int/Float/Bool(name, value, saveInFile)` | Запись |
-| `GetParameterArray(name)` | Массив строк |
-| `SetParameterArray(name, value)` | Запись массива |
-| `GetSubParameterInArrayString(param, idx, subParam)` | Элемент вложенного массива |
-| `SetSubParameterInArray(param, idx, subParam, value)` | Запись во вложенный массив |
-| `RemoveParameter(name)` / `RemoveParameterArray(name)` | Удаление |
-| `RenameParameter(old, new)` / `RenameParameterArray(old, new)` | Переименование |
-| `LoadConfigFile()` | Парсинг файла профиля |
-| `SaveConfigToFile()` | Сериализация и сохранение |
+| `GetParameterString/Int/Float/Bool(name)` | Read with auto-create if missing |
+| `SetParameterString/Int/Float/Bool(name, value, saveInFile)` | Write |
+| `GetParameterArray(name)` | String array |
+| `SetParameterArray(name, value)` | Write an array |
+| `GetSubParameterInArrayString(param, idx, subParam)` | Element of a nested array |
+| `SetSubParameterInArray(param, idx, subParam, value)` | Write into a nested array |
+| `RemoveParameter(name)` / `RemoveParameterArray(name)` | Remove |
+| `RenameParameter(old, new)` / `RenameParameterArray(old, new)` | Rename |
+| `LoadConfigFile()` | Parse the profile file |
+| `SaveConfigToFile()` | Serialize and write |
 
-Формат файла: `param_name = value` или `param_name = {val1,val2}` или `param_name = {{k=v},{k=v}}`.
+File format: `param_name = value` or `param_name = {val1,val2}` or `param_name = {{k=v},{k=v}}`.

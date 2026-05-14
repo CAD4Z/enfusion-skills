@@ -1,80 +1,80 @@
-Шаблонные коллекции. Источник: `proto/enscript.c`
+Template collections. Source: `proto/enscript.c`
 
 ### array\<T\>
 
-Динамический массив. Литерал: `{1, 2, 3}`. Поддерживает `foreach`.
+Dynamic array. Literal: `{1, 2, 3}`. Supports `foreach`.
 
-| Метод | Возврат | Описание |
+| Method | Return | Description |
 |-------|---------|----------|
-| `Count()` | `int` | Кол-во элементов, O(1) |
-| `Clear()` | `void` | Очистить (память не освобождается) |
-| `Get(n)` / `arr[n]` | `T` | Элемент по индексу |
-| `Set(n, value)` | `void` | Установить элемент |
-| `Insert(value)` | `int` | Добавить в конец, возвращает позицию |
-| `InsertAt(value, index)` | `int` | Вставить на позицию (сдвиг вправо) |
-| `InsertAll(from)` | `void` | Добавить все элементы из другого массива |
-| `Find(value)` | `int` | Индекс первого вхождения, -1 если нет |
-| `Remove(index)` | `void` | Удалить (заменяет последним, **НЕ сохраняет порядок**) |
-| `RemoveOrdered(index)` | `void` | Удалить с сохранением порядка (медленнее) |
-| `RemoveItem(value)` | `void` | Найти и удалить (ordered) |
-| `RemoveItemUnOrdered(value)` | `void` | Найти и удалить (fast, unordered) |
-| `Resize(newSize)` | `void` | Изменить размер |
-| `Reserve(newSize)` | `void` | Зарезервировать память |
-| `Sort(reverse = false)` | `void` | Сортировка |
-| `Copy(from)` | `int` | Копировать содержимое |
-| `Swap(other)` | `void` | Обменять содержимое с другим массивом |
-| `IsValidIndex(index)` | `bool` | Проверка валидности индекса |
-| `GetRandomIndex()` | `int` | Случайный индекс |
-| `GetRandomElement()` | `T` | Случайный элемент |
-| `SwapItems(i1, i2)` | `void` | Поменять два элемента местами |
-| `ShuffleArray()` | `void` | Перемешать |
-| `Invert()` | `void` | Обратить порядок |
-| `DifferentAtPosition(other)` | `int` | Индекс первого различия |
-| `Debug()` | `void` | Вывод в лог |
+| `Count()` | `int` | Number of elements, O(1) |
+| `Clear()` | `void` | Clear (memory is not freed) |
+| `Get(n)` / `arr[n]` | `T` | Element by index |
+| `Set(n, value)` | `void` | Set element |
+| `Insert(value)` | `int` | Add to end, returns position |
+| `InsertAt(value, index)` | `int` | Insert at position (shifts right) |
+| `InsertAll(from)` | `void` | Add all elements from another array |
+| `Find(value)` | `int` | Index of first occurrence, -1 if none |
+| `Remove(index)` | `void` | Remove (replaces with last, **does NOT preserve order**) |
+| `RemoveOrdered(index)` | `void` | Remove preserving order (slower) |
+| `RemoveItem(value)` | `void` | Find and remove (ordered) |
+| `RemoveItemUnOrdered(value)` | `void` | Find and remove (fast, unordered) |
+| `Resize(newSize)` | `void` | Resize |
+| `Reserve(newSize)` | `void` | Reserve memory |
+| `Sort(reverse = false)` | `void` | Sort |
+| `Copy(from)` | `int` | Copy contents |
+| `Swap(other)` | `void` | Swap contents with another array |
+| `IsValidIndex(index)` | `bool` | Check index validity |
+| `GetRandomIndex()` | `int` | Random index |
+| `GetRandomElement()` | `T` | Random element |
+| `SwapItems(i1, i2)` | `void` | Swap two elements |
+| `ShuffleArray()` | `void` | Shuffle |
+| `Invert()` | `void` | Reverse order |
+| `DifferentAtPosition(other)` | `int` | Index of first difference |
+| `Debug()` | `void` | Output to log |
 
-**Готовые typedef'ы:** `TStringArray`, `TFloatArray`, `TIntArray`, `TBoolArray`, `TVectorArray`, `TTypenameArray`
+**Predefined typedefs:** `TStringArray`, `TFloatArray`, `TIntArray`, `TBoolArray`, `TVectorArray`, `TTypenameArray`
 
 ### set\<T\>
 
-Упорядоченное множество (без дубликатов по умолчанию не проверяет — это ручная ответственность). API аналогичен `array`, но `Remove` всегда ordered.
+Ordered set (does not check for duplicates by default — that's a manual responsibility). API is similar to `array`, but `Remove` is always ordered.
 
-| Метод | Возврат | Описание |
+| Method | Return | Description |
 |-------|---------|----------|
-| `Count()` | `int` | Кол-во элементов |
-| `Clear()` | `void` | Очистить |
-| `Get(n)` / `s[n]` | `T` | Элемент по индексу |
-| `Insert(value)` | `int` | Добавить |
-| `InsertAt(value, index)` | `int` | Вставить на позицию |
-| `Find(value)` | `int` | Поиск |
-| `Remove(index)` | `void` | Удалить (ordered) |
-| `RemoveItem(value)` | `void` | Найти и удалить |
-| `RemoveItems(other)` | `void` | Удалить все из другого set |
-| `InsertSet(other)` | `void` | Добавить все из другого set |
+| `Count()` | `int` | Number of elements |
+| `Clear()` | `void` | Clear |
+| `Get(n)` / `s[n]` | `T` | Element by index |
+| `Insert(value)` | `int` | Add |
+| `InsertAt(value, index)` | `int` | Insert at position |
+| `Find(value)` | `int` | Search |
+| `Remove(index)` | `void` | Remove (ordered) |
+| `RemoveItem(value)` | `void` | Find and remove |
+| `RemoveItems(other)` | `void` | Remove all from another set |
+| `InsertSet(other)` | `void` | Add all from another set |
 
-**Typedef'ы:** `TStringSet`, `TFloatSet`, `TIntSet`, `TTypenameSet`
+**Typedefs:** `TStringSet`, `TFloatSet`, `TIntSet`, `TTypenameSet`
 
 ### map\<TKey, TValue\>
 
-Хеш-таблица.
+Hash table.
 
-| Метод | Возврат | Описание |
+| Method | Return | Description |
 |-------|---------|----------|
-| `Count()` | `int` | Кол-во элементов |
-| `Clear()` | `void` | Очистить |
-| `Get(key)` | `TValue` | Значение по ключу |
-| `Find(key, out val)` | `bool` | Поиск с проверкой существования |
-| `Set(key, value)` | `void` | Установить (создаёт если нет) |
-| `Insert(key, value)` | `bool` | Вставить новый элемент |
-| `Remove(key)` | `void` | Удалить по ключу |
-| `Contains(key)` | `bool` | Проверка наличия |
-| `GetElement(index)` | `TValue` | Значение по позиции, O(n) |
-| `GetKey(index)` | `TKey` | Ключ по позиции, O(n) |
-| `RemoveElement(index)` | `void` | Удалить по позиции, O(n) |
-| `GetKeyArray()` | `array<TKey>` | Массив всех ключей |
-| `GetValueArray()` | `array<TValue>` | Массив всех значений |
-| `ReplaceKey(old, new)` | `bool` | Заменить ключ |
-| `GetKeyByValue(value)` | `TKey` | Ключ по значению (первый найденный) |
+| `Count()` | `int` | Number of elements |
+| `Clear()` | `void` | Clear |
+| `Get(key)` | `TValue` | Value by key |
+| `Find(key, out val)` | `bool` | Search with existence check |
+| `Set(key, value)` | `void` | Set (creates if absent) |
+| `Insert(key, value)` | `bool` | Insert new element |
+| `Remove(key)` | `void` | Remove by key |
+| `Contains(key)` | `bool` | Check presence |
+| `GetElement(index)` | `TValue` | Value by position, O(n) |
+| `GetKey(index)` | `TKey` | Key by position, O(n) |
+| `RemoveElement(index)` | `void` | Remove by position, O(n) |
+| `GetKeyArray()` | `array<TKey>` | Array of all keys |
+| `GetValueArray()` | `array<TValue>` | Array of all values |
+| `ReplaceKey(old, new)` | `bool` | Replace key |
+| `GetKeyByValue(value)` | `TKey` | Key by value (first found) |
 
-**Итератор:** `Begin()`, `End()`, `Next(it)`, `GetIteratorKey(it)`, `GetIteratorElement(it)`
+**Iterator:** `Begin()`, `End()`, `Next(it)`, `GetIteratorKey(it)`, `GetIteratorElement(it)`
 
-**Typedef'ы:** комбинации `int/string/Class/Managed/typename` x `float/int/string/Class/Managed/typename/vector` — например `TStringIntMap`, `TIntFloatMap` и т.д.
+**Typedefs:** combinations of `int/string/Class/Managed/typename` x `float/int/string/Class/Managed/typename/vector` — for example `TStringIntMap`, `TIntFloatMap`, etc.

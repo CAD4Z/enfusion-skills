@@ -1,28 +1,28 @@
-Сетевое взаимодействие: RPC, сериализация, HTTP, Hive, события. Источники: `gameplay.c`, `syncevents.c`, `http/`, `hive/`
+Network communication: RPC, serialization, HTTP, Hive, events. Sources: `gameplay.c`, `syncevents.c`, `http/`, `hive/`
 
 ### ScriptRPC
 
-Механизм удалённого вызова процедур. Наследует `ParamsWriteContext`. Источник: `gameplay.c`
+Remote procedure call mechanism. Inherits `ParamsWriteContext`. Source: `gameplay.c`
 
-| Метод | Описание |
-|-------|----------|
-| `Reset()` | Очистить буфер записи |
-| `Send(target, rpc_type, guaranteed, recipient)` | Отправить. `target=NULL` → глобальный. `guaranteed=true` → TCP-подобная доставка. `recipient=NULL` → всем |
+| Method | Description |
+|--------|-------------|
+| `Reset()` | Clear write buffer |
+| `Send(target, rpc_type, guaranteed, recipient)` | Send. `target=NULL` → global. `guaranteed=true` → TCP-like delivery. `recipient=NULL` → to all |
 
-Данные пишутся через `Write(value)` (наследуется от `ParamsWriteContext`).
+Data is written via `Write(value)` (inherited from `ParamsWriteContext`).
 
-Приём: `CGame.OnRPC(sender, target, rpc_type, ctx)` — `ctx` это `ParamsReadContext`, читать через `ctx.Read(value)`.
+Receiving: `CGame.OnRPC(sender, target, rpc_type, ctx)` — `ctx` is a `ParamsReadContext`, read via `ctx.Read(value)`.
 
-#### Паттерн
+#### Pattern
 
 ```enforcescript
-// Отправка (клиент)
+// Sending (client)
 ScriptRPC rpc = new ScriptRPC();
 rpc.Write(someInt);
 rpc.Write(someString);
 rpc.Send(target, MY_RPC_ID, true, null);
 
-// Приём (в OnRPC)
+// Receiving (in OnRPC)
 int val; string str;
 ctx.Read(val);
 ctx.Read(str);
@@ -30,56 +30,56 @@ ctx.Read(str);
 
 ### JsonSerializer
 
-JSON-сериализация. Наследует `Serializer`. Источник: `gameplay.c`
+JSON serialization. Inherits `Serializer`. Source: `gameplay.c`
 
-| Метод | Описание |
-|-------|----------|
-| `WriteToString(variable, nice, out result)` | Объект → JSON строка. `nice=true` → форматированный |
-| `ReadFromString(variable, json, out error)` | JSON строка → объект |
+| Method | Description |
+|--------|-------------|
+| `WriteToString(variable, nice, out result)` | Object → JSON string. `nice=true` → formatted |
+| `ReadFromString(variable, json, out error)` | JSON string → object |
 
-### Вспомогательные сетевые контексты
+### Auxiliary network contexts
 
-| Класс | Описание |
-|-------|----------|
-| `ScriptInputUserData` | Пользовательский ввод для сети (наследует `ParamsWriteContext`) |
-| `ScriptReadWriteContext` | Двунаправленный контекст |
-| `ScriptRemoteInputUserData` | Входящий ввод от удалённого клиента |
-| `ScriptJunctureData` | Данные juncture |
+| Class | Description |
+|-------|-------------|
+| `ScriptInputUserData` | User input for the network (inherits `ParamsWriteContext`) |
+| `ScriptReadWriteContext` | Bidirectional context |
+| `ScriptRemoteInputUserData` | Incoming input from a remote client |
+| `ScriptJunctureData` | Juncture data |
 
 ### MeleeCombatData
 
-Данные ближнего боя. Proto native.
+Melee combat data. Proto native.
 
-| Метод | Описание |
-|-------|----------|
-| `GetModesCount()` | Количество режимов |
-| `GetModeName(index)` | Имя режима |
-| `GetAmmoTypeName(index)` | Тип боеприпаса режима |
-| `GetModeRange(index)` | Дальность режима |
+| Method | Description |
+|--------|-------------|
+| `GetModesCount()` | Number of modes |
+| `GetModeName(index)` | Mode name |
+| `GetAmmoTypeName(index)` | Mode's ammo type |
+| `GetModeRange(index)` | Mode range |
 
 ### Selection
 
-Геометрическая selection. Proto native.
+Geometric selection. Proto native.
 
-| Метод | Описание |
-|-------|----------|
-| `GetName()` | Имя selection |
-| `GetVertexCount()` | Количество вершин |
-| `GetLODVertexIndex(vertex)` | Индекс вершины в LOD |
+| Method | Description |
+|--------|-------------|
+| `GetName()` | Selection name |
+| `GetVertexCount()` | Number of vertices |
+| `GetLODVertexIndex(vertex)` | Vertex index in LOD |
 
 ### SyncEvents
 
-Статический broadcast сетевых событий. Источник: `syncevents.c`
+Static broadcast of network events. Source: `syncevents.c`
 
-| Метод | Описание |
-|-------|----------|
-| `SendPlayerList()` | Список игроков |
-| `SendEntityKilled(victim, killer, source, isHeadshot)` | Смерть сущности |
-| `SendPlayerIgnatedFireplace(player, igniteType)` | Розжиг костра |
+| Method | Description |
+|--------|-------------|
+| `SendPlayerList()` | Player list |
+| `SendEntityKilled(victim, killer, source, isHeadshot)` | Entity death |
+| `SendPlayerIgnatedFireplace(player, igniteType)` | Fire ignition |
 
 ### REST API
 
-HTTP-клиент. Источник: `http/`
+HTTP client. Source: `http/`
 
 #### ERestResultState
 
@@ -91,69 +91,69 @@ EREST_ERROR_APPERROR, EREST_ERROR_TIMEOUT, EREST_ERROR_UNKNOWN
 
 #### RestApi
 
-Менеджер контекстов. Proto native.
+Context manager. Proto native.
 
 #### RestContext
 
-HTTP-контекст. Proto native.
+HTTP context. Proto native.
 
-| Метод | Описание |
-|-------|----------|
-| `GET(callback, url)` | Асинхронный GET |
-| `GET_now(url, out result)` | Синхронный GET |
-| `POST(callback, url, data)` | Асинхронный POST |
-| `POST_now(url, data, out result)` | Синхронный POST |
-| `FILE(callback, url, fileName)` | Скачать файл |
-| `FILE_now(url, fileName)` | Синхронное скачивание |
-| `SetHeader(headerKey)` | Установить HTTP-заголовок |
-| `reset()` | Сброс контекста |
+| Method | Description |
+|--------|-------------|
+| `GET(callback, url)` | Async GET |
+| `GET_now(url, out result)` | Sync GET |
+| `POST(callback, url, data)` | Async POST |
+| `POST_now(url, data, out result)` | Sync POST |
+| `FILE(callback, url, fileName)` | Download a file |
+| `FILE_now(url, fileName)` | Sync download |
+| `SetHeader(headerKey)` | Set HTTP header |
+| `reset()` | Reset context |
 
 #### RestCallback
 
-Callback для асинхронных запросов.
+Callback for asynchronous requests.
 
-| Метод | Описание |
-|-------|----------|
-| `OnSuccess(data, dataSize)` | Успех |
-| `OnError(errorCode)` | Ошибка |
-| `OnTimeout()` | Таймаут |
-| `OnFileCreated(fileName, dataSize)` | Файл создан |
+| Method | Description |
+|--------|-------------|
+| `OnSuccess(data, dataSize)` | Success |
+| `OnError(errorCode)` | Error |
+| `OnTimeout()` | Timeout |
+| `OnFileCreated(fileName, dataSize)` | File created |
 
 ### Hive
 
-Система персистентности персонажей. Источник: `hive/`
+Character persistence system. Source: `hive/`
 
-#### Управление (proto native)
+#### Management (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `InitOnline(host)` | Подключение к базе |
-| `InitOffline()` | Оффлайн режим |
-| `InitSandbox()` | Sandbox режим |
-| `IsIdleMode()` | Режим простоя |
-| `SetShardID(id)` / `SetEnviroment(env)` | Конфигурация сервера |
+| Method | Description |
+|--------|-------------|
+| `InitOnline(host)` | Connect to database |
+| `InitOffline()` | Offline mode |
+| `InitSandbox()` | Sandbox mode |
+| `IsIdleMode()` | Idle mode |
+| `SetShardID(id)` / `SetEnviroment(env)` | Server configuration |
 
-#### Персонажи (proto native)
+#### Characters (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `CharacterSave(player)` | Сохранить персонажа |
-| `CharacterKill(player)` | Зафиксировать смерть |
-| `CharacterExit(player)` | Зафиксировать выход |
-| `CharacterIsLoginPositionChanged(player)` | Позиция изменилась с последнего входа |
-| `CallUpdater()` | Вызвать обновление |
+| Method | Description |
+|--------|-------------|
+| `CharacterSave(player)` | Save character |
+| `CharacterKill(player)` | Record death |
+| `CharacterExit(player)` | Record exit |
+| `CharacterIsLoginPositionChanged(player)` | Position changed since last login |
+| `CallUpdater()` | Call updater |
 
-#### Глобальные функции
+#### Global functions
 
-`CreateHive()`, `DestroyHive()`, `GetHive()` — управление синглтоном.
+`CreateHive()`, `DestroyHive()`, `GetHive()` — singleton management.
 
-### ERPCs (ключевые)
+### ERPCs (key entries)
 
-Определены в `enums/erpcs.c`. Обширный enum идентификаторов RPC. Группы:
+Defined in `enums/erpcs.c`. Extensive enum of RPC identifiers. Groups:
 
-- **Отладка**: `RPC_DAYZ_FORCE_WEATHER_*`, `RPC_CFG_GAMEPLAY_SYNC`, `RPC_UNDERGROUND_*`
-- **Геймплей**: `RPC_PLAYER_STAT_*`, `RPC_SYNC_EVENT_*`, `RPC_ITEM_*`
+- **Debug**: `RPC_DAYZ_FORCE_WEATHER_*`, `RPC_CFG_GAMEPLAY_SYNC`, `RPC_UNDERGROUND_*`
+- **Gameplay**: `RPC_PLAYER_STAT_*`, `RPC_SYNC_EVENT_*`, `RPC_ITEM_*`
 - **UI**: `RPC_USER_ACTION_MESSAGE`, `RPC_SOFT_SKILLS_*`
-- **Транспорт**: `RPC_EXPLODE_EVENT`
+- **Vehicles**: `RPC_EXPLODE_EVENT`
 
-Используется в `ScriptRPC.Send()` как `rpc_type`.
+Used in `ScriptRPC.Send()` as `rpc_type`.

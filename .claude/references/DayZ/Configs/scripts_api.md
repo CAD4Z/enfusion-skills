@@ -1,41 +1,41 @@
-Чтение конфигов из Enforce Script, глобальный доступ — `GetGame()`. 
-Путь формируется через пробелы: `"CfgКласс ИмяКласса свойство"`.
+Reading configs from Enforce Script, global access — `g_Game`.
+The path is built with spaces: `"CfgClass ClassName property"`.
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `ConfigGetFloat(path)` | `float` | Числовое значение с плавающей точкой |
-| `ConfigGetInt(path)` | `int` | Целочисленное значение |
-| `ConfigGetText(path, out value)` | `bool` | Строковое значение (возвращает успех) |
-| `ConfigGetVector(path)` | `vector` | Вектор (x,y,z) |
-| `ConfigGetTextArray(path, out values)` | `void` | Массив строк |
-| `ConfigGetTextArrayRaw(path, out values)` | `void` | Массив строк без локализации (`$STR_` не переводятся) |
-| `ConfigGetFloatArray(path, out values)` | `void` | Массив float |
-| `ConfigGetIntArray(path, out values)` | `void` | Массив int |
-| `ConfigGetType(path)` | `int` | Тип значения: `CT_INT`, `CT_FLOAT`, `CT_STRING`, `CT_ARRAY`, `CT_CLASS` |
-| `ConfigGetChildrenCount(path)` | `int` | Количество подклассов |
-| `ConfigGetChildName(path, index, out name)` | `bool` | Имя подкласса по индексу |
-| `ConfigGetBaseName(path, out name)` | `bool` | Имя родительского класса |
-| `ConfigIsExisting(path)` | `bool` | Проверка существования пути |
-| `ConfigGetFullPath(path, out array)` | `void` | Полная цепочка наследования |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `ConfigGetFloat(path)` | `float` | Floating-point numeric value |
+| `ConfigGetInt(path)` | `int` | Integer value |
+| `ConfigGetText(path, out value)` | `bool` | String value (returns success) |
+| `ConfigGetVector(path)` | `vector` | Vector (x,y,z) |
+| `ConfigGetTextArray(path, out values)` | `void` | String array |
+| `ConfigGetTextArrayRaw(path, out values)` | `void` | String array without localization (`$STR_` is not translated) |
+| `ConfigGetFloatArray(path, out values)` | `void` | float array |
+| `ConfigGetIntArray(path, out values)` | `void` | int array |
+| `ConfigGetType(path)` | `int` | Value type: `CT_INT`, `CT_FLOAT`, `CT_STRING`, `CT_ARRAY`, `CT_CLASS` |
+| `ConfigGetChildrenCount(path)` | `int` | Number of subclasses |
+| `ConfigGetChildName(path, index, out name)` | `bool` | Subclass name by index |
+| `ConfigGetBaseName(path, out name)` | `bool` | Parent class name |
+| `ConfigIsExisting(path)` | `bool` | Check whether the path exists |
+| `ConfigGetFullPath(path, out array)` | `void` | Full inheritance chain |
 
-Дополнительно для серверного конфига:
-| `ServerConfigGetInt(name)` | `int` | Значение из serverDZ.cfg |
+Additionally for the server config:
+| `ServerConfigGetInt(name)` | `int` | Value from serverDZ.cfg |
 
-### Доступ через объект — Object
+### Access through an object — Object
 
-Относительно класса конкретного объекта (не нужно указывать `CfgVehicles ClassName`):
+Relative to the specific object's class (no need to specify `CfgVehicles ClassName`):
 
-| Метод | Описание |
-|-------|----------|
-| `ConfigGetFloat(entry)` | float-свойство объекта |
-| `ConfigGetVector(entry)` | vector-свойство |
-| `ConfigGetBool(entry)` | bool (обёртка над ConfigGetInt == 1) |
-| `ConfigGetTextArray(entry, out values)` | Массив строк |
-| `ConfigGetFloatArray(entry, out values)` | Массив float |
-| `ConfigGetIntArray(entry, out values)` | Массив int |
-| `ConfigIsExisting(entry)` | Проверка существования |
+| Method | Description |
+|--------|-------------|
+| `ConfigGetFloat(entry)` | float property of the object |
+| `ConfigGetVector(entry)` | vector property |
+| `ConfigGetBool(entry)` | bool (wrapper over ConfigGetInt == 1) |
+| `ConfigGetTextArray(entry, out values)` | String array |
+| `ConfigGetFloatArray(entry, out values)` | float array |
+| `ConfigGetIntArray(entry, out values)` | int array |
+| `ConfigIsExisting(entry)` | Existence check |
 
-### Константы путей
+### Path constants
 
 ```cpp
 const string CFG_VEHICLESPATH  = "CfgVehicles";
@@ -43,62 +43,62 @@ const string CFG_WEAPONSPATH   = "CfgWeapons";
 const string CFG_MAGAZINESPATH = "CfgMagazines";
 ```
 
-### Комплексный пример
+### Comprehensive example
 
 ```cpp
-// Чтение свойств предмета по имени класса
+// Reading item properties by class name
 string className = "AlarmClock_Green";
 
 // float
-float weight = GetGame().ConfigGetFloat("CfgVehicles " + className + " weight");
+float weight = g_Game.ConfigGetFloat("CfgVehicles " + className + " weight");
 
 // int
-int scope = GetGame().ConfigGetInt("CfgVehicles " + className + " scope");
+int scope = g_Game.ConfigGetInt("CfgVehicles " + className + " scope");
 
 // string
 string model;
-GetGame().ConfigGetText("CfgVehicles " + className + " model", model);
+g_Game.ConfigGetText("CfgVehicles " + className + " model", model);
 
-// string[] — массив строк
+// string[] — string array
 TStringArray slots = new TStringArray;
-GetGame().ConfigGetTextArray("CfgVehicles " + className + " inventorySlot", slots);
+g_Game.ConfigGetTextArray("CfgVehicles " + className + " inventorySlot", slots);
 
-// float[] — массив float
+// float[] — float array
 TFloatArray size = new TFloatArray;
-GetGame().ConfigGetFloatArray("CfgVehicles " + className + " itemSize", size);
+g_Game.ConfigGetFloatArray("CfgVehicles " + className + " itemSize", size);
 
-// int[] — массив int
+// int[] — int array
 TIntArray intValues = new TIntArray;
-GetGame().ConfigGetIntArray("CfgVehicles " + className + " repairableWithKits", intValues);
+g_Game.ConfigGetIntArray("CfgVehicles " + className + " repairableWithKits", intValues);
 
-// Проверка существования свойства
-bool hasAttachments = GetGame().ConfigIsExisting("CfgVehicles " + className + " attachments");
+// Check whether a property exists
+bool hasAttachments = g_Game.ConfigIsExisting("CfgVehicles " + className + " attachments");
 
-// Тип значения
-int type = GetGame().ConfigGetType("CfgVehicles " + className + " weight");
+// Value type
+int type = g_Game.ConfigGetType("CfgVehicles " + className + " weight");
 // type == CT_FLOAT
 
-// Обход подклассов
+// Iterating over subclasses
 string dmgPath = "CfgVehicles " + className + " DamageSystem GlobalHealth";
-int count = GetGame().ConfigGetChildrenCount(dmgPath);
+int count = g_Game.ConfigGetChildrenCount(dmgPath);
 for (int i = 0; i < count; i++)
 {
     string childName;
-    GetGame().ConfigGetChildName(dmgPath, i, childName);
+    g_Game.ConfigGetChildName(dmgPath, i, childName);
     // childName == "Health"
 }
 
-// Имя базового класса
+// Base class name
 string baseName;
-GetGame().ConfigGetBaseName("CfgVehicles " + className, baseName);
+g_Game.ConfigGetBaseName("CfgVehicles " + className, baseName);
 // baseName == "AlarmClock_ColorBase"
 ```
 
-### Чтение через объект
+### Reading through an object
 
 ```cpp
-// Когда уже есть ссылка на объект — путь относительный
-Object item = GetGame().CreateObject("AlarmClock_Green", pos);
+// When you already have a reference to an object — the path is relative
+Object item = g_Game.CreateObject("AlarmClock_Green", pos);
 
 float w = item.ConfigGetFloat("weight");
 bool exists = item.ConfigIsExisting("inventorySlot");
@@ -107,19 +107,19 @@ TStringArray slotNames = new TStringArray;
 item.ConfigGetTextArray("inventorySlot", slotNames);
 ```
 
-### Определение реестра по классу
+### Determining the registry by class
 
 ```cpp
-// Предмет может быть в CfgVehicles, CfgWeapons или CfgMagazines
-// Паттерн определения:
+// An item may live in CfgVehicles, CfgWeapons or CfgMagazines
+// Detection pattern:
 string typeName = "Glock19";
 string cfgPath;
 
-if (GetGame().ConfigIsExisting(CFG_VEHICLESPATH + " " + typeName))
+if (g_Game.ConfigIsExisting(CFG_VEHICLESPATH + " " + typeName))
     cfgPath = CFG_VEHICLESPATH;
-else if (GetGame().ConfigIsExisting(CFG_WEAPONSPATH + " " + typeName))
+else if (g_Game.ConfigIsExisting(CFG_WEAPONSPATH + " " + typeName))
     cfgPath = CFG_WEAPONSPATH;
-else if (GetGame().ConfigIsExisting(CFG_MAGAZINESPATH + " " + typeName))
+else if (g_Game.ConfigIsExisting(CFG_MAGAZINESPATH + " " + typeName))
     cfgPath = CFG_MAGAZINESPATH;
 
 // cfgPath == "CfgWeapons"

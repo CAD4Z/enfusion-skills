@@ -1,64 +1,64 @@
-Конфигурация геймплея, моды, спавнеры. Источники: `cfggameplaydatajson.c`, `cfggameplayhandler.c`, `modinfo.c`, `objectspawner.c`
+Gameplay configuration, mods, spawners. Sources: `cfggameplaydatajson.c`, `cfggameplayhandler.c`, `modinfo.c`, `objectspawner.c`
 
 ### CfgGameplayHandler
 
-Статический менеджер конфигурации геймплея. Загружает `cfggameplay.json`. Источник: `cfggameplayhandler.c`
+Static gameplay configuration manager. Loads `cfggameplay.json`. Source: `cfggameplayhandler.c`
 
 #### Lifecycle
 
-| Метод | Описание |
-|-------|----------|
-| `LoadData()` | Загрузить JSON или использовать значения по умолчанию |
-| `ValidateItems()` / `InitData()` | Валидация и инициализация |
-| `SyncDataSend(identity)` | Отправить конфиг клиенту (сервер) |
-| `SyncDataSendEx(identity)` | Расширенная отправка |
-| `OnRPC(target, ctx)` | Приём конфига от сервера (клиент) |
+| Method | Description |
+|--------|-------------|
+| `LoadData()` | Load JSON or use default values |
+| `ValidateItems()` / `InitData()` | Validation and initialization |
+| `SyncDataSend(identity)` | Send config to client (server) |
+| `SyncDataSendEx(identity)` | Extended send |
+| `OnRPC(target, ctx)` | Receive config from server (client) |
 
-#### Основные геттеры (static)
+#### Main getters (static)
 
-**Базовые настройки:**
+**Basic settings:**
 
-| Метод | Описание |
-|-------|----------|
-| `GetDisablePersonalLight()` | Отключить персональный свет |
-| `GetDisableBaseDamage()` | Отключить урон базам |
-| `GetDisableContainerDamage()` | Отключить урон контейнерам |
-| `GetDisableRespawnDialog()` | Отключить диалог респавна |
+| Method | Description |
+|--------|-------------|
+| `GetDisablePersonalLight()` | Disable personal light |
+| `GetDisableBaseDamage()` | Disable damage to bases |
+| `GetDisableContainerDamage()` | Disable damage to containers |
+| `GetDisableRespawnDialog()` | Disable respawn dialog |
 
-**Выносливость:**
+**Stamina:**
 
-| Метод | Описание |
-|-------|----------|
-| `GetStaminaMax()` | Максимальная выносливость |
-| `GetStaminaKgToStaminaPercentPenalty()` | Штраф кг → % выносливости |
-| `GetStaminaMinCap()` | Минимальный порог |
-| `GetSprintStaminaModifierErc/Cro()` | Модификатор спринта стоя/присед |
+| Method | Description |
+|--------|-------------|
+| `GetStaminaMax()` | Max stamina |
+| `GetStaminaKgToStaminaPercentPenalty()` | kg → % stamina penalty |
+| `GetStaminaMinCap()` | Minimum threshold |
+| `GetSprintStaminaModifierErc/Cro()` | Sprint modifier standing/crouched |
 
-**Шок:**
+**Shock:**
 
-| Метод | Описание |
-|-------|----------|
-| `GetShockRefillSpeedConscious/Unconscious()` | Скорость восстановления шока |
+| Method | Description |
+|--------|-------------|
+| `GetShockRefillSpeedConscious/Unconscious()` | Shock refill speed |
 
-**Погода:**
+**Weather:**
 
-| Метод | Описание |
-|-------|----------|
-| `GetWeatherParameters()` | Параметры погоды |
+| Method | Description |
+|--------|-------------|
+| `GetWeatherParameters()` | Weather parameters |
 
-**Мир:**
+**World:**
 
-| Метод | Описание |
-|-------|----------|
-| `GetLightingConfig()` | Конфигурация освещения |
-| `GetObjectSpawnersArr()` | Массив спавнеров объектов |
-| `GetEnvironmentMinTemps()` / `GetEnvironmentMaxTemps()` | Температурные диапазоны |
+| Method | Description |
+|--------|-------------|
+| `GetLightingConfig()` | Lighting configuration |
+| `GetObjectSpawnersArr()` | Array of object spawners |
+| `GetEnvironmentMinTemps()` / `GetEnvironmentMaxTemps()` | Temperature ranges |
 
 ### CfgGameplayJson
 
-Модель данных JSON-конфигурации. Источник: `cfggameplaydatajson.c`
+Data model of the JSON config. Source: `cfggameplaydatajson.c`
 
-#### Структура
+#### Structure
 
 ```
 CfgGameplayJson
@@ -83,53 +83,53 @@ CfgGameplayJson
 └── VehicleData
 ```
 
-Каждая секция — наследник `ITEM_DataBase` с методами `ValidateServer()`, `InitServer()`.
+Each section is a descendant of `ITEM_DataBase` with methods `ValidateServer()`, `InitServer()`.
 
 ### ModInfo
 
-Информация о моде/DLC. Proto native. Источник: `modinfo.c`
+Info about a mod/DLC. Proto native. Source: `modinfo.c`
 
-#### Данные (proto native)
+#### Data (proto native)
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `GetName()` | `string` | Имя мода |
-| `GetAuthor()` | `string` | Автор |
-| `GetVersion()` | `string` | Версия |
-| `GetPicture()` | `string` | Основное изображение |
-| `GetLogo()` / `GetLogoSmall()` / `GetLogoOver()` | `string` | Логотипы |
-| `GetTooltip()` | `string` | Подсказка |
-| `GetOverview()` | `string` | Описание |
-| `GetAction()` | `string` | URL действия |
-| `GetDefault()` | `bool` | Мод по умолчанию |
-| `GetIsDLC()` | `bool` | Это DLC |
-| `GetIsOwned()` | `bool` | Владеет ли игрок |
-| `GoToStore()` | `void` | Открыть магазин |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `GetName()` | `string` | Mod name |
+| `GetAuthor()` | `string` | Author |
+| `GetVersion()` | `string` | Version |
+| `GetPicture()` | `string` | Main image |
+| `GetLogo()` / `GetLogoSmall()` / `GetLogoOver()` | `string` | Logos |
+| `GetTooltip()` | `string` | Tooltip |
+| `GetOverview()` | `string` | Description |
+| `GetAction()` | `string` | Action URL |
+| `GetDefault()` | `bool` | Default mod |
+| `GetIsDLC()` | `bool` | Is DLC |
+| `GetIsOwned()` | `bool` | Whether the player owns it |
+| `GoToStore()` | `void` | Open the store |
 
 #### Static
 
-`GetDLCImage(name)` — текстура по имени DLC (`"badlands"`, `"frostline"` и др.)
+`GetDLCImage(name)` — texture by DLC name (`"badlands"`, `"frostline"`, etc.)
 
 ### ObjectSpawnerHandler
 
-Спавн статических объектов из JSON. Источник: `objectspawner.c`
+Spawning of static objects from JSON. Source: `objectspawner.c`
 
-| Метод | Описание |
-|-------|----------|
-| `SpawnObjects()` | Загрузить и заспавнить все объекты из JSON |
-| `SpawnObject(item)` | Заспавнить один объект |
-| `ValidatePath(path)` | Проверить whitelist путей P3D |
+| Method | Description |
+|--------|-------------|
+| `SpawnObjects()` | Load and spawn all objects from JSON |
+| `SpawnObject(item)` | Spawn a single object |
+| `ValidatePath(path)` | Validate P3D path whitelist |
 
 #### VALID_PATHS
 
-Whitelist для моделей: растения, камни по DLC (Chernarus, Enoch, Sakhal).
+Whitelist for models: plants, rocks per DLC (Chernarus, Enoch, Sakhal).
 
 #### ITEM_SpawnerObject
 
-| Поле | Тип | Описание |
-|------|-----|----------|
-| `name` | `string` | Путь к P3D |
-| `pos[3]` | `float` | Позиция XYZ |
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `string` | P3D path |
+| `pos[3]` | `float` | XYZ position |
 | `ypr[3]` | `float` | Yaw/Pitch/Roll |
-| `scale` | `float` | Масштаб |
-| `enableCEPersistency` | `bool` | Персистентность через CE |
+| `scale` | `float` | Scale |
+| `enableCEPersistency` | `bool` | Persistence via CE |

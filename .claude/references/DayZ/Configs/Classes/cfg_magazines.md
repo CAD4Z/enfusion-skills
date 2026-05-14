@@ -1,14 +1,14 @@
-Реестр магазинов и россыпных патронов. Константа в скриптах: `CFG_MAGAZINESPATH = "CfgMagazines"`.
+Registry of magazines and loose rounds. Script constant: `CFG_MAGAZINESPATH = "CfgMagazines"`.
 
-### Иерархия
+### Hierarchy
 
 ```
 DefaultMagazine
-└── Magazine_Base            — все магазины
-    └── Ammunition_Base      — россыпные патроны
+└── Magazine_Base            — all magazines
+    └── Ammunition_Base      — loose rounds
 ```
 
-### Ключевые свойства Magazine_Base
+### Key properties of Magazine_Base
 
 ```cpp
 class MyMag: Magazine_Base
@@ -20,14 +20,14 @@ class MyMag: Magazine_Base
     inventorySlot[] = { "magazine", "magazine2", "magazine3" };
     itemSize[] = {1, 2};
     weight = 113;
-    weightPerQuantityUnit = 8;          // вес одного патрона в граммах
+    weightPerQuantityUnit = 8;          // weight of one round in grams
 
-    count = 30;                         // ёмкость магазина
-    ammo = "Bullet_556x45";            // класс пули из CfgAmmo (что вылетает)
-    ammoItems[] = { "Ammo_556x45" };   // класс россыпных патронов из CfgMagazines (чем снаряжается)
-    tracersEvery = 0;                   // каждый N-й патрон трассер (0 = нет)
+    count = 30;                         // magazine capacity
+    ammo = "Bullet_556x45";            // bullet class from CfgAmmo (what flies out)
+    ammoItems[] = { "Ammo_556x45" };   // loose-round class from CfgMagazines (what it's loaded with)
+    tracersEvery = 0;                   // every Nth round is a tracer (0 = none)
 
-    manipulationDamage = 0.05;          // урон при ручных манипуляциях
+    manipulationDamage = 0.05;          // damage from manual handling
 
     class Reliability
     {
@@ -36,7 +36,7 @@ class MyMag: Magazine_Base
 };
 ```
 
-### Ammunition_Base — россыпные патроны
+### Ammunition_Base — loose rounds
 
 ```cpp
 class Ammo_9x19: Ammunition_Base
@@ -47,28 +47,28 @@ class Ammo_9x19: Ammunition_Base
 
     itemSize[] = {1, 1};
     weight = 8;
-    count = 25;                         // макс. кол-во в стаке
-    ammo = "Bullet_9x19";              // класс пули из CfgAmmo
+    count = 25;                         // max count in a stack
+    ammo = "Bullet_9x19";              // bullet class from CfgAmmo
 
-    canBeSplit = 1;                     // можно разделять стак
-    destroyOnEmpty = 1;                 // удалять при 0 патронов
+    canBeSplit = 1;                     // stack can be split
+    destroyOnEmpty = 1;                 // remove when 0 rounds
     varQuantityDestroyOnMin = 1;
 };
 ```
 
-### Связь магазинов с оружием и пулями
+### Linkage between magazines, weapons and bullets
 
 ```
 CfgWeapons::Glock19
-    magazines[] → "Mag_Glock_15Rnd"      (CfgMagazines — магазин)
-    chamberableFrom[] → "Ammo_9x19"      (CfgMagazines — россыпь)
+    magazines[] → "Mag_Glock_15Rnd"      (CfgMagazines — magazine)
+    chamberableFrom[] → "Ammo_9x19"      (CfgMagazines — loose rounds)
 
 CfgMagazines::Mag_Glock_15Rnd
-    ammo → "Bullet_9x19"                 (CfgAmmo — что вылетает из ствола)
-    ammoItems[] → "Ammo_9x19"            (CfgMagazines — чем снаряжается)
+    ammo → "Bullet_9x19"                 (CfgAmmo — what flies out of the barrel)
+    ammoItems[] → "Ammo_9x19"            (CfgMagazines — what it's loaded with)
 
 CfgMagazines::Ammo_9x19
-    ammo → "Bullet_9x19"                 (CfgAmmo — что вылетает)
+    ammo → "Bullet_9x19"                 (CfgAmmo — what flies out)
 
-CfgAmmo::Bullet_9x19                     — физика пули, урон
+CfgAmmo::Bullet_9x19                     — bullet physics, damage
 ```

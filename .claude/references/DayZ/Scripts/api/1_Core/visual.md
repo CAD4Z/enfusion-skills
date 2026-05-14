@@ -1,94 +1,94 @@
-Визуальные объекты: модели, кости, анимации, партиклы. Источник: `proto/envisual.c`
+Visual objects: models, bones, animations, particles. Source: `proto/envisual.c`
 
-### vobject — визуальный объект
+### vobject — visual object
 
-| Функция | Описание |
+| Function | Description |
 |---------|----------|
-| `GetObject(name)` | Загрузить/получить из кеша |
-| `ReleaseObject(object, flag)` | Освободить. `RF_RELEASE` = немедленное удаление |
-| `GetNumAnimFrames(anim)` | Кол-во кадров анимации |
-| `vtoa(vobj)` | Имя объекта в строку |
-| `GetObjectMaterials(object, out materials[])` | Список материалов |
+| `GetObject(name)` | Load/get from cache |
+| `ReleaseObject(object, flag)` | Release. `RF_RELEASE` = immediate removal |
+| `GetNumAnimFrames(anim)` | Number of animation frames |
+| `vtoa(vobj)` | Object name to string |
+| `GetObjectMaterials(object, out materials[])` | List of materials |
 
-### Кости (Bone)
+### Bones
 
-| Функция | Описание |
+| Function | Description |
 |---------|----------|
-| `SetBone(ent, bone, angles, trans, scale)` | Установить трансформацию кости |
-| `SetBoneMatrix(ent, bone, mat[4])` | Установить матрицу кости |
-| `SetBoneGlobal(ent, bone, mat[4])` | Глобальная матрица кости |
-| `GetBoneMatrix(ent, bone, out mat[4])` | Получить мировую матрицу |
-| `GetBoneLocalMatrix(ent, bone, out mat[4])` | Получить локальную матрицу |
+| `SetBone(ent, bone, angles, trans, scale)` | Set bone transform |
+| `SetBoneMatrix(ent, bone, mat[4])` | Set bone matrix |
+| `SetBoneGlobal(ent, bone, mat[4])` | Global bone matrix |
+| `GetBoneMatrix(ent, bone, out mat[4])` | Get world matrix |
+| `GetBoneLocalMatrix(ent, bone, out mat[4])` | Get local matrix |
 
-### Анимации
+### Animations
 
 **AnimFlags:**
 
-| Флаг | Описание |
+| Flag | Description |
 |------|----------|
-| `ONCE` | Однократное проигрывание, потом заморозка на последнем кадре |
-| `BLENDOUT` | Автоматический blend-out после окончания |
-| `USER` | Ожидает на первом кадре, управляется через `SetFrame` |
-| `RESET` | Принудительный рестарт |
-| `FORCEFPS` | Использовать указанный fps вместо anim.def |
-| `NOANIMEND` | Не вызывать ANIMEND событие |
-| `NOANIMHOOKS` | Не вызывать anim hooks |
+| `ONCE` | Single playback, then frozen on the last frame |
+| `BLENDOUT` | Automatic blend-out after end |
+| `USER` | Waits on the first frame, controlled via `SetFrame` |
+| `RESET` | Forced restart |
+| `FORCEFPS` | Use the specified fps instead of anim.def |
+| `NOANIMEND` | Do not fire ANIMEND event |
+| `NOANIMHOOKS` | Do not fire anim hooks |
 
-| Функция | Описание |
+| Function | Description |
 |---------|----------|
-| `SetAnimSlot(ent, slot, anim, blendin, blendout, mask, fps, flags)` | Установить анимацию в слот |
-| `SetAnimFrame(ent, slot, frame)` | Установить кадр |
-| `ChangeAnimSlotMask(ent, slot, blendin, mask)` | Сменить маску с blend'ом |
-| `ChangeAnimSlotFPS(ent, slot, fps)` | Сменить framerate |
-| `SetAnimMask(ent, mask)` | Маска каналов |
-| `ClearAnimMask(ent, mask)` | Очистить маску |
-| `IsAnimSlotPlaying(ent, mask)` | Проверка активности слотов |
-| `SetMorphState(ent, morph, value)` | Морф-таргет (0..1) |
+| `SetAnimSlot(ent, slot, anim, blendin, blendout, mask, fps, flags)` | Set animation in a slot |
+| `SetAnimFrame(ent, slot, frame)` | Set frame |
+| `ChangeAnimSlotMask(ent, slot, blendin, mask)` | Change mask with blend |
+| `ChangeAnimSlotFPS(ent, slot, fps)` | Change framerate |
+| `SetAnimMask(ent, mask)` | Channel mask |
+| `ClearAnimMask(ent, mask)` | Clear mask |
+| `IsAnimSlotPlaying(ent, mask)` | Slot activity check |
+| `SetMorphState(ent, morph, value)` | Morph target (0..1) |
 
-**BoneMask** — битовая маска для фильтрации костей. `NULL` = все кости. Non-managed, требует ручного `delete`.
+**BoneMask** — bitmask for filtering bones. `NULL` = all bones. Non-managed, requires manual `delete`.
 
-### Партиклы
+### Particles
 
-**EmitorParam enum** — параметры эмиттера:
+**EmitorParam enum** — emitter parameters:
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |----------|-----|----------|
-| `BIRTH_RATE` / `BIRTH_RATE_RND` | float | Частота рождения |
-| `LIFETIME` / `LIFETIME_RND` | float | Время жизни |
-| `VELOCITY` / `VELOCITY_RND` | float | Скорость |
-| `SIZE` | float | Размер |
-| `STRETCH` | float | Растяжение |
-| `GRAVITY_SCALE` / `GRAVITY_SCALE_RND` | float | Масштаб гравитации |
-| `AIR_RESISTANCE` / `AIR_RESISTANCE_RND` | float | Сопротивление воздуха |
-| `AVELOCITY` | float | Угловая скорость |
-| `CONEANGLE` | vector | Угол конуса |
-| `EMITOFFSET` | vector | Смещение эмиттера |
-| `EFFECT_TIME` | float | Общее время эффекта |
-| `CURRENT_TIME` | float | Текущее время |
-| `ACTIVE_PARTICLES` | int | Активные частицы (только чтение) |
-| `REPEAT` | bool | Повтор после окончания |
-| `RANDOM_ANGLE` | bool | Случайный начальный поворот |
-| `RANDOM_ROT` | bool | Случайное направление вращения |
-| `WIND` | bool | Влияние ветра |
-| `SORT` | bool | Сортировка |
-| `SPRING` | float | Пружина |
+| `BIRTH_RATE` / `BIRTH_RATE_RND` | float | Birth rate |
+| `LIFETIME` / `LIFETIME_RND` | float | Lifetime |
+| `VELOCITY` / `VELOCITY_RND` | float | Velocity |
+| `SIZE` | float | Size |
+| `STRETCH` | float | Stretch |
+| `GRAVITY_SCALE` / `GRAVITY_SCALE_RND` | float | Gravity scale |
+| `AIR_RESISTANCE` / `AIR_RESISTANCE_RND` | float | Air resistance |
+| `AVELOCITY` | float | Angular velocity |
+| `CONEANGLE` | vector | Cone angle |
+| `EMITOFFSET` | vector | Emitter offset |
+| `EFFECT_TIME` | float | Total effect time |
+| `CURRENT_TIME` | float | Current time |
+| `ACTIVE_PARTICLES` | int | Active particles (read-only) |
+| `REPEAT` | bool | Repeat after finishing |
+| `RANDOM_ANGLE` | bool | Random initial rotation |
+| `RANDOM_ROT` | bool | Random rotation direction |
+| `WIND` | bool | Wind influence |
+| `SORT` | bool | Sorting |
+| `SPRING` | float | Spring |
 
-| Функция | Описание |
+| Function | Description |
 |---------|----------|
-| `GetParticleCount(ent)` | Кол-во активных частиц (суммирует все эмиттеры) |
-| `HasActiveParticle(ent)` | Есть ли активные частицы |
-| `GetParticleEmitorCount(ent)` | Кол-во эмиттеров |
-| `GetParticleEmitors(ent, out names[], max)` | Имена эмиттеров |
-| `SetParticleParm(ent, emitor, param, value)` | Установить параметр (-1 = все эмиттеры) |
-| `GetParticleParm(ent, emitor, param, out value)` | Получить параметр |
-| `GetParticleParmOriginal(ent, emitor, param, out value)` | Оригинальное значение |
-| `ResetParticlePosition(ent)` | Сброс позиции (для телепортации) |
-| `RestartParticle(ent)` | Полный рестарт эффекта |
+| `GetParticleCount(ent)` | Number of active particles (sums all emitters) |
+| `HasActiveParticle(ent)` | Whether any particles are active |
+| `GetParticleEmitorCount(ent)` | Number of emitters |
+| `GetParticleEmitors(ent, out names[], max)` | Emitter names |
+| `SetParticleParm(ent, emitor, param, value)` | Set parameter (-1 = all emitters) |
+| `GetParticleParm(ent, emitor, param, out value)` | Get parameter |
+| `GetParticleParmOriginal(ent, emitor, param, out value)` | Original value |
+| `ResetParticlePosition(ent)` | Reset position (for teleportation) |
+| `RestartParticle(ent)` | Full restart of the effect |
 
-### Динамические модели
+### Dynamic models
 
-| Функция | Описание |
+| Function | Description |
 |---------|----------|
-| `CreateXOB(nsurfaces, nverts[], numindices[], materials[])` | Создать динамический меш |
-| `UpdateVertsEx(ent, surf, verts[], uv[])` | Обновить вершины |
-| `UpdateIndices(obj, surf, indices[])` | Обновить индексы |
+| `CreateXOB(nsurfaces, nverts[], numindices[], materials[])` | Create dynamic mesh |
+| `UpdateVertsEx(ent, surf, verts[], uv[])` | Update vertices |
+| `UpdateIndices(obj, surf, indices[])` | Update indices |

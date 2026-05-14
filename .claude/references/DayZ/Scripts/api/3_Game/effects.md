@@ -1,4 +1,4 @@
-Система эффектов и пост-обработка. Источники: `effect.c`, `effectmanager.c`, `effects/`, `ppemanager/`
+Effects system and post-processing. Sources: `effect.c`, `effectmanager.c`, `effects/`, `ppemanager/`
 
 ### EffectType
 
@@ -8,181 +8,181 @@ NONE, SOUND, PARTICLE
 
 ### Effect
 
-Базовый класс эффектов. Managed. Источник: `effect.c`
+Base class for effects. Managed. Source: `effect.c`
 
-| Метод | Описание |
-|-------|----------|
-| `Start()` / `Stop()` | Запуск/остановка |
-| `IsPlaying()` | Воспроизводится |
-| `GetEffectType()` | Тип (`SOUND` / `PARTICLE`) |
-| `SetParent(parent)` / `GetParent()` | Родительская сущность |
-| `SetLocalPosition(pos)` / `SetLocalOrientation(ori)` | Локальная позиция/ориентация |
-| `SetAttachmentPivotIdx(idx)` | Индекс pivot-точки привязки |
-| `SetAutodestroy(state)` | Автоудаление после остановки |
-| `ValidateStart()` | Хук валидации перед стартом |
-| `IsRegistered()` / `GetID()` | Регистрация в SEffectManager |
+| Method | Description |
+|--------|-------------|
+| `Start()` / `Stop()` | Start/stop |
+| `IsPlaying()` | Playing |
+| `GetEffectType()` | Type (`SOUND` / `PARTICLE`) |
+| `SetParent(parent)` / `GetParent()` | Parent entity |
+| `SetLocalPosition(pos)` / `SetLocalOrientation(ori)` | Local position/orientation |
+| `SetAttachmentPivotIdx(idx)` | Attachment pivot index |
+| `SetAutodestroy(state)` | Auto-destroy after stop |
+| `ValidateStart()` | Validation hook before start |
+| `IsRegistered()` / `GetID()` | Registration in SEffectManager |
 
-#### События (ScriptInvoker)
+#### Events (ScriptInvoker)
 
 `Event_OnStarted`, `Event_OnStopped`, `Event_OnEffectStarted`, `Event_OnEffectEnded`
 
 ### EffectParticle
 
-Наследует `Effect`. Обёртка партикла. Источник: `effects/effectparticle.c`
+Inherits `Effect`. Particle wrapper. Source: `effects/effectparticle.c`
 
-| Метод | Описание |
-|-------|----------|
-| `GetParticle()` | Объект `Particle` |
-| `SetOrientation(ori)` | Ориентация |
+| Method | Description |
+|--------|-------------|
+| `GetParticle()` | `Particle` object |
+| `SetOrientation(ori)` | Orientation |
 
 ### EffectSound
 
-Наследует `Effect`. Обёртка звука. Источник: `effects/effectsound.c`
+Inherits `Effect`. Sound wrapper. Source: `effects/effectsound.c`
 
-| Метод | Описание |
-|-------|----------|
-| `FadeIn(seconds)` / `FadeOut(seconds)` | Плавное нарастание/затухание |
-| `SetVolume(vol)` / `SetPitch(pitch)` | Громкость / высота тона |
+| Method | Description |
+|--------|-------------|
+| `FadeIn(seconds)` / `FadeOut(seconds)` | Fade in/out |
+| `SetVolume(vol)` / `SetPitch(pitch)` | Volume / pitch |
 
 ### SEffectManager
 
-Статический глобальный менеджер эффектов. Источник: `effectmanager.c`
+Static global effects manager. Source: `effectmanager.c`
 
-#### Управление эффектами
+#### Effect management
 
-| Метод | Описание |
-|-------|----------|
-| `PlayInWorld(effect, pos)` | Воспроизвести в мире |
-| `PlayOnObject(effect, obj, local_pos, local_ori, force_rotation)` | На объекте |
-| `Stop(effect_id)` | Остановить по ID |
-| `EffectRegister(effect)` / `EffectUnregister(effect)` | Регистрация |
+| Method | Description |
+|--------|-------------|
+| `PlayInWorld(effect, pos)` | Play in the world |
+| `PlayOnObject(effect, obj, local_pos, local_ori, force_rotation)` | On an object |
+| `Stop(effect_id)` | Stop by ID |
+| `EffectRegister(effect)` / `EffectUnregister(effect)` | Registration |
 
-#### Звуковые ярлыки
+#### Sound shortcuts
 
-| Метод | Описание |
-|-------|----------|
-| `CreateSound(soundSet, pos, ...)` | Создать EffectSound |
-| `PlaySound(soundSet, pos, ...)` | Создать и воспроизвести |
-| `PlaySoundParams(params, pos, ...)` | С SoundParams |
+| Method | Description |
+|--------|-------------|
+| `CreateSound(soundSet, pos, ...)` | Create EffectSound |
+| `PlaySound(soundSet, pos, ...)` | Create and play |
+| `PlaySoundParams(params, pos, ...)` | With SoundParams |
 
-#### Система
+#### System
 
-| Метод | Описание |
-|-------|----------|
+| Method | Description |
+|--------|-------------|
 | `Init()` / `InitServer()` / `Cleanup()` | Lifecycle |
-| `Event_OnFrameUpdate` | Invoker обновления каждый кадр |
+| `Event_OnFrameUpdate` | Per-frame update invoker |
 
-### Bullet Impact эффекты
+### Bullet Impact effects
 
-Система эффектов попаданий. Источник: `effects/generated/`. Каждый эффект — наследник `BulletImpactBase`.
+Hit effects system. Source: `effects/generated/`. Every effect is a descendant of `BulletImpactBase`.
 
-Ключевые: `Hit_MeatBones`, `Hit_Metal`, `Hit_Wood`, `Hit_Concrete`, `Hit_Glass`, `Hit_Water`, `Hit_Dirt`, `Hit_Sand`, `Hit_Foliage`, `Hit_Grass`, `Hit_Plastic`, `Hit_Rubber`, `Hit_Ice`, `Hit_Snow`, `Hit_Textile`, `Hit_Plaster`
+Key ones: `Hit_MeatBones`, `Hit_Metal`, `Hit_Wood`, `Hit_Concrete`, `Hit_Glass`, `Hit_Water`, `Hit_Dirt`, `Hit_Sand`, `Hit_Foliage`, `Hit_Grass`, `Hit_Plastic`, `Hit_Rubber`, `Hit_Ice`, `Hit_Snow`, `Hit_Textile`, `Hit_Plaster`
 
-### Специальные эффекты
+### Special effects
 
-| Класс | Описание |
-|-------|----------|
-| `BleedingSource` | Визуализация кровотечения |
-| `BloodSplatter` | Брызги крови |
-| `Vomit` / `VomitBlood` | Рвота |
-| `BreathVapourLight/Medium/Heavy` | Пар изо рта |
-| `SwarmingFlies` | Мухи |
-| `VehicleSmoke` / `EngineSmoke` / `ExhaustSmoke` | Дым транспорта |
-| `GeneratorSmoke` | Дым генератора |
-| `LandmineExplosion` | Взрыв мины |
+| Class | Description |
+|-------|-------------|
+| `BleedingSource` | Bleeding visualization |
+| `BloodSplatter` | Blood splatter |
+| `Vomit` / `VomitBlood` | Vomit |
+| `BreathVapourLight/Medium/Heavy` | Breath vapor |
+| `SwarmingFlies` | Flies |
+| `VehicleSmoke` / `EngineSmoke` / `ExhaustSmoke` | Vehicle smoke |
+| `GeneratorSmoke` | Generator smoke |
+| `LandmineExplosion` | Mine explosion |
 
 ---
 
-## PPEManager (система пост-обработки)
+## PPEManager (post-processing system)
 
-Централизованное управление пост-процессингом. Источник: `ppemanager/`
+Centralized post-processing management. Source: `ppemanager/`
 
-### Архитектура
+### Architecture
 
 ```
-PPEManager (синглтон)
-├── PPEClassBase (материальный класс — один тип эффекта)
-│   └── PPEMatClassParameter* (параметры: float, int, bool, color, vector, texture)
-└── PPERequesterBase (реквестер — запрашивает эффект)
-    └── PPERequestData (данные запроса)
+PPEManager (singleton)
+├── PPEClassBase (material class — one effect type)
+│   └── PPEMatClassParameter* (parameters: float, int, bool, color, vector, texture)
+└── PPERequesterBase (requester — requests an effect)
+    └── PPERequestData (request data)
 ```
 
-**Поток**: реквестер → вызывает `SetTargetValueFloat/Color/...` на параметрах материального класса → PPEManager агрегирует все запросы и применяет результат.
+**Flow**: requester → calls `SetTargetValueFloat/Color/...` on material class parameters → PPEManager aggregates all requests and applies the result.
 
 ### PPEManagerStatic
 
-| Метод | Описание |
-|-------|----------|
-| `GetPPEManager()` | Получить синглтон |
+| Method | Description |
+|--------|-------------|
+| `GetPPEManager()` | Get the singleton |
 | `CreateManagerStatic()` / `DestroyManagerStatic()` | Lifecycle |
 
 ### PPERequesterBase
 
-Базовый класс реквестера. Каждый реквестер — один визуальный эффект.
+Base requester class. Each requester is a single visual effect.
 
-| Метод | Описание |
-|-------|----------|
-| `Start(settings)` / `Stop(settings)` | Запуск/остановка |
-| `SetTargetValueFloat(matIdx, paramIdx, value, priority, op)` | Float-параметр |
-| `SetTargetValueColor(matIdx, paramIdx, color, priority, op)` | Цвет (vector4) |
+| Method | Description |
+|--------|-------------|
+| `Start(settings)` / `Stop(settings)` | Start/stop |
+| `SetTargetValueFloat(matIdx, paramIdx, value, priority, op)` | Float parameter |
+| `SetTargetValueColor(matIdx, paramIdx, color, priority, op)` | Color (vector4) |
 | `SetTargetValueBool(matIdx, paramIdx, value, priority, op)` | Bool |
 | `SetTargetValueInt(matIdx, paramIdx, value, priority, op)` | Int |
 
-### Типы параметров
+### Parameter types
 
-| Класс | Тип данных |
+| Class | Data type |
 |-------|-----------|
 | `PPEMatClassParameterFloat` | `float` |
 | `PPEMatClassParameterInt` | `int` |
 | `PPEMatClassParameterBool` | `bool` |
 | `PPEMatClassParameterColor` | `vector` (RGBA) |
 | `PPEMatClassParameterVector` | `vector` |
-| `PPEMatClassParameterTexture` | Ресурс текстуры |
+| `PPEMatClassParameterTexture` | Texture resource |
 
-### Ключевые реквестеры
+### Key requesters
 
-| Класс | Эффект |
+| Class | Effect |
 |-------|--------|
-| `PPERPain` | Боль |
-| `PPERBloodLoss` | Потеря крови (виньетка) |
-| `PPERHealthHit` | Вспышка при попадании |
-| `PPERCameraNV` | Ночное видение (зелёный тинт) |
-| `PPERCameraADS_OPT` | Зум при прицеливании |
-| `PPERBurlapsack` | Мешок на голове |
-| `PPERContaminated` | Заражение (размытие) |
-| `PPERDrowningEffect` | Утопление |
-| `PPERUnconEffects` | Бессознательное состояние |
-| `PPERFever` | Лихорадка |
-| `PPERShockHit` | Шок |
-| `PPERFlashbangEffects` | Светошумовая граната |
-| `PPERDeathDarkening` | Затемнение при смерти |
-| `PPERTunnel` | Туннельное зрение |
-| `PPERGlasses` | Очки |
+| `PPERPain` | Pain |
+| `PPERBloodLoss` | Blood loss (vignette) |
+| `PPERHealthHit` | Hit flash |
+| `PPERCameraNV` | Night vision (green tint) |
+| `PPERCameraADS_OPT` | Zoom when aiming |
+| `PPERBurlapsack` | Burlap sack on head |
+| `PPERContaminated` | Contamination (blur) |
+| `PPERDrowningEffect` | Drowning |
+| `PPERUnconEffects` | Unconscious state |
+| `PPERFever` | Fever |
+| `PPERShockHit` | Shock |
+| `PPERFlashbangEffects` | Flashbang grenade |
+| `PPERDeathDarkening` | Darkening on death |
+| `PPERTunnel` | Tunnel vision |
+| `PPERGlasses` | Glasses |
 
-Остальные: `PPERControlsBlur`, `PPERInventoryBlur`, `PPERFeedbackBlur`, `PPERLatencyBlur`, `PPERTutorial`, `PPERUndergroundAcco`, `PPERSpooky`, `PPERIntroChromaBB`, `PPERHMPGhosts`, `PPERHMPLevel3`, `PPERServerBrowser`, `PPERMenuEffects`, `PPERControllerDisconnectBlur`
+Others: `PPERControlsBlur`, `PPERInventoryBlur`, `PPERFeedbackBlur`, `PPERLatencyBlur`, `PPERTutorial`, `PPERUndergroundAcco`, `PPERSpooky`, `PPERIntroChromaBB`, `PPERHMPGhosts`, `PPERHMPLevel3`, `PPERServerBrowser`, `PPERMenuEffects`, `PPERControllerDisconnectBlur`
 
-### Материальные классы (PPEClassBase)
+### Material classes (PPEClassBase)
 
-| Класс | Эффект |
+| Class | Effect |
 |-------|--------|
-| `PPEDepthOfField` / `PPEDOF` | Глубина резкости |
-| `PPEChromAber` | Хроматическая аберрация |
-| `PPERadialBlur` | Радиальное размытие |
-| `PPEDynamicBlur` | Динамическое размытие |
-| `PPEGaussFilter` | Размытие по Гауссу |
-| `PPERotBlur` | Ротационное размытие |
-| `PPEColorGrading` | Цветокоррекция |
-| `PPEColors` | Цветовые настройки |
-| `PPEGlow` | Свечение (bloom) |
-| `PPEFilmGrain` | Зернистость плёнки |
-| `PPEGodRays` | Лучи света |
-| `PPERain` | Дождь на экране |
-| `PPESnowfall` | Снег на экране |
-| `PPEUnderWater` | Подводное искажение |
-| `PPEWetDistort` | Искажение влаги |
-| `PPEDistort` | Общее искажение |
-| `PPEGhost` | Призрачные блики |
-| `PPESunMask` | Маска солнца |
+| `PPEDepthOfField` / `PPEDOF` | Depth of field |
+| `PPEChromAber` | Chromatic aberration |
+| `PPERadialBlur` | Radial blur |
+| `PPEDynamicBlur` | Dynamic blur |
+| `PPEGaussFilter` | Gaussian blur |
+| `PPERotBlur` | Rotational blur |
+| `PPEColorGrading` | Color grading |
+| `PPEColors` | Color settings |
+| `PPEGlow` | Glow (bloom) |
+| `PPEFilmGrain` | Film grain |
+| `PPEGodRays` | God rays |
+| `PPERain` | Rain on screen |
+| `PPESnowfall` | Snow on screen |
+| `PPEUnderWater` | Underwater distortion |
+| `PPEWetDistort` | Wet distortion |
+| `PPEDistort` | General distortion |
+| `PPEGhost` | Ghost-like glares |
+| `PPESunMask` | Sun mask |
 
 Anti-aliasing: `PPESMAA`, `PPEFXAA`, `PPEMedian`
 

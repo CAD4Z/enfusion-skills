@@ -1,20 +1,20 @@
-Чат — отображение и ввод сообщений по каналам. Источники: `gui/chat/`
+Chat — display and input of messages across channels. Sources: `gui/chat/`
 
-### Архитектура
+### Architecture
 
 ```
 MissionGameplay
-  ├── m_Chat : Chat                          ← дисплей (12 строк)
+  ├── m_Chat : Chat                          ← display (12 lines)
   │     └── m_Lines : array<ChatLine>
-  │           └── ChatLine (один widget из day_z_chat_item.layout)
-  └── ChatInputMenu (MENU_CHAT_INPUT)        ← ввод
+  │           └── ChatLine (one widget from day_z_chat_item.layout)
+  └── ChatInputMenu (MENU_CHAT_INPUT)        ← input
 ```
 
-`Chat` создаётся в `MissionGameplay.OnInit` через `m_Chat.Init(ChatFrameWidget)`. `ChatInputMenu` — `UIScriptedMenu`, открывается через `MissionGameplay.ShowChat()` (по `UAChat`).
+`Chat` is created in `MissionGameplay.OnInit` via `m_Chat.Init(ChatFrameWidget)`. `ChatInputMenu` is a `UIScriptedMenu` opened through `MissionGameplay.ShowChat()` (on `UAChat`).
 
 ---
 
-### Каналы
+### Channels
 
 ```c
 CCSystem               = 1
@@ -26,17 +26,17 @@ CCPublicAddressSystem  = 32
 CCBattlEye             = 64
 ```
 
-`channel == 0` — локальные сообщения "себе" (singleplayer chat).
+`channel == 0` — local "self" messages (singleplayer chat).
 
-Filter по каналам через `EDayZProfilesOptions`:
+Channel filtering via `EDayZProfilesOptions`:
 
-| Канал | Profile option |
-|-------|----------------|
+| Channel | Profile option |
+|---------|----------------|
 | `CCSystem` / `CCBattlEye` | `GAME_MESSAGES` |
 | `CCAdmin` | `ADMIN_MESSAGES` |
 | `CCDirect` / `CCMegaphone` / `CCTransmitter` / `CCPublicAddressSystem` | `PLAYER_MESSAGES` |
 
-Если соответствующая опция включена — сообщения этого канала не показываются.
+If the corresponding option is enabled, messages on this channel are not shown.
 
 ---
 
@@ -46,25 +46,25 @@ Filter по каналам через `EDayZProfilesOptions`:
 class Chat
 ```
 
-| Поле | Описание |
-|------|----------|
-| `LINE_COUNT = 12` | Максимум видимых строк |
-| `m_RootWidget` | `ChatFrameWidget` из HUD layout'а |
-| `m_LineHeight` | Высота строки (h / LINE_COUNT) |
-| `m_LastLine` | Индекс последней добавленной (cyclic) |
-| `m_Lines : array<ChatLine>` | Пул из 12 ChatLine'ов |
+| Field | Description |
+|-------|-------------|
+| `LINE_COUNT = 12` | Maximum visible lines |
+| `m_RootWidget` | `ChatFrameWidget` from the HUD layout |
+| `m_LineHeight` | Line height (h / LINE_COUNT) |
+| `m_LastLine` | Index of the last added line (cyclic) |
+| `m_Lines : array<ChatLine>` | Pool of 12 ChatLines |
 
-| Метод | Описание |
-|-------|----------|
-| `Init(rootWidget)` | Создать пул из `LINE_COUNT` ChatLine'ов под `m_RootWidget` |
-| `Destroy()` | Очистить пул |
-| `Clear()` | Скрыть все строки (без удаления) |
-| `Add(ChatMessageEventParams)` | Принять сообщение, отфильтровать по каналу/опции, разбить на части если длиннее `ChatMaxUserLength`/`ChatMaxSystemLength` |
-| `AddInternal(params)` | Циклически записать в `m_Lines[(m_LastLine+1) % count]` и сдвинуть позиции остальных строк вверх |
+| Method | Description |
+|--------|-------------|
+| `Init(rootWidget)` | Create a pool of `LINE_COUNT` ChatLines under `m_RootWidget` |
+| `Destroy()` | Clear the pool |
+| `Clear()` | Hide all lines (without removing) |
+| `Add(ChatMessageEventParams)` | Accept a message, filter by channel/option, split into parts if longer than `ChatMaxUserLength`/`ChatMaxSystemLength` |
+| `AddInternal(params)` | Cyclically write to `m_Lines[(m_LastLine+1) % count]` and shift positions of other lines up |
 
 `ChatMessageEventParams` (3_Game) — `Param4<int channel, string sender, string text, string colorParam>`.
 
-Длина: системные сообщения могут быть длиннее (`ChatMaxSystemLength`), пользовательские режутся на куски по `ChatMaxUserLength` через `Substring(pos, length)` в цикле.
+Length: system messages may be longer (`ChatMaxSystemLength`); user messages are split into chunks of `ChatMaxUserLength` via `Substring(pos, length)` in a loop.
 
 ---
 
@@ -74,24 +74,24 @@ class Chat
 class ChatLine
 ```
 
-Один widget из `gui/layouts/day_z_chat_item.layout` (`ChatItemSenderWidget` + `ChatItemTextWidget`).
+One widget from `gui/layouts/day_z_chat_item.layout` (`ChatItemSenderWidget` + `ChatItemTextWidget`).
 
-#### Константы
+#### Constants
 
-| Константа | Значение |
-|-----------|----------|
-| `FADE_TIMEOUT` | 30s — пока строка видима |
+| Constant | Value |
+|----------|-------|
+| `FADE_TIMEOUT` | 30s — while the line is visible |
 | `FADE_OUT_DURATION` | 3s |
 | `FADE_IN_DURATION` | 0.5s |
-| `DEFAULT_COLOUR` | белый |
-| `GAME_TEXT_COLOUR` | красный |
-| `ADMIN_TEXT_COLOUR` | жёлтый |
+| `DEFAULT_COLOUR` | white |
+| `GAME_TEXT_COLOUR` | red |
+| `ADMIN_TEXT_COLOUR` | yellow |
 
-#### Префиксы по каналам
+#### Channel prefixes
 
-| Канал | Префикс sender |
-|-------|----------------|
-| `CCSystem` | `(#layout_chat_game)` (если есть имя) |
+| Channel | Sender prefix |
+|---------|---------------|
+| `CCSystem` | `(#layout_chat_game)` (if a name is present) |
 | `CCAdmin` | `(#STR_MP_MASTER): ` |
 | `CCTransmitter` | `(#str_radio) sender :` |
 | `CCDirect` / `0` | `sender :` |
@@ -99,23 +99,23 @@ class ChatLine
 #### Method `Set(params)`
 
 1. Reset name + text widgets
-2. Switch по `params.param1` (channel) — установить sender prefix и цвет через `SetColorByParam`
-3. Записать `params.param3` в `m_TextWidget`
+2. Switch on `params.param1` (channel) — set sender prefix and color via `SetColorByParam`
+3. Write `params.param3` into `m_TextWidget`
 4. `m_FadeTimer.FadeIn(rootWidget, FADE_IN_DURATION)` — fade in
-5. `m_TimeoutTimer.Run(FADE_TIMEOUT, m_FadeTimer, "FadeOut", ...)` — отложенный fade out
+5. `m_TimeoutTimer.Run(FADE_TIMEOUT, m_FadeTimer, "FadeOut", ...)` — deferred fade out
 
 #### SetColorByParam
 
-`params.param4` — строковое имя цвета (если задано сервером):
+`params.param4` — string color name (if set by the server):
 
-| Имя | Цвет |
-|-----|------|
+| Name | Color |
+|------|-------|
 | `colorStatusChannel` | `COLOR_BLUE` |
 | `colorAction` | `COLOR_YELLOW` |
 | `colorFriendly` | `COLOR_GREEN` |
 | `colorImportant` | `COLOR_RED` |
 
-Если пусто — fallback на цвет канала (`GAME_TEXT_COLOUR`/`ADMIN_TEXT_COLOUR`).
+If empty — falls back to the channel color (`GAME_TEXT_COLOUR`/`ADMIN_TEXT_COLOUR`).
 
 ---
 
@@ -125,35 +125,35 @@ class ChatLine
 class ChatInputMenu extends UIScriptedMenu
 ```
 
-`MENU_CHAT_INPUT`. Layout — `gui/layouts/day_z_chat_input.layout` с одним `EditBoxWidget` и `TextWidget` названия канала. Открывается из `MissionGameplay.OnUpdate` по `UAChat` (только non-console).
+`MENU_CHAT_INPUT`. Layout — `gui/layouts/day_z_chat_input.layout` with a single `EditBoxWidget` and a `TextWidget` for the channel name. Opened from `MissionGameplay.OnUpdate` on `UAChat` (non-console only).
 
-| Поле | Описание |
-|------|----------|
-| `m_edit_box : EditBoxWidget` | Поле ввода |
-| `m_channel_text : TextWidget` | Имя текущего канала |
-| `m_BackInputWrapper : UAIDWrapper` | Persistent wrapper для `UAUIBack` |
-| `m_close_timer : Timer` | Отложенное закрытие после Enter |
+| Field | Description |
+|-------|-------------|
+| `m_edit_box : EditBoxWidget` | Input field |
+| `m_channel_text : TextWidget` | Name of the current channel |
+| `m_BackInputWrapper : UAIDWrapper` | Persistent wrapper for `UAUIBack` |
+| `m_close_timer : Timer` | Deferred close after Enter |
 
 #### Lifecycle
 
-| Метод | Описание |
-|-------|----------|
-| `Init()` | Создать layout, получить `UAUIBack` wrapper, `UpdateChannel()` |
-| `UseKeyboard()` | `return true` — режим клавиатурного ввода |
+| Method | Description |
+|--------|-------------|
+| `Init()` | Create layout, get `UAUIBack` wrapper, `UpdateChannel()` |
+| `UseKeyboard()` | `return true` — keyboard input mode |
 | `OnShow()` | `SetFocus(m_edit_box)` |
-| `OnHide()` | `mission.HideChat()`, `HideVoiceLevelWidgets()` если VoN не активен |
-| `OnChange(w, x, y, finished)` | На Enter: `g_Game.ChatPlayer(text)` → отправка через сеть; для SP создаёт локальный `ChatMessageEventParams(CCDirect, name, text, "")` и кладёт в `m_Chat.Add` сразу |
+| `OnHide()` | `mission.HideChat()`, `HideVoiceLevelWidgets()` if VoN is not active |
+| `OnChange(w, x, y, finished)` | On Enter: `g_Game.ChatPlayer(text)` → send over the network; for SP creates a local `ChatMessageEventParams(CCDirect, name, text, "")` and pushes it to `m_Chat.Add` immediately |
 | `Update(timeslice)` | `UAUIBack.LocalPress` → `Close()` |
-| `UpdateChannel()` | Заполнить `m_channel_text` через `GetChannelName(channel)` |
+| `UpdateChannel()` | Fill `m_channel_text` via `GetChannelName(channel)` |
 | `static GetChannelName(channel)` | `CCSystem` → "System", `CCAdmin` → "Admin", `CCDirect` → "Direct", `CCMegaphone` → "Megaphone", `CCTransmitter` → "Radio", `CCPublicAddressSystem` → "PAS" |
 
-После отправки: `m_close_timer.Run(0.1, this, "Close")` (отложено чтобы не схватить лишний keypress) и `UAPersonView.Supress()` (подавить hold-key).
+After sending: `m_close_timer.Run(0.1, this, "Close")` (deferred so it doesn't catch an extra keypress) and `UAPersonView.Supress()` (suppress hold-key).
 
 ---
 
-### Pipeline отображения
+### Display pipeline
 
-Сервер шлёт chat сообщение → клиент получает событие `ChatMessageEventTypeID` → `MissionGameplay.OnEvent`:
+The server sends a chat message → client receives `ChatMessageEventTypeID` event → `MissionGameplay.OnEvent`:
 
 ```c
 case ChatMessageEventTypeID:
@@ -162,8 +162,8 @@ case ChatMessageEventTypeID:
     break;
 ```
 
-→ `Chat.Add` фильтрует по profile options → `AddInternal` циклически в `m_Lines`.
+→ `Chat.Add` filters by profile options → `AddInternal` cyclically into `m_Lines`.
 
-`ChatChannelEventTypeID` — отдельное событие смены канала, обновляет `MissionGameplay` (fade timer индикатора канала).
+`ChatChannelEventTypeID` — a separate channel-change event that updates `MissionGameplay` (fade timer of the channel indicator).
 
-См. [mission.md](mission.md) — событийный handler.
+See [mission.md](mission.md) — event handler.

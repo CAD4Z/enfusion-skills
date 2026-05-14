@@ -1,4 +1,4 @@
-Динамическая система погоды. Доступ: `g_Game.GetWeather()`. Источник: `weather.c`
+Dynamic weather system. Access: `g_Game.GetWeather()`. Source: `weather.c`
 
 ### EWeatherPhenomenon
 
@@ -10,81 +10,81 @@ VOLFOG_HEIGHT_DENSITY, VOLFOG_DISTANCE_DENSITY, VOLFOG_HEIGHT_BIAS
 
 ### WeatherPhenomenon
 
-Обёртка одного погодного явления. Значения в диапазоне `<0, 1>` (кроме ветра — абсолютные величины).
+Wrapper for a single weather phenomenon. Values are in the `<0, 1>` range (except wind, which uses absolute values).
 
-Typedef-алиасы: `Overcast`, `Fog`, `Rain`, `Snowfall`, `WindDirection`, `WindMagnitude`.
+Typedef aliases: `Overcast`, `Fog`, `Rain`, `Snowfall`, `WindDirection`, `WindMagnitude`.
 
-#### Текущее состояние (proto native)
+#### Current state (proto native)
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `GetType()` | `EWeatherPhenomenon` | Тип явления |
-| `GetActual()` | `float` | Текущее значение |
-| `GetForecast()` | `float` | Целевое значение |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `GetType()` | `EWeatherPhenomenon` | Phenomenon type |
+| `GetActual()` | `float` | Current value |
+| `GetForecast()` | `float` | Target value |
 
-#### Управление (proto native)
+#### Control (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `Set(forecast, time, minDuration)` | Установить прогноз. `time` — секунды интерполяции, `minDuration` — мин. длительность |
-| `GetNextChange()` / `SetNextChange(time)` | Время до пересчёта прогноза (сек) |
-| `GetLimits(out fnMin, out fnMax)` | Пределы значения |
-| `SetLimits(fnMin, fnMax)` | Установить пределы (по умолчанию 0..1) |
-| `GetForecastChangeLimits(out fcMin, out fcMax)` | Пределы изменения прогноза |
-| `SetForecastChangeLimits(fcMin, fcMax)` | Установить пределы изменения |
-| `GetForecastTimeLimits(out ftMin, out ftMax)` | Интервал пересчёта (по умолчанию 300..3600 сек) |
-| `SetForecastTimeLimits(ftMin, ftMax)` | Установить интервал |
+| Method | Description |
+|--------|-------------|
+| `Set(forecast, time, minDuration)` | Set forecast. `time` — seconds of interpolation, `minDuration` — minimum duration |
+| `GetNextChange()` / `SetNextChange(time)` | Time until forecast recalculation (sec) |
+| `GetLimits(out fnMin, out fnMax)` | Value limits |
+| `SetLimits(fnMin, fnMax)` | Set limits (default 0..1) |
+| `GetForecastChangeLimits(out fcMin, out fcMax)` | Forecast change limits |
+| `SetForecastChangeLimits(fcMin, fcMax)` | Set change limits |
+| `GetForecastTimeLimits(out ftMin, out ftMax)` | Recalculation interval (default 300..3600 sec) |
+| `SetForecastTimeLimits(ftMin, ftMax)` | Set the interval |
 
 #### Callback
 
-`OnBeforeChange(float change, float time)` → `bool` — вызывается на сервере при пересчёте прогноза. Возврат `true` = скрипт изменил состояние, `false` = стандартная логика. Делегирует в `WorldData.WeatherOnBeforeChange()`.
+`OnBeforeChange(float change, float time)` → `bool` — invoked on the server during forecast recalculation. Returns `true` if the script changed the state, `false` for standard logic. Delegates to `WorldData.WeatherOnBeforeChange()`.
 
 ### Weather
 
-Контроллер погоды. Доступ: `g_Game.GetWeather()`.
+Weather controller. Access: `g_Game.GetWeather()`.
 
-#### Явления (proto native)
+#### Phenomena (proto native)
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `GetOvercast()` | `Overcast` | Облачность |
-| `GetFog()` | `Fog` | Туман |
-| `GetRain()` | `Rain` | Дождь |
-| `GetSnowfall()` | `Snowfall` | Снегопад |
-| `GetWindDirection()` | `WindDirection` | Направление ветра (радианы, `-PI..+PI`) |
-| `GetWindMagnitude()` | `WindMagnitude` | Скорость ветра (м/с) |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `GetOvercast()` | `Overcast` | Cloud cover |
+| `GetFog()` | `Fog` | Fog |
+| `GetRain()` | `Rain` | Rain |
+| `GetSnowfall()` | `Snowfall` | Snowfall |
+| `GetWindDirection()` | `WindDirection` | Wind direction (radians, `-PI..+PI`) |
+| `GetWindMagnitude()` | `WindMagnitude` | Wind speed (m/s) |
 
-#### Ветер (proto native)
+#### Wind (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `GetWind()` | Вектор ветра (направление × скорость) |
-| `SetWind(wind)` | Установить вектор ветра |
-| `GetWindSpeed()` / `SetWindSpeed(speed)` | Скорость ветра (м/с). Минимум 0.1 |
-| `GetWindMaximumSpeed()` / `SetWindMaximumSpeed(maxSpeed)` | Максимальная скорость (по умолчанию 10 м/с) |
-| `GetWindFunctionParams(out fnMin, out fnMax, out fnSpeed)` | Параметры функции изменения ветра |
-| `SetWindFunctionParams(fnMin, fnMax, fnSpeed)` | Установить параметры |
+| Method | Description |
+|--------|-------------|
+| `GetWind()` | Wind vector (direction × speed) |
+| `SetWind(wind)` | Set wind vector |
+| `GetWindSpeed()` / `SetWindSpeed(speed)` | Wind speed (m/s). Minimum 0.1 |
+| `GetWindMaximumSpeed()` / `SetWindMaximumSpeed(maxSpeed)` | Max speed (default 10 m/s) |
+| `GetWindFunctionParams(out fnMin, out fnMax, out fnSpeed)` | Wind change function parameters |
+| `SetWindFunctionParams(fnMin, fnMax, fnSpeed)` | Set parameters |
 
-#### Гроза и дождь (proto native)
+#### Storm and rain (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `SetStorm(density, threshold, timeOut)` | Гроза: `density` 0..1, `threshold` — порог облачности, `timeOut` — мин. пауза между молниями |
-| `SuppressLightningSimulation(state)` | Вкл/выкл симуляцию молний на клиенте |
-| `SetRainThresholds(tMin, tMax, tTime)` | Дождь только при облачности в `<tMin, tMax>`. `tTime` — время остановки (по умолчанию 0.6, 1.0, 30) |
-| `SetSnowfallThresholds(tMin, tMax, tTime)` | Аналогично для снегопада |
+| Method | Description |
+|--------|-------------|
+| `SetStorm(density, threshold, timeOut)` | Storm: `density` 0..1, `threshold` — overcast threshold, `timeOut` — minimum pause between lightning strikes |
+| `SuppressLightningSimulation(state)` | Enable/disable lightning simulation on the client |
+| `SetRainThresholds(tMin, tMax, tTime)` | Rain only when overcast is in `<tMin, tMax>`. `tTime` — stop time (default 0.6, 1.0, 30) |
+| `SetSnowfallThresholds(tMin, tMax, tTime)` | Same for snowfall |
 
-#### Время и управление
+#### Time and control
 
-| Метод | Описание |
-|-------|----------|
-| `GetTime()` | Серверное время с запуска (сек) |
-| `GetMissionWeather()` / `SetMissionWeather(state)` | Флаг кастомной погоды миссии |
-| `GetWeatherUpdateFrozen()` / `SetWeatherUpdateFrozen(state)` | Заморозка обновления погоды |
+| Method | Description |
+|--------|-------------|
+| `GetTime()` | Server time since launch (sec) |
+| `GetMissionWeather()` / `SetMissionWeather(state)` | Custom mission weather flag |
+| `GetWeatherUpdateFrozen()` / `SetWeatherUpdateFrozen(state)` | Freeze weather updates |
 
-#### Конвертация (static)
+#### Conversion (static)
 
-| Метод | Описание |
-|-------|----------|
-| `WindDirectionToAngle(dir)` | Вектор направления → угол (рад) |
-| `AngleToWindDirection(angle)` | Угол → вектор направления |
+| Method | Description |
+|--------|-------------|
+| `WindDirectionToAngle(dir)` | Direction vector → angle (rad) |
+| `AngleToWindDirection(angle)` | Angle → direction vector |

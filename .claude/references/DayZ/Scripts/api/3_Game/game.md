@@ -1,147 +1,147 @@
-Основной класс игры и управление миром. Наследование: `Game` (2_GameLib) → `CGame` → `DayZGame`. Источники: `global/game.c`, `dayzgame.c`
+Main game class and world management. Inheritance: `Game` (2_GameLib) → `CGame` → `DayZGame`. Sources: `global/game.c`, `dayzgame.c`
 
-Глобальный экземпляр: `g_Game`. Константа: `GAME_STORAGE_VERSION = 142`.
+Global instance: `g_Game`. Constant: `GAME_STORAGE_VERSION = 142`.
 
 ### CGame
 
-Расширяет `Game` из 2_GameLib. Определяет DayZ-специфичный API: конфиг, объекты, профили, сеть.
+Extends `Game` from 2_GameLib. Defines the DayZ-specific API: config, objects, profiles, networking.
 
-#### Lifecycle (переопределяемые)
+#### Lifecycle (overridable)
 
-| Метод | Когда вызывается |
-|-------|------------------|
-| `OnEvent(EventType eventTypeId, Param params)` | Системное событие |
-| `OnAfterCreate()` | После создания экземпляра CGame |
-| `OnInitialize()` → `bool` | Перед игровым циклом. `true` = инициализация в скриптах |
-| `OnUpdate(bool doSim, float timeslice)` | Каждый кадр. `doSim=false` при паузе |
-| `OnPostUpdate(bool doSim, float timeslice)` | После симуляции сущностей |
-| `OnKeyPress(int key)` / `OnKeyRelease(int key)` | Нажатие/отпускание клавиши (DIK код) |
-| `OnMouseButtonPress(int button)` / `OnMouseButtonRelease(int button)` | Клик мыши |
-| `OnActivateMessage()` / `OnDeactivateMessage()` | Фокус окна (Windows) |
-| `OnDeviceReset()` | Сброс графического устройства, сброс скриптовых переменных |
-| `OnRPC(PlayerIdentity sender, Object target, int rpc_type, ParamsReadContext ctx)` | Входящий RPC. `target=NULL` → глобальный RPC |
+| Method | When invoked |
+|--------|--------------|
+| `OnEvent(EventType eventTypeId, Param params)` | System event |
+| `OnAfterCreate()` | After CGame instance is created |
+| `OnInitialize()` → `bool` | Before the game loop. `true` = initialization in scripts |
+| `OnUpdate(bool doSim, float timeslice)` | Every frame. `doSim=false` when paused |
+| `OnPostUpdate(bool doSim, float timeslice)` | After entity simulation |
+| `OnKeyPress(int key)` / `OnKeyRelease(int key)` | Key press/release (DIK code) |
+| `OnMouseButtonPress(int button)` / `OnMouseButtonRelease(int button)` | Mouse click |
+| `OnActivateMessage()` / `OnDeactivateMessage()` | Window focus (Windows) |
+| `OnDeviceReset()` | Graphics device reset, reset script variables |
+| `OnRPC(PlayerIdentity sender, Object target, int rpc_type, ParamsReadContext ctx)` | Incoming RPC. `target=NULL` → global RPC |
 
-#### Мир и доступ (proto native)
+#### World and access (proto native)
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `GetWorkspace()` | `WorkspaceWidget` | Корневой UI workspace |
-| `GetLoadingWorkspace()` | `WorkspaceWidget` | Workspace загрузочного экрана |
-| `GetWorld()` | `World` | Объект текущего мира |
-| `GetPlayer()` | `DayZPlayer` | Локальный игрок |
-| `GetPlayers(out array<Man> players)` | `void` | Список всех игроков |
-| `GetUIManager()` | `UIManager` | Менеджер UI |
-| `GetInput()` | `Input` | Система ввода |
-| `GetSoundScene()` | `AbstractSoundScene` | Звуковая сцена |
-| `GetNoiseSystem()` | `NoiseSystem` | Система шума (для ИИ) |
-| `GetCurrentCameraPosition()` | `vector` | Позиция камеры |
-| `GetCurrentCameraDirection()` | `vector` | Направление камеры |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `GetWorkspace()` | `WorkspaceWidget` | Root UI workspace |
+| `GetLoadingWorkspace()` | `WorkspaceWidget` | Loading screen workspace |
+| `GetWorld()` | `World` | Current world object |
+| `GetPlayer()` | `DayZPlayer` | Local player |
+| `GetPlayers(out array<Man> players)` | `void` | List of all players |
+| `GetUIManager()` | `UIManager` | UI manager |
+| `GetInput()` | `Input` | Input system |
+| `GetSoundScene()` | `AbstractSoundScene` | Sound scene |
+| `GetNoiseSystem()` | `NoiseSystem` | Noise system (for AI) |
+| `GetCurrentCameraPosition()` | `vector` | Camera position |
+| `GetCurrentCameraDirection()` | `vector` | Camera direction |
 
-#### Объекты (proto native)
+#### Objects (proto native)
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `CreateObject(type, pos, create_local, init_ai, create_physics)` | `Object` | Создать объект по типу |
-| `CreateObjectEx(type, pos, iFlags, iRotation)` | `Object` | Создать с ECE-флагами и вращением |
-| `CreateStaticObjectUsingP3D(p3d, pos, ori, scale, createLocal)` | `Object` | Создать статический объект из P3D |
-| `ObjectDelete(obj)` | `void` | Удалить объект |
-| `ObjectRelease(obj)` | `int` | Освободить объект |
-| `ObjectModelToWorld(obj, modelPos)` | `vector` | Модельные → мировые координаты |
-| `ObjectWorldToModel(obj, worldPos)` | `vector` | Мировые → модельные координаты |
-| `ObjectGetSelectionPosition(obj, name)` | `vector` | Позиция именованной selection |
-| `ObjectGetSelectionPositionMS(obj, name)` | `vector` | В model space |
-| `ObjectGetSelectionPositionWS(obj, name)` | `vector` | В world space |
-| `PreloadObject(type, distance)` | `bool` | Предзагрузить объекты типа |
-| `GetObjectsAtPosition(pos, radius, out objects, out proxyCargos)` | `void` | Объекты в круге (2D) |
-| `GetObjectsAtPosition3D(pos, radius, out objects, out proxyCargos)` | `void` | Объекты в сфере (3D) |
-| `IsObjectAccesible(item, player)` | `bool` | Доступ к карго/аттачментам по дистанции |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `CreateObject(type, pos, create_local, init_ai, create_physics)` | `Object` | Create object by type |
+| `CreateObjectEx(type, pos, iFlags, iRotation)` | `Object` | Create with ECE flags and rotation |
+| `CreateStaticObjectUsingP3D(p3d, pos, ori, scale, createLocal)` | `Object` | Create static object from P3D |
+| `ObjectDelete(obj)` | `void` | Delete object |
+| `ObjectRelease(obj)` | `int` | Release object |
+| `ObjectModelToWorld(obj, modelPos)` | `vector` | Model → world coordinates |
+| `ObjectWorldToModel(obj, worldPos)` | `vector` | World → model coordinates |
+| `ObjectGetSelectionPosition(obj, name)` | `vector` | Named selection position |
+| `ObjectGetSelectionPositionMS(obj, name)` | `vector` | In model space |
+| `ObjectGetSelectionPositionWS(obj, name)` | `vector` | In world space |
+| `PreloadObject(type, distance)` | `bool` | Preload objects of type |
+| `GetObjectsAtPosition(pos, radius, out objects, out proxyCargos)` | `void` | Objects in circle (2D) |
+| `GetObjectsAtPosition3D(pos, radius, out objects, out proxyCargos)` | `void` | Objects in sphere (3D) |
+| `IsObjectAccesible(item, player)` | `bool` | Access to cargo/attachments by distance |
 
-#### Конфигурация (proto native)
+#### Configuration (proto native)
 
-Чтение значений из `configFile` / `missionConfigFile`. Путь: классы через пробел (`"CfgVehicles AK74 scope"`).
+Reading values from `configFile` / `missionConfigFile`. Path: classes separated by spaces (`"CfgVehicles AK74 scope"`).
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `ConfigGetText(path, out value)` | `bool` | Строка |
-| `ConfigGetTextRaw(path, out value)` | `bool` | Строка без локализации (`$STR_` не раскрываются) |
-| `ConfigGetFloat(path)` | `float` | Число с плавающей точкой |
-| `ConfigGetInt(path)` | `int` | Целое число |
-| `ConfigGetVector(path)` | `vector` | Вектор |
-| `ConfigGetTextArray(path, out values)` | `void` | Массив строк |
-| `ConfigGetFloatArray(path, out values)` | `void` | Массив float |
-| `ConfigGetIntArray(path, out values)` | `void` | Массив int |
-| `ConfigGetType(path)` | `int` | Тип: `CT_INT`, `CT_FLOAT`, `CT_STRING`, `CT_ARRAY`, `CT_CLASS` |
-| `ConfigGetChildName(path, index, out name)` | `bool` | Имя подкласса по индексу |
-| `ConfigGetBaseName(path, out base_name)` | `bool` | Имя базового класса |
-| `ConfigGetChildrenCount(path)` | `int` | Кол-во подклассов |
-| `ConfigIsExisting(path)` | `bool` | Путь существует |
-| `ConfigGetFullPath(path, out full_path)` | `void` | Полный путь (массив) |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `ConfigGetText(path, out value)` | `bool` | String |
+| `ConfigGetTextRaw(path, out value)` | `bool` | String without localization (`$STR_` is not expanded) |
+| `ConfigGetFloat(path)` | `float` | Floating-point number |
+| `ConfigGetInt(path)` | `int` | Integer |
+| `ConfigGetVector(path)` | `vector` | Vector |
+| `ConfigGetTextArray(path, out values)` | `void` | Array of strings |
+| `ConfigGetFloatArray(path, out values)` | `void` | Array of floats |
+| `ConfigGetIntArray(path, out values)` | `void` | Array of ints |
+| `ConfigGetType(path)` | `int` | Type: `CT_INT`, `CT_FLOAT`, `CT_STRING`, `CT_ARRAY`, `CT_CLASS` |
+| `ConfigGetChildName(path, index, out name)` | `bool` | Subclass name by index |
+| `ConfigGetBaseName(path, out base_name)` | `bool` | Base class name |
+| `ConfigGetChildrenCount(path)` | `int` | Number of subclasses |
+| `ConfigIsExisting(path)` | `bool` | Path exists |
+| `ConfigGetFullPath(path, out full_path)` | `void` | Full path (array) |
 
-#### Игроки и сеть (proto native)
+#### Players and networking (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `CreatePlayer(identity, name, pos, radius, spec)` | Создать игрока (сервер) |
-| `SelectPlayer(identity, player)` | Назначить управляемый объект |
-| `SelectSpectator(identity, spectatorObjType, position)` | Создать наблюдателя |
-| `UpdateSpectatorPosition(position)` | Обновить позицию сетевого бабла |
-| `DisconnectPlayer(identity, uid)` | Кикнуть игрока (сервер) |
-| `SendLogoutTime(player, time)` | Отправить экран выхода клиенту |
-| `GetPlayerNetworkIDByIdentityID(id, out low, out high)` | ID игрока → network ID |
-| `GetObjectByNetworkId(low, high)` | Network ID → объект |
-| `RegisterNetworkStaticObject(object)` | Включить репликацию статического объекта |
-| `AddToReconnectCache(identity)` | Добавить в кеш реконнекта (сервер) |
-| `RemoveFromReconnectCache(uid)` | Удалить из кеша |
+| Method | Description |
+|--------|-------------|
+| `CreatePlayer(identity, name, pos, radius, spec)` | Create player (server) |
+| `SelectPlayer(identity, player)` | Assign controlled object |
+| `SelectSpectator(identity, spectatorObjType, position)` | Create spectator |
+| `UpdateSpectatorPosition(position)` | Update network bubble position |
+| `DisconnectPlayer(identity, uid)` | Kick player (server) |
+| `SendLogoutTime(player, time)` | Send logout screen to client |
+| `GetPlayerNetworkIDByIdentityID(id, out low, out high)` | Player ID → network ID |
+| `GetObjectByNetworkId(low, high)` | Network ID → object |
+| `RegisterNetworkStaticObject(object)` | Enable replication for a static object |
+| `AddToReconnectCache(identity)` | Add to reconnect cache (server) |
+| `RemoveFromReconnectCache(uid)` | Remove from cache |
 
-#### Соединение (proto native)
+#### Connection (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `Connect(parent, ip, port, password)` | Подключиться к серверу |
-| `ConnectLastSession(parent, selectedCharacter)` | Переподключиться |
-| `DisconnectSession()` | Отключиться |
-| `DisconnectSessionForce()` | Принудительное отключение |
-| `GetHostAddress(out address, out port)` | Адрес сервера |
-| `GetHostName()` | Имя сервера |
+| Method | Description |
+|--------|-------------|
+| `Connect(parent, ip, port, password)` | Connect to a server |
+| `ConnectLastSession(parent, selectedCharacter)` | Reconnect |
+| `DisconnectSession()` | Disconnect |
+| `DisconnectSessionForce()` | Force disconnect |
+| `GetHostAddress(out address, out port)` | Server address |
+| `GetHostName()` | Server name |
 
-#### Профиль и система (proto native)
+#### Profile and system (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `GetProfileString(name, out value)` / `SetProfileString(name, value)` | Строка профиля |
-| `GetProfileStringList(name, out values)` / `SetProfileStringList(name, values)` | Массив строк профиля |
-| `SaveProfile()` | Сохранить профиль на диск |
-| `GetPlayerName(out name)` / `SetPlayerName(name)` | Имя игрока |
-| `CommandlineGetParam(name, out value)` | Параметр командной строки |
-| `CopyToClipboard(text)` / `CopyFromClipboard(out text)` | Буфер обмена |
-| `StorageVersion(version)` | Установить версию хранилища |
-| `LoadVersion()` / `SaveVersion()` | Текущая версия загрузки/сохранения |
-| `GetTickTime()` | Время от старта игры (сек) |
-| `GetDayTime()` | Игровое время суток (сервер) |
-| `GetFps()` / `GetAvgFPS(n)` / `GetMinFPS(n)` / `GetMaxFPS(n)` | FPS-статистика |
-| `RequestExit(code)` / `RequestRestart(code)` | Выход/рестарт |
-| `IsAppActive()` | Окно в фокусе |
-| `AdminLog(text)` | Запись в админ-лог |
+| Method | Description |
+|--------|-------------|
+| `GetProfileString(name, out value)` / `SetProfileString(name, value)` | Profile string |
+| `GetProfileStringList(name, out values)` / `SetProfileStringList(name, values)` | Profile string array |
+| `SaveProfile()` | Save profile to disk |
+| `GetPlayerName(out name)` / `SetPlayerName(name)` | Player name |
+| `CommandlineGetParam(name, out value)` | Command-line parameter |
+| `CopyToClipboard(text)` / `CopyFromClipboard(out text)` | Clipboard |
+| `StorageVersion(version)` | Set storage version |
+| `LoadVersion()` / `SaveVersion()` | Current load/save version |
+| `GetTickTime()` | Time since game start (sec) |
+| `GetDayTime()` | In-game time of day (server) |
+| `GetFps()` / `GetAvgFPS(n)` / `GetMinFPS(n)` / `GetMaxFPS(n)` | FPS stats |
+| `RequestExit(code)` / `RequestRestart(code)` | Exit/restart |
+| `IsAppActive()` | Window is focused |
+| `AdminLog(text)` | Write to admin log |
 
-#### Juncture (proto native, сервер)
+#### Juncture (proto native, server)
 
-Механизм блокировки предметов при сетевых операциях.
+Mechanism for locking items during network operations.
 
-| Метод | Описание |
-|-------|----------|
-| `AddInventoryJuncture(player, item, dst, test_dst_occupancy, timeout_ms)` | Создать блокировку |
-| `HasInventoryJunctureItem(item)` | Предмет заблокирован (любой игрок) |
-| `HasInventoryJuncture(player, item)` | Предмет заблокирован конкретным игроком |
-| `HasInventoryJunctureDestination(player, dst)` | Место назначения заблокировано |
-| `AddActionJuncture(player, item, timeout_ms)` | Блокировка для действия |
-| `ExtendActionJuncture(player, item, timeout_ms)` | Продлить блокировку |
-| `ClearJuncture(player, item)` | Снять блокировку |
+| Method | Description |
+|--------|-------------|
+| `AddInventoryJuncture(player, item, dst, test_dst_occupancy, timeout_ms)` | Create lock |
+| `HasInventoryJunctureItem(item)` | Item is locked (any player) |
+| `HasInventoryJuncture(player, item)` | Item is locked by a specific player |
+| `HasInventoryJunctureDestination(player, dst)` | Destination is locked |
+| `AddActionJuncture(player, item, timeout_ms)` | Lock for an action |
+| `ExtendActionJuncture(player, item, timeout_ms)` | Extend the lock |
+| `ClearJuncture(player, item)` | Release the lock |
 
 ### DayZGame
 
-Наследует `CGame`. Управляет состояниями загрузки, модальными экранами, профилями DayZ.
+Inherits `CGame`. Manages loading states, modal screens, DayZ profiles.
 
-#### Состояния
+#### States
 
 ```
 DayZGameState: UNDEFINED, MAIN_MENU, JOINING, IN_GAME, CONNECTING
@@ -150,73 +150,73 @@ DayZLoadState: UNDEFINED, MAIN_MENU_START, MAIN_MENU_CONTROLLER_SELECT,
                JOIN_USER_SELECT, MISSION_START, MISSION_USER_SELECT
 ```
 
-#### Коллизии снарядов
+#### Projectile collisions
 
-| Класс | Описание |
-|-------|----------|
-| `ProjectileStoppedInfo` | Базовый: `GetSource()`, `GetPos()`, `GetInVelocity()`, `GetAmmoType()`, `GetProjectileDamage()` |
+| Class | Description |
+|-------|-------------|
+| `ProjectileStoppedInfo` | Base: `GetSource()`, `GetPos()`, `GetInVelocity()`, `GetAmmoType()`, `GetProjectileDamage()` |
 | `CollisionInfoBase` | + `GetSurfNormal()` |
 | `ObjectCollisionInfo` | + `GetHitObj()`, `GetHitObjPos()`, `GetHitObjRot()`, `GetComponentIndex()` |
 | `TerrainCollisionInfo` | + `GetIsWater()` |
 
 #### CrashSoundSets
 
-Статический реестр звуков столкновений по хешу.
+Static registry of collision sounds by hash.
 
-| Метод | Описание |
-|-------|----------|
-| `RegisterSoundSet(sound_set)` | Зарегистрировать звуковой набор |
-| `GetSoundSetByHash(hash)` | Получить по хешу |
+| Method | Description |
+|--------|-------------|
+| `RegisterSoundSet(sound_set)` | Register a sound set |
+| `GetSoundSetByHash(hash)` | Get by hash |
 
 ### World
 
-Управление игровым миром. Доступ: `g_Game.GetWorld()`. Источник: `global/world.c`
+Game world management. Access: `g_Game.GetWorld()`. Source: `global/world.c`
 
-#### Время и дата (proto native)
+#### Time and date (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `GetDate(out y, out m, out d, out h, out min)` | Текущая игровая дата |
-| `SetDate(y, m, d, h, min)` | Установить дату |
-| `SetTimeMultiplier(mult)` | Множитель скорости времени |
+| Method | Description |
+|--------|-------------|
+| `GetDate(out y, out m, out d, out h, out min)` | Current in-game date |
+| `SetDate(y, m, d, h, min)` | Set the date |
+| `SetTimeMultiplier(mult)` | Time speed multiplier |
 
-#### География (proto native)
+#### Geography (proto native)
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `GetLatitude()` | `float` | Широта (для расчёта солнца) |
-| `GetLongitude()` | `float` | Долгота |
-| `GetMoonIntensity()` | `float` | Интенсивность луны |
-| `GetSunOrMoon()` | `float` | 0 = луна, 1 = солнце |
-| `IsNight()` | `bool` | Ночь |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `GetLatitude()` | `float` | Latitude (for sun calculation) |
+| `GetLongitude()` | `float` | Longitude |
+| `GetMoonIntensity()` | `float` | Moon intensity |
+| `GetSunOrMoon()` | `float` | 0 = moon, 1 = sun |
+| `IsNight()` | `bool` | Night |
 
-#### Видимость (proto native)
+#### Visibility (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `SetPreferredViewDistance(dist)` | Предпочтительная дальность |
-| `SetViewDistance(dist)` | Дальность прорисовки |
-| `SetObjectViewDistance(dist)` | Дальность объектов |
-| `GetEyeAccom()` | Текущая адаптация глаз |
-| `SetEyeAccom(value)` | Установить адаптацию |
+| Method | Description |
+|--------|-------------|
+| `SetPreferredViewDistance(dist)` | Preferred view distance |
+| `SetViewDistance(dist)` | Render distance |
+| `SetObjectViewDistance(dist)` | Object distance |
+| `GetEyeAccom()` | Current eye accommodation |
+| `SetEyeAccom(value)` | Set accommodation |
 
-#### Навигация (proto native)
+#### Navigation (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `GetAIWorld()` | Объект `AIWorld` |
-| `UpdatePathgraphDoorByAnimationSourceName(building, animSource)` | Обновить навмеш для двери |
-| `MarkObjectForPathgraphUpdate(object)` | Пометить объект для пересчёта навмеша |
+| Method | Description |
+|--------|-------------|
+| `GetAIWorld()` | `AIWorld` object |
+| `UpdatePathgraphDoorByAnimationSourceName(building, animSource)` | Update navmesh for a door |
+| `MarkObjectForPathgraphUpdate(object)` | Mark an object for navmesh recalculation |
 
-#### Звук и материалы (proto native)
+#### Sound and materials (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `GetMaterial(materialName)` | Получить материал |
-| `CheckSoundObstruction(source, pos1, pos2, geometry)` | Проверить звуковое препятствие |
+| Method | Description |
+|--------|-------------|
+| `GetMaterial(materialName)` | Get a material |
+| `CheckSoundObstruction(source, pos1, pos2, geometry)` | Check sound obstruction |
 
-#### Игроки (proto native)
+#### Players (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `GetPlayerList(out array)` | Список игроков |
+| Method | Description |
+|--------|-------------|
+| `GetPlayerList(out array)` | List of players |

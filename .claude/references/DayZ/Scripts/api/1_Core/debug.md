@@ -1,90 +1,90 @@
-Инструменты отладки. Источник: `proto/endebug.c`, `debug/`
+Debugging tools. Source: `proto/endebug.c`, `debug/`
 
-### Вывод в лог
+### Log output
 
-| Функция | Описание |
+| Function | Description |
 |---------|----------|
-| `Print(var)` | Вывод любой переменной в консоль/лог |
-| `PrintFormat(fmt, p1..p9)` | Форматированный вывод (`%1`, `%2`...) |
-| `PrintToRPT(var)` | Запись в RPT файл (fflush каждый раз — осторожно с производительностью) |
-| `DPrint(var)` | Критические сообщения (debug log) |
+| `Print(var)` | Print any variable to console/log |
+| `PrintFormat(fmt, p1..p9)` | Formatted output (`%1`, `%2`...) |
+| `PrintToRPT(var)` | Write to RPT file (fflushes each time — be careful with performance) |
+| `DPrint(var)` | Critical messages (debug log) |
 
-### Ошибки
+### Errors
 
-| Функция | Описание |
+| Function | Description |
 |---------|----------|
-| `ErrorEx(msg, severity)` | Ошибка с именем класса/метода в префиксе. `INFO` — лог, `WARNING`/`ERROR` — messagebox |
-| `ErrorExString(msg, out str, severity)` | То же, но сохраняет в строку |
-| `Error(msg)` | Messagebox с ошибкой |
-| `Error2(title, msg)` | Messagebox с заголовком |
+| `ErrorEx(msg, severity)` | Error with class/method name as prefix. `INFO` — log, `WARNING`/`ERROR` — messagebox |
+| `ErrorExString(msg, out str, severity)` | Same, but saves to a string |
+| `Error(msg)` | Messagebox with an error |
+| `Error2(title, msg)` | Messagebox with a title |
 
 `ErrorExSeverity`: `INFO`, `WARNING`, `ERROR`
 
 ### Stack trace
 
-| Функция | Описание |
+| Function | Description |
 |---------|----------|
-| `DumpStack()` | Вывод стека вызовов в консоль |
-| `DumpStackString(out str)` | Стек вызовов в строку |
-| `DebugBreak(condition, p1..p9)` | Breakpoint в C++ (debug environment) |
+| `DumpStack()` | Print call stack to console |
+| `DumpStackString(out str)` | Call stack to a string |
+| `DebugBreak(condition, p1..p9)` | Breakpoint in C++ (debug environment) |
 
-### Shape — визуальная отладка
+### Shape — visual debugging
 
-Создание debug-геометрии в мире.
+Creation of debug geometry in the world.
 
 **ShapeType:** `BBOX`, `LINE`, `SPHERE`, `CYLINDER`, `DIAMOND`, `PYRAMID`
 
 **ShapeFlags:**
 
-| Флаг | Описание |
+| Flag | Description |
 |------|----------|
-| `ONCE` | Рисуется один кадр, автоудаление. Не сохраняйте указатель |
-| `WIREFRAME` | Только каркас |
-| `NOOUTLINE` | Только заливка |
-| `NOZBUFFER` | Не сравнивать z-buffer |
-| `NOZWRITE` | Не записывать в z-buffer |
-| `TRANSP` | Полупрозрачный |
-| `ADDITIVE` | Аддитивное смешивание (с TRANSP) |
-| `DOUBLESIDE` | Двусторонний |
-| `VISIBLE` | По умолчанию включён |
+| `ONCE` | Drawn for one frame, auto-removed. Do not store the pointer |
+| `WIREFRAME` | Wireframe only |
+| `NOOUTLINE` | Fill only |
+| `NOZBUFFER` | Do not compare z-buffer |
+| `NOZWRITE` | Do not write to z-buffer |
+| `TRANSP` | Semi-transparent |
+| `ADDITIVE` | Additive blending (with TRANSP) |
+| `DOUBLESIDE` | Two-sided |
+| `VISIBLE` | Enabled by default |
 
-**Создание:**
+**Creation:**
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `Shape.Create(type, color, flags, p1, p2)` | Базовая фигура |
-| `Shape.CreateLines(color, flags, points[], num)` | Линии |
-| `Shape.CreateTris(color, flags, points[], num)` | Треугольники |
-| `Shape.CreateSphere(color, flags, origin, radius)` | Сфера |
-| `Shape.CreateCylinder(color, flags, origin, radius, length)` | Цилиндр |
-| `Shape.CreateFrustum(hAngle, vAngle, length, color, flags)` | Фрустум |
-| `Shape.CreateArrow(from, to, size, color, flags)` | Стрелка |
-| `Shape.CreateMatrix(mat[4], axisLen, arrowSize)` | Оси координат (RGB = XYZ) |
+| `Shape.Create(type, color, flags, p1, p2)` | Basic shape |
+| `Shape.CreateLines(color, flags, points[], num)` | Lines |
+| `Shape.CreateTris(color, flags, points[], num)` | Triangles |
+| `Shape.CreateSphere(color, flags, origin, radius)` | Sphere |
+| `Shape.CreateCylinder(color, flags, origin, radius, length)` | Cylinder |
+| `Shape.CreateFrustum(hAngle, vAngle, length, color, flags)` | Frustum |
+| `Shape.CreateArrow(from, to, size, color, flags)` | Arrow |
+| `Shape.CreateMatrix(mat[4], axisLen, arrowSize)` | Coordinate axes (RGB = XYZ) |
 
-**Управление:** `SetPosition(pos)`, `SetDirection(dir)`, `SetColor(color)`, `SetMatrix(mat[4])`, `SetFlags(flags)`, `Destroy()`
+**Management:** `SetPosition(pos)`, `SetDirection(dir)`, `SetColor(color)`, `SetMatrix(mat[4])`, `SetFlags(flags)`, `Destroy()`
 
-### DiagMenu — диагностическое меню
+### DiagMenu — diagnostic menu
 
-Доступно только в Diag/Developer билдах. Позволяет создавать пункты меню для отладки.
+Available only in Diag/Developer builds. Allows creating menu items for debugging.
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `InitScriptDiags()` | Инициализировать перед регистрацией |
-| `ClearScriptDiags()` | Очистить все скриптовые пункты |
-| `RegisterMenu(id, name, parent)` | Зарегистрировать подменю |
-| `RegisterItem(id, shortcut, name, parent, values, callback)` | Пункт с выбором значений |
-| `RegisterBool(id, shortcut, name, parent, reverse, callback)` | Bool пункт |
-| `RegisterRange(id, shortcut, name, parent, "min,max,start,step", callback)` | Диапазон |
-| `Unregister(id)` | Удалить пункт |
-| `BindCallback(id, callback)` | Привязать callback |
-| `GetBool(id)` / `GetValue(id)` / `GetRangeValue(id)` | Получить значение |
-| `SetValue(id, value)` / `SetRangeValue(id, value)` | Установить значение |
+| `InitScriptDiags()` | Initialize before registration |
+| `ClearScriptDiags()` | Clear all script items |
+| `RegisterMenu(id, name, parent)` | Register a submenu |
+| `RegisterItem(id, shortcut, name, parent, values, callback)` | Item with value selection |
+| `RegisterBool(id, shortcut, name, parent, reverse, callback)` | Bool item |
+| `RegisterRange(id, shortcut, name, parent, "min,max,start,step", callback)` | Range |
+| `Unregister(id)` | Remove item |
+| `BindCallback(id, callback)` | Bind callback |
+| `GetBool(id)` / `GetValue(id)` / `GetRangeValue(id)` | Get value |
+| `SetValue(id, value)` / `SetRangeValue(id, value)` | Set value |
 
-### DebugText — текст на экране
+### DebugText — on-screen text
 
-Базовый класс: `DebugText` с методами `GetText()`, `SetText(text)`, `SetTextColor(color)`, `SetFontSize(size)`, `SetBackgroundColor(color)`, `SetPriority(priority)`.
+Base class: `DebugText` with methods `GetText()`, `SetText(text)`, `SetTextColor(color)`, `SetFontSize(size)`, `SetBackgroundColor(color)`, `SetPriority(priority)`.
 
-**DebugTextScreenSpace** — экранные координаты:
+**DebugTextScreenSpace** — screen coordinates:
 
 ```cpp
 // Одноразовый текст (ONCE — не нужно хранить ссылку)
@@ -95,7 +95,7 @@ ref DebugTextScreenSpace txt = DebugTextScreenSpace.Create("Hello", 0, 0.5, 0.5)
 txt.SetPosition(0.3, 0.3);
 ```
 
-**DebugTextWorldSpace** — мировые координаты:
+**DebugTextWorldSpace** — world coordinates:
 
 ```cpp
 // Текст в мире
@@ -107,22 +107,22 @@ DebugTextWorldSpace.CreateInWorld("Label", flags, transform, 0.5);
 
 **DebugTextFlags:** `DEFAULT`, `CENTER`, `FACE_CAMERA`, `ONCE`, `IN_WORLD`, `DONT_SCALE_POS`, `DONT_SCALE`
 
-### EnProfiler — профайлер
+### EnProfiler — profiler
 
-Доступен в developer/diag билдах. Запуск: параметр `-profile`.
+Available in developer/diag builds. Launch: `-profile` parameter.
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `Enable(enable, immediate, sessionReset)` | Вкл/выкл профилирования |
-| `SetModule(EnProfilerModule)` | Модуль для анализа: `CORE`, `GAMELIB`, `GAME`, `WORLD`, `MISSION` |
-| `SetFlags(flags)` | `RESET` — сброс после сортировки, `RECURSIVE` — все модули |
-| `SetInterval(frames)` | Интервал обновления данных |
-| `SortData()` | Принудительная сортировка |
-| `GetTimeOfClass(typename, immediate)` | Время класса |
-| `GetTimeOfFunc(func, typename, immediate)` | Время функции |
-| `GetCountOfFunc(func, typename, immediate)` | Кол-во вызовов функции |
-| `GetAllocationsOfClass(typename, immediate)` | Аллокации класса |
-| `GetInstancesOfClass(typename, immediate)` | Текущие инстансы |
-| `GetTimePerClass(out arr, count)` | Топ классов по времени |
-| `GetTimePerFunc(out arr, count)` | Топ функций по времени |
-| `Dump()` | Вывод данных в лог |
+| `Enable(enable, immediate, sessionReset)` | Enable/disable profiling |
+| `SetModule(EnProfilerModule)` | Module to analyze: `CORE`, `GAMELIB`, `GAME`, `WORLD`, `MISSION` |
+| `SetFlags(flags)` | `RESET` — reset after sorting, `RECURSIVE` — all modules |
+| `SetInterval(frames)` | Data update interval |
+| `SortData()` | Force sort |
+| `GetTimeOfClass(typename, immediate)` | Time of a class |
+| `GetTimeOfFunc(func, typename, immediate)` | Time of a function |
+| `GetCountOfFunc(func, typename, immediate)` | Call count of a function |
+| `GetAllocationsOfClass(typename, immediate)` | Allocations of a class |
+| `GetInstancesOfClass(typename, immediate)` | Current instances |
+| `GetTimePerClass(out arr, count)` | Top classes by time |
+| `GetTimePerFunc(out arr, count)` | Top functions by time |
+| `Dump()` | Output data to log |

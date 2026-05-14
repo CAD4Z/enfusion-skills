@@ -1,44 +1,44 @@
-Препроцессорные дефайны (задаются C++ стороной). Источник: `defines.c`
+Preprocessor defines (set by the C++ side). Source: `defines.c`
 
-Используются в `#ifdef` / `#ifndef` блоках для условной компиляции.
+Used in `#ifdef` / `#ifndef` blocks for conditional compilation.
 
-### Версия и режимы
+### Version and modes
 
-| Define | Описание |
+| Define | Description |
 |--------|----------|
-| `DAYZ_X_XX` | Версия игры (напр. `DAYZ_1_16`) |
-| `BULDOZER` | Режим Buldozer |
-| `WORKBENCH` | Компиляция для Workbench |
+| `DAYZ_X_XX` | Game version (e.g. `DAYZ_1_16`) |
+| `BULDOZER` | Buldozer mode |
+| `WORKBENCH` | Compilation for Workbench |
 
-### Билды
+### Builds
 
-Один из `DEVELOPER` / `RELEASE` всегда активен.
+One of `DEVELOPER` / `RELEASE` is always active.
 
-| Define | Описание |
+| Define | Description |
 |--------|----------|
-| `DIAG` | Диагностический билд |
-| `DEVELOPER` | Девелоперский билд |
-| `RELEASE` | Релизный билд |
+| `DIAG` | Diagnostic build |
+| `DEVELOPER` | Developer build |
+| `RELEASE` | Release build |
 | `DIAG_DEVELOPER` | `DIAG \|\| DEVELOPER` |
-| `BUILD_EXPERIMENTAL` | Экспериментальный билд |
+| `BUILD_EXPERIMENTAL` | Experimental build |
 
-### Сервер
+### Server
 
-Определены только когда `CGame.IsDedicatedServer == true`.
+Defined only when `CGame.IsDedicatedServer == true`.
 
-| Define | Описание |
+| Define | Description |
 |--------|----------|
-| `SERVER` | Выделенный сервер (предпочитай над `IsDedicatedServer()`) |
-| `SERVER_FOR_WINDOWS` | Сервер для Windows клиентов (определён и на Linux серверах) |
-| `SERVER_FOR_X1` | Сервер для Xbox |
-| `SERVER_FOR_PS4` | Сервер для PlayStation |
+| `SERVER` | Dedicated server (prefer over `IsDedicatedServer()`) |
+| `SERVER_FOR_WINDOWS` | Server for Windows clients (defined on Linux servers too) |
+| `SERVER_FOR_X1` | Server for Xbox |
+| `SERVER_FOR_PS4` | Server for PlayStation |
 | `SERVER_FOR_CONSOLE` | `SERVER_FOR_X1 \|\| SERVER_FOR_PS4` |
-| `NO_GUI` | Нет GUI (серверный билд) |
-| `NO_GUI_INGAME` | Нет внутриигрового GUI |
+| `NO_GUI` | No GUI (server build) |
+| `NO_GUI_INGAME` | No in-game GUI |
 
-### Платформа
+### Platform
 
-| Define | Описание |
+| Define | Description |
 |--------|----------|
 | `PLATFORM_WINDOWS` | Windows |
 | `PLATFORM_LINUX` | Linux |
@@ -47,25 +47,25 @@
 | `PLATFORM_MSSTORE` | Microsoft Store |
 | `PLATFORM_CONSOLE` | `XBOX \|\| PS4 \|\| MSSTORE` |
 
-### Логирование
+### Logging
 
-Управляется через параметры запуска.
+Controlled via launch parameters.
 
-| Define | Параметр | Описание |
+| Define | Parameter | Description |
 |--------|----------|----------|
-| `ENABLE_LOGGING` | `-doScriptLogs=1` | Включить скриптовое логирование |
-| `LOG_TO_FILE` | `-logToFile=1` | Лог в файл (default: 1 internal, 0 retail) |
-| `LOG_TO_SCRIPT` | `-logToScript=1` | Лог в скрипт (default: 1 internal, 0 retail) |
-| `LOG_TO_RPT` | `-logToRpt=1` | Лог в RPT (default: 0) |
+| `ENABLE_LOGGING` | `-doScriptLogs=1` | Enable script logging |
+| `LOG_TO_FILE` | `-logToFile=1` | Log to file (default: 1 internal, 0 retail) |
+| `LOG_TO_SCRIPT` | `-logToScript=1` | Log to script (default: 1 internal, 0 retail) |
+| `LOG_TO_RPT` | `-logToRpt=1` | Log to RPT (default: 0) |
 
 ### Feature flags
 
-| Define | Описание |
+| Define | Description |
 |--------|----------|
-| `FEATURE_CURSOR` | WIP: предотвращение перехвата курсора игрой |
-| `FEATURE_NETWORK_RECONCILIATION` | WIP: новая сетевая реконсиляция игроков |
+| `FEATURE_CURSOR` | WIP: prevents the game from capturing the cursor |
+| `FEATURE_NETWORK_RECONCILIATION` | WIP: new network reconciliation for players |
 
-### Пример использования
+### Usage example
 
 ```cpp
 #ifdef SERVER

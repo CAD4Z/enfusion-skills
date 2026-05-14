@@ -1,57 +1,57 @@
-`4_World` — существа. Источники: `entities/creatures/infected/`, `entities/creatures/animals/`
+`4_World` — creatures. Sources: `entities/creatures/infected/`, `entities/creatures/animals/`
 
-### ZombieBase (заражённые)
+### ZombieBase (infected)
 
-Иерархия: `DayZInfected` (3_Game) → `ZombieBase` → `ZombieMaleBase` / `ZombieFemaleBase` → конкретные классы.
+Hierarchy: `DayZInfected` (3_Game) → `ZombieBase` → `ZombieMaleBase` / `ZombieFemaleBase` → concrete classes.
 
-#### Синхронизируемые переменные
+#### Synchronized variables
 
-| Переменная | Тип | Описание |
+| Variable | Type | Description |
 |-----------|-----|----------|
 | `m_MindState` | int (-1..4) | CALM / ALERTED / DISTURBED / CHASE / FIGHT |
-| `m_OrientationSynced` | int (0–359) | Квантизованный yaw (каждые 2с или при >30° разницы) |
-| `m_MovementSpeed` | float (-1..3) | Скорость передвижения |
-| `m_IsCrawling` | bool | Ползание |
+| `m_OrientationSynced` | int (0–359) | Quantized yaw (every 2s or when delta > 30°) |
+| `m_MovementSpeed` | float (-1..3) | Movement speed |
+| `m_IsCrawling` | bool | Crawling |
 
-#### CommandHandler — основной цикл поведения
+#### CommandHandler — main behavior loop
 
 ```
 CommandHandler(dt, commandID, commandFinished)
- 1. ModCommandHandlerBefore() → return true = полный перехват
+ 1. ModCommandHandlerBefore() → return true = full override
  2. HandleDeath() → StartCommand_Death(type, dir)
  3. HandleMove() / HandleOrientation() → sync
- 4. Если команда завершена → StartCommand_Move()
- 5. ModCommandHandlerInside() → mid-flow хук
+ 4. If command finished → StartCommand_Move()
+ 5. ModCommandHandlerInside() → mid-flow hook
  6. HandleCrawlTransition()
  7. HandleDamageHit()
  8. HandleVault()
- 9. HandleMindStateChange() → смена idle-анимации
+ 9. HandleMindStateChange() → swap idle animation
 10. FightLogic() → ChaseAttackLogic / FightAttackLogic → StartCommand_Attack()
-11. ModCommandHandlerAfter() → post-flow хук
+11. ModCommandHandlerAfter() → post-flow hook
 ```
 
-#### Переопределяемые методы
+#### Overridable methods
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `ModCommandHandlerBefore(float, int, bool)` | Полный перехват до стандартной логики |
-| `ModCommandHandlerInside(float, int, bool)` | Хук в середине |
-| `ModCommandHandlerAfter(float, int, bool)` | Хук в конце |
-| `IsZombieMilitary()` | `false`, переопределить для военных |
-| `IsMale()` | `true`, переопределить для женских |
+| `ModCommandHandlerBefore(float, int, bool)` | Full override before the standard logic |
+| `ModCommandHandlerInside(float, int, bool)` | Mid-loop hook |
+| `ModCommandHandlerAfter(float, int, bool)` | End-of-loop hook |
+| `IsZombieMilitary()` | `false`, override for military variants |
+| `IsMale()` | `true`, override for female variants |
 | `CanBeBackstabbed()` | `true` |
-| `EvaluateDeathAnimation(source, component, ammo, out anim, out dir)` | Логика анимации смерти |
-| `GetHitComponentForAI()` | Зоны попадания из конфига |
+| `EvaluateDeathAnimation(source, component, ammo, out anim, out dir)` | Death animation logic |
+| `GetHitComponentForAI()` | Hit zones from config |
 
-#### Боевая логика
+#### Combat logic
 
-При `COMMANDID_MOVE` + CHASE/FIGHT: получить цель из `DayZInfectedInputController.GetTargetEntity()` → `CanAttackToPosition()` → выбор атаки через `GetDayZInfectedType().ChooseAttack(group, distance, pitch)` → `StartCommand_Attack()`.
+On `COMMANDID_MOVE` + CHASE/FIGHT: get the target from `DayZInfectedInputController.GetTargetEntity()` → `CanAttackToPosition()` → pick an attack via `GetDayZInfectedType().ChooseAttack(group, distance, pitch)` → `StartCommand_Attack()`.
 
-При попадании: `DamageSystem.CloseCombatDamageName()`. Заблокированные атаки → `"Dummy_Light"`.
+On hit: `DamageSystem.CloseCombatDamageName()`. Blocked attacks → `"Dummy_Light"`.
 
-#### Звуковой автомат (HandleSoundEvents)
+#### Sound state machine (HandleSoundEvents)
 
-| MindState | Звук |
+| MindState | Sound |
 |-----------|------|
 | CALM | `MINDSTATE_CALM_MOVE` |
 | ALERTED | `MINDSTATE_ALERTED_MOVE` |
@@ -60,55 +60,55 @@ CommandHandler(dt, commandID, commandFinished)
 
 ---
 
-### AnimalBase (животные)
+### AnimalBase (animals)
 
-Иерархия: `DayZAnimal` (3_Game) → `AnimalBase` → конкретные классы.
+Hierarchy: `DayZAnimal` (3_Game) → `AnimalBase` → concrete classes.
 
-Большая часть логики в C++ `DayZAnimal`. Скриптовая часть тонкая.
+Most of the logic lives in C++ `DayZAnimal`. The script side is thin.
 
-#### Ключевые методы
+#### Key methods
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `DeathUpdate()` | Спаун мёртвого предмета (`GetDeadItemName()`), перенос свойств, `DeleteSafe()` |
-| `IsSelfAdjustingTemperature()` | `return IsAlive()` — саморегуляция температуры |
-| `RegisterHitComponentsForAI()` | Зоны попадания и приоритетные веса |
-| `CaptureSound()` / `ReleaseSound()` | Звуки для ловушек |
-| `IsDanger()` | `true` для хищников (Wolf), `false` для добычи |
+| `DeathUpdate()` | Spawn the dead item (`GetDeadItemName()`), transfer properties, `DeleteSafe()` |
+| `IsSelfAdjustingTemperature()` | `return IsAlive()` — temperature self-regulation |
+| `RegisterHitComponentsForAI()` | Hit zones and priority weights |
+| `CaptureSound()` / `ReleaseSound()` | Sounds for traps |
+| `IsDanger()` | `true` for predators (Wolf), `false` for prey |
 
 ---
 
-### AreaDamage (зоны урона)
+### AreaDamage (damage zones)
 
-Источники: `classes/areadamage/areadamagenew/`
+Sources: `classes/areadamage/areadamagenew/`
 
-#### Архитектура
+#### Architecture
 
 ```
-AreaDamageManager (оркестратор)
- ├── AreaDamageTriggerBase (физический триггер в мире)
- └── AreaDamageComponent (стратегия расчёта урона)
+AreaDamageManager (orchestrator)
+ ├── AreaDamageTriggerBase (physical trigger in the world)
+ └── AreaDamageComponent (damage calculation strategy)
 ```
 
-#### Типы компонентов (`SetDamageComponentType`)
+#### Component types (`SetDamageComponentType`)
 
-| Тип | Описание |
+| Type | Description |
 |-----|----------|
-| `BASE` | Фиксированная зона попадания |
-| `HITZONE` | Случайная зона из `SetHitZones()` |
-| `RAYCASTED` | Raycast от точек модели → определение зоны |
+| `BASE` | Fixed hit zone |
+| `HITZONE` | Random zone from `SetHitZones()` |
+| `RAYCASTED` | Raycast from model points → determines the zone |
 
-#### Конкретные классы
+#### Concrete classes
 
-| Класс | Поведение |
+| Class | Behavior |
 |-------|-----------|
-| `AreaDamageOnce` | Один раз при входе |
-| `AreaDamageOnceDeferred` | Один раз после задержки `m_DeferDuration` |
-| `AreaDamageLooped` | Каждые `m_LoopInterval` секунд, пока внутри |
-| `AreaDamageLoopedDeferred` | Цикличный с начальной задержкой |
-| `AreaDamageLoopedDeferred_NoVehicle` | То же, но пропускает пассажиров |
+| `AreaDamageOnce` | Once on entry |
+| `AreaDamageOnceDeferred` | Once after a delay `m_DeferDuration` |
+| `AreaDamageLooped` | Every `m_LoopInterval` seconds while inside |
+| `AreaDamageLoopedDeferred` | Looped with an initial delay |
+| `AreaDamageLoopedDeferred_NoVehicle` | Same, but skips passengers |
 
-#### Паттерн использования
+#### Usage pattern
 
 ```
 AreaDamageLooped dmg = new AreaDamageLooped(parentEntity);
@@ -125,11 +125,11 @@ dmg.Destroy();
 
 ---
 
-### ScriptedLightBase (освещение)
+### ScriptedLightBase (lighting)
 
-Источники: `entities/scriptedlightbase.c`. Работает **только на клиенте**.
+Sources: `entities/scriptedlightbase.c`. Runs **client-side only**.
 
-#### Иерархия
+#### Hierarchy
 
 ```
 ScriptedLightBase extends EntityLightSource
@@ -137,7 +137,7 @@ ScriptedLightBase extends EntityLightSource
  └── SpotLightBase → FlashlightLight, HeadTorchLight...
 ```
 
-#### Создание
+#### Creation
 
 ```
 ScriptedLightBase.CreateLight(MyLight, position, fadeInSeconds);
@@ -145,35 +145,35 @@ ScriptedLightBase.CreateLightAtObjMemoryPoint(MyLight, obj, "LightPoint", "Light
 light.AttachOnObject(parentObj, localPos, localOri);
 ```
 
-#### Настройка (в конструкторе подкласса)
+#### Setup (in the subclass constructor)
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `SetRadiusTo(float)` | Радиус |
-| `SetBrightnessTo(float)` | Яркость |
-| `SetDiffuseColor(r,g,b)` | Цвет |
+| `SetRadiusTo(float)` | Radius |
+| `SetBrightnessTo(float)` | Brightness |
+| `SetDiffuseColor(r,g,b)` | Color |
 | `SetAmbientColor(r,g,b)` | Ambient |
-| `SetCastShadow(bool)` | Тени (дорого) |
-| `SetFlickerAmplitude/Speed(float)` | Мерцание |
-| `SetDancingShadowsAmplitude/MovementSpeed(float)` | Танцующие тени |
-| `SetVisibleDuringDaylight(bool)` | Видимость днём |
-| `SetBlinkingSpeed(float)` | Синусоидальное мигание |
+| `SetCastShadow(bool)` | Shadows (expensive) |
+| `SetFlickerAmplitude/Speed(float)` | Flicker |
+| `SetDancingShadowsAmplitude/MovementSpeed(float)` | Dancing shadows |
+| `SetVisibleDuringDaylight(bool)` | Visibility during the day |
+| `SetBlinkingSpeed(float)` | Sinusoidal blinking |
 
-#### Управление
+#### Control
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `FadeBrightnessTo(value, time)` | Плавная яркость |
-| `FadeRadiusTo(value, time)` | Плавный радиус |
-| `FadeIn(time)` / `FadeOut(time)` | Появление / исчезновение |
-| `SetLifetime(seconds)` | Автоудаление |
-| `Destroy()` | Безопасное удаление |
+| `FadeBrightnessTo(value, time)` | Smooth brightness change |
+| `FadeRadiusTo(value, time)` | Smooth radius change |
+| `FadeIn(time)` / `FadeOut(time)` | Fade in / fade out |
+| `SetLifetime(seconds)` | Auto-destroy |
+| `Destroy()` | Safe destruction |
 
-#### Хук
+#### Hook
 
 ```
 override void OnFrameLightSource(IEntity other, float timeSlice)
 {
-    // Каждый кадр — динамическое поведение
+    // Each frame — dynamic behavior
 }
 ```

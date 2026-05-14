@@ -1,130 +1,130 @@
-UI-система: менеджер, меню, виджеты. Источники: `tools/uimanager.c`, `tools/uidata.c`, `gui/`
+UI system: manager, menus, widgets. Sources: `tools/uimanager.c`, `tools/uidata.c`, `gui/`
 
 ### UIManager
 
-Менеджер пользовательского интерфейса. Доступ: `g_Game.GetUIManager()`. Источник: `tools/uimanager.c`
+User interface manager. Access: `g_Game.GetUIManager()`. Source: `tools/uimanager.c`
 
-#### Меню (proto native)
+#### Menus (proto native)
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `EnterScriptedMenu(id, parent)` | `UIScriptedMenu` | Открыть меню по ID |
-| `CreateScriptedMenu(id)` | `UIScriptedMenu` | Создать меню (без показа) |
-| `ShowScriptedMenu(menu, parent)` | `UIScriptedMenu` | Показать созданное меню |
-| `HideScriptedMenu(menu)` | `void` | Скрыть меню |
-| `GetMenu()` | `UIScriptedMenu` | Текущее активное меню |
-| `IsMenuOpen(id)` | `bool` | Открыто ли меню с ID |
-| `CloseAll()` | `void` | Закрыть все меню |
-| `Back()` | `void` | Вернуться назад |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `EnterScriptedMenu(id, parent)` | `UIScriptedMenu` | Open menu by ID |
+| `CreateScriptedMenu(id)` | `UIScriptedMenu` | Create menu (without showing) |
+| `ShowScriptedMenu(menu, parent)` | `UIScriptedMenu` | Show a created menu |
+| `HideScriptedMenu(menu)` | `void` | Hide menu |
+| `GetMenu()` | `UIScriptedMenu` | Currently active menu |
+| `IsMenuOpen(id)` | `bool` | Whether menu with ID is open |
+| `CloseAll()` | `void` | Close all menus |
+| `Back()` | `void` | Go back |
 
-#### Диалоги
+#### Dialogs
 
-| Метод | Описание |
-|-------|----------|
-| `ShowDialog(caption, text, id, buttons, defaultBtn, dialogType, handler)` | Модальный диалог |
+| Method | Description |
+|--------|-------------|
+| `ShowDialog(caption, text, id, buttons, defaultBtn, dialogType, handler)` | Modal dialog |
 
-#### Курсор (proto native)
+#### Cursor (proto native)
 
-| Метод | Описание |
-|-------|----------|
-| `ShowCursor(visible)` | Показать/скрыть |
-| `IsCursorVisible()` | Виден ли |
+| Method | Description |
+|--------|-------------|
+| `ShowCursor(visible)` | Show/hide |
+| `IsCursorVisible()` | Is visible |
 
-#### Экран (proto native)
+#### Screen (proto native)
 
-| Метод | Описание |
-|-------|----------|
+| Method | Description |
+|--------|-------------|
 | `ScreenFadeIn(time, color, reason)` | Fade in |
 | `ScreenFadeOut(time, color, reason)` | Fade out |
-| `IsScreenFadeVisible()` | В процессе |
+| `IsScreenFadeVisible()` | In progress |
 
 ### UIScriptedMenu
 
-Базовый класс скриптовых меню. Наследует `UIMenuPanel`.
+Base class for scripted menus. Inherits `UIMenuPanel`.
 
-| Метод | Описание |
-|-------|----------|
-| `Init()` → `Widget` | Инициализация, возвращает корневой виджет |
-| `Cleanup()` | Очистка ресурсов |
-| `Update(float timeslice)` | Обновление каждый кадр |
-| `Refresh()` | Обновление данных |
-| `OnShow()` / `OnHide()` | Показ/скрытие |
-| `SetFocus(widget)` | Установить фокус |
-| `OnClick(w, x, y, button)` → `bool` | Клик по виджету |
-| `OnChange(w, x, y, finished)` → `bool` | Изменение значения |
-| `OnFocus(w, x, y)` → `bool` | Получение фокуса |
-| `OnFocusLost(w, x, y)` → `bool` | Потеря фокуса |
-| `IsHandlingPlayerDeathEvent()` → `bool` | Обрабатывает ли смерть |
+| Method | Description |
+|--------|-------------|
+| `Init()` → `Widget` | Initialization, returns the root widget |
+| `Cleanup()` | Resource cleanup |
+| `Update(float timeslice)` | Per-frame update |
+| `Refresh()` | Data refresh |
+| `OnShow()` / `OnHide()` | Show/hide |
+| `SetFocus(widget)` | Set focus |
+| `OnClick(w, x, y, button)` → `bool` | Widget click |
+| `OnChange(w, x, y, finished)` → `bool` | Value change |
+| `OnFocus(w, x, y)` → `bool` | Gained focus |
+| `OnFocusLost(w, x, y)` → `bool` | Lost focus |
+| `IsHandlingPlayerDeathEvent()` → `bool` | Handles death event |
 
 ### UIScriptedWindow
 
-Базовый класс скриптовых окон. Аналогичен `UIScriptedMenu`, но для неполноэкранных окон.
+Base class for scripted windows. Similar to `UIScriptedMenu`, but for non-fullscreen windows.
 
-### Виджеты GUI
+### GUI widgets
 
-Источник: `gui/`
+Source: `gui/`
 
 #### Tabber
 
-Навигация по вкладкам.
+Tab navigation.
 
-| Метод | Описание |
-|-------|----------|
-| `SelectTab(index)` | Выбрать вкладку |
-| `OnClick(w, x, y, button)` | Обработка клика |
+| Method | Description |
+|--------|-------------|
+| `SelectTab(index)` | Select a tab |
+| `OnClick(w, x, y, button)` | Handle click |
 
 #### Spacers
 
-Управление расположением виджетов.
+Widget layout management.
 
-| Класс | Описание |
-|-------|----------|
-| `SpacerBase` | Базовый spacer |
-| `HorizontalSpacer` | Горизонтальное размещение |
-| `VerticalSpacer` | Вертикальное размещение |
-| `AutoHeightSpacer` | Автовысота |
-| `HorizontalSpacerWithFixedAspect` | Фиксированные пропорции |
+| Class | Description |
+|-------|-------------|
+| `SpacerBase` | Base spacer |
+| `HorizontalSpacer` | Horizontal layout |
+| `VerticalSpacer` | Vertical layout |
+| `AutoHeightSpacer` | Auto height |
+| `HorizontalSpacerWithFixedAspect` | Fixed aspect ratio |
 
-#### Анимации
+#### Animations
 
-| Класс | Описание |
-|-------|----------|
-| `HoverEffect` | Эффект при наведении |
-| `RadialMenu` | Радиальное меню |
-| `RadialProgressBar` | Круговой прогресс-бар |
-| `Rotator` | Вращение |
-| `Bouncer` | Отскок |
+| Class | Description |
+|-------|-------------|
+| `HoverEffect` | Hover effect |
+| `RadialMenu` | Radial menu |
+| `RadialProgressBar` | Circular progress bar |
+| `Rotator` | Rotation |
+| `Bouncer` | Bounce |
 
-#### Контейнеры
+#### Containers
 
-| Класс | Описание |
-|-------|----------|
-| `ScrollbarContainer` | Прокручиваемый контейнер |
-| `SizeToChild` | Размер по дочернему элементу |
+| Class | Description |
+|-------|-------------|
+| `ScrollbarContainer` | Scrollable container |
+| `SizeToChild` | Size based on child |
 
-#### Подсказки
+#### Hints
 
-| Класс | Описание |
-|-------|----------|
-| `UIHintPanel` | Панель подсказок |
-| `HintPage` | Страница подсказки |
+| Class | Description |
+|-------|-------------|
+| `UIHintPanel` | Hint panel |
+| `HintPage` | Hint page |
 
 ### GameplayEffectWidgets_base
 
-Базовый класс UI-оверлеев игровых эффектов. Источник: `gameplayeffectwidgets_base.c`
+Base class for UI overlays of gameplay effects. Source: `gameplayeffectwidgets_base.c`
 
-| Метод | Описание |
-|-------|----------|
-| `IsAnyEffectRunning()` | Есть активные эффекты |
-| `AreEffectsSuspended()` | Эффекты приостановлены |
-| `AddActiveEffects(effects)` / `RemoveActiveEffects(effects)` | Управление |
-| `StopAllEffects()` | Остановить все |
-| `AddSuspendRequest(id)` / `RemoveSuspendRequest(id)` | Приостановка |
-| `UpdateWidgets()` / `Update()` | Обновление |
-| `OnVoiceEvent(breathing_resistance)` | Событие голоса |
-| `SetBreathIntensityStamina(value)` | Интенсивность дыхания |
+| Method | Description |
+|--------|-------------|
+| `IsAnyEffectRunning()` | Active effects exist |
+| `AreEffectsSuspended()` | Effects suspended |
+| `AddActiveEffects(effects)` / `RemoveActiveEffects(effects)` | Management |
+| `StopAllEffects()` | Stop all |
+| `AddSuspendRequest(id)` / `RemoveSuspendRequest(id)` | Suspension |
+| `UpdateWidgets()` / `Update()` | Update |
+| `OnVoiceEvent(breathing_resistance)` | Voice event |
+| `SetBreathIntensityStamina(value)` | Breath intensity |
 
-### EffectWidgetsTypes (ID слоёв)
+### EffectWidgetsTypes (layer IDs)
 
 ```
 ROOT, NONE, MASK_OCCLUDER, MASK_BREATH,
@@ -135,36 +135,36 @@ HELMET2_OCCLUDER, BLEEDING_LAYER
 
 ### Colors
 
-Статические цветовые константы. Источник: `colors.c`
+Static color constants. Source: `colors.c`
 
-#### Базовые
+#### Basic
 
 `RED`, `GREEN`, `BLUE`, `WHITE`, `BLACK`, `YELLOW`, `ORANGE`, `PURPLE`, `CYAN`, `GRAY`, `BROWN`, `WHITEGRAY`
 
-#### Состояние предмета
+#### Item state
 
-`COLOR_PRISTINE` (зелёный) → `COLOR_WORN` → `COLOR_DAMAGED` → `COLOR_BADLY_DAMAGED` → `COLOR_RUINED` (красный)
+`COLOR_PRISTINE` (green) → `COLOR_WORN` → `COLOR_DAMAGED` → `COLOR_BADLY_DAMAGED` → `COLOR_RUINED` (red)
 
-#### Влажность
+#### Wetness
 
-`COLOR_DRENCHED` (синий) → `COLOR_SOAKING` → `COLOR_WET` → `COLOR_DAMP`
+`COLOR_DRENCHED` (blue) → `COLOR_SOAKING` → `COLOR_WET` → `COLOR_DAMP`
 
-#### Температура
+#### Temperature
 
-`COLOR_HOT` (красные градации) ↔ `COLOR_COLD` (синие градации)
+`COLOR_HOT` (red gradients) ↔ `COLOR_COLD` (blue gradients)
 
-#### Еда
+#### Food
 
 `COLOR_RAW`, `COLOR_BAKED`, `COLOR_BOILED`, `COLOR_DRIED`, `COLOR_BURNED`, `COLOR_ROTTEN`
 
-#### Карты
+#### Maps
 
-`LIVONIA`, `FROSTLINE`, `DAYZ` — палитры по картам
+`LIVONIA`, `FROSTLINE`, `DAYZ` — per-map palettes
 
 ### FadeColors
 
-Цвета затемнения: `WHITE`, `LIGHT_GREY`, `BLACK`, `RED`, `DARK_RED`
+Fade colors: `WHITE`, `LIGHT_GREY`, `BLACK`, `RED`, `DARK_RED`
 
-### Константы меню (MENU_*)
+### Menu constants (MENU_*)
 
-`MENU_MAIN`, `MENU_INGAME`, `MENU_INVENTORY`, `MENU_OPTIONS`, `MENU_SERVER_BROWSER`, `MENU_LOGIN_QUEUE`, `MENU_LOADING`, `MENU_RESPAWN_DIALOGUE`, `MENU_CHAT`, `MENU_MAP` и др.
+`MENU_MAIN`, `MENU_INGAME`, `MENU_INVENTORY`, `MENU_OPTIONS`, `MENU_SERVER_BROWSER`, `MENU_LOGIN_QUEUE`, `MENU_LOADING`, `MENU_RESPAWN_DIALOGUE`, `MENU_CHAT`, `MENU_MAP`, etc.

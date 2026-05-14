@@ -1,47 +1,47 @@
-`4_World` — оружие. Weapon FSM, отдача, магазины, аттачменты. Источники: `entities/firearms/`, `classes/weapons/`, `classes/recoilbase/`
+`4_World` — weapons. Weapon FSM, recoil, magazines, attachments. Sources: `entities/firearms/`, `classes/weapons/`, `classes/recoilbase/`
 
 ### Weapon_Base
 
-Иерархия: `Weapon` (C++) → `Weapon_Base`. Все конкретные виды оружия наследуют `Weapon_Base`.
+Hierarchy: `Weapon` (C++) → `Weapon_Base`. All concrete weapons inherit from `Weapon_Base`.
 
-#### Инициализация
+#### Initialization
 
-Конструктор: флаги (`m_isJammed`, `m_BayonetAttached`...), `simpleHiddenSelections` для патронов/магазинов, `InitWeaponLength()`, `InitReliability()`, затем **`InitStateMachine()`**.
+Constructor: flags (`m_isJammed`, `m_BayonetAttached`...), `simpleHiddenSelections` for cartridges/magazines, `InitWeaponLength()`, `InitReliability()`, then **`InitStateMachine()`**.
 
-`InitStateMachine()` — **пустой в Weapon_Base**, обязателен к переопределению. Здесь определяются состояния FSM и переходы.
+`InitStateMachine()` is **empty in Weapon_Base** and must be overridden. FSM states and transitions are defined there.
 
-`EEInit()` — на сервере вызывает `AssembleGun()` (загрузка боеприпасов из хранилища в состояние FSM).
+`EEInit()` — on the server calls `AssembleGun()` (loads ammo from storage into FSM state).
 
-#### Состояния и запросы
+#### State and queries
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `IsCharged()` | Патрон в патроннике |
-| `IsJammed()` | Заклинивание |
-| `IsWeaponOpen()` | Затвор открыт |
-| `CanProcessWeaponEvents()` | FSM активен |
-| `IsIdle()` | FSM в стабильном состоянии |
-| `GetCurrentState()` | Текущий `WeaponStateBase` |
+| `IsCharged()` | Round in chamber |
+| `IsJammed()` | Jammed |
+| `IsWeaponOpen()` | Bolt open |
+| `CanProcessWeaponEvents()` | FSM active |
+| `IsIdle()` | FSM in a stable state |
+| `GetCurrentState()` | Current `WeaponStateBase` |
 
-#### FSM интерфейс
+#### FSM interface
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `ProcessWeaponEvent(WeaponEventBase e)` | Диспатч события → синхронизация |
-| `ProcessWeaponAbortEvent(WeaponEventBase e)` | Прерывание |
-| `HasActionAbility(int action, int type)` | Поддерживает ли операцию |
-| `GetAbilityCount()` / `GetAbility(int)` | Список возможностей |
+| `ProcessWeaponEvent(WeaponEventBase e)` | Dispatch event → synchronization |
+| `ProcessWeaponAbortEvent(WeaponEventBase e)` | Abort |
+| `HasActionAbility(int action, int type)` | Whether the operation is supported |
+| `GetAbilityCount()` / `GetAbility(int)` | Capability list |
 
-#### Стрельба и заклинивание
+#### Firing and jamming
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `EEFired(int muzzle, int mode, string ammo)` | Выстрел — партиклы, нагрев |
-| `JamCheck(int muzzleIndex)` | Проверка заклинивания (синхр. random) |
-| `GetChanceToJam()` | Шанс по уровню здоровья |
-| `InitReliability(out array<float>)` | Загрузка шансов из конфига |
+| `EEFired(int muzzle, int mode, string ammo)` | Shot — particles, heating |
+| `JamCheck(int muzzleIndex)` | Jam check (synced random) |
+| `GetChanceToJam()` | Chance based on health level |
+| `InitReliability(out array<float>)` | Load chances from config |
 
-#### Создание оружия с боеприпасами (статические)
+#### Creating a weapon with ammo (static)
 
 ```
 Weapon_Base.CreateWeaponWithAmmo(string weaponType, string magazineType, int flags)
@@ -59,45 +59,45 @@ HFSM: `WeaponFSM extends HFSMBase<WeaponStateBase, WeaponEventBase, WeaponAction
 
 #### WeaponStateBase
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `OnEntry(WeaponEventBase e)` | Вход в состояние |
-| `OnUpdate(float dt)` | Тик |
-| `OnAbort(WeaponEventBase e)` | Прерывание |
-| `OnExit(WeaponEventBase e)` | Выход |
-| `IsIdle()` | Стабильное состояние |
-| `HasFSM()` | Есть вложенная машина |
+| `OnEntry(WeaponEventBase e)` | State entry |
+| `OnUpdate(float dt)` | Tick |
+| `OnAbort(WeaponEventBase e)` | Abort |
+| `OnExit(WeaponEventBase e)` | Exit |
+| `IsIdle()` | Stable state |
+| `HasFSM()` | Has a nested machine |
 
-Состояния вкладываемые — состояние с собственным `WeaponFSM` работает как композитное.
+States are nestable — a state with its own `WeaponFSM` acts as a composite.
 
-#### WeaponStableState — базовый для idle-состояний
+#### WeaponStableState — base for idle states
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `HasBullet()` | Патрон в патроннике |
-| `HasMagazine()` | Магазин присоединён |
-| `IsJammed()` | Заклинивание |
-| `IsWeaponOpen()` | Затвор открыт |
-| `IsRepairEnabled()` | Разрешить ValidateAndRepair |
+| `HasBullet()` | Round in chamber |
+| `HasMagazine()` | Magazine attached |
+| `IsJammed()` | Jammed |
+| `IsWeaponOpen()` | Bolt open |
+| `IsRepairEnabled()` | Allow ValidateAndRepair |
 
-`OnEntry` синхронизирует: jammed, charged, open, animation state.
+`OnEntry` syncs: jammed, charged, open, animation state.
 
-#### Определение переходов
+#### Defining transitions
 
 ```
 m_fsm.AddTransition(new WeaponTransition(srcState, event, dstState, action, guard));
 ```
 
-#### Группы состояний
+#### State groups
 
-| Группа | Состояния |
+| Group | States |
 |--------|-----------|
-| Стрельба | `WeaponFire`, `WeaponFireAndChamberNext`, `WeaponFireLast` |
-| Заряжание | `WeaponChambering`, `WeaponChamberingLooped`, `RifleChambering` |
-| Магазин | `WeaponAttachMagazine`, `WeaponDetachingMag`, `WeaponReplacingMagAndChamberNext` |
-| Извлечение | `WeaponEjectBullet`, `RifleEjectCasing`, `WeaponReChamber` |
-| Заклинивание | `WeaponStateJammed`, `WeaponUnjamming` |
-| Визуальные | `BulletShow`, `BulletHide`, `MagazineShow`, `MagazineHide` |
+| Firing | `WeaponFire`, `WeaponFireAndChamberNext`, `WeaponFireLast` |
+| Chambering | `WeaponChambering`, `WeaponChamberingLooped`, `RifleChambering` |
+| Magazine | `WeaponAttachMagazine`, `WeaponDetachingMag`, `WeaponReplacingMagAndChamberNext` |
+| Ejection | `WeaponEjectBullet`, `RifleEjectCasing`, `WeaponReChamber` |
+| Jamming | `WeaponStateJammed`, `WeaponUnjamming` |
+| Visual | `BulletShow`, `BulletHide`, `MagazineShow`, `MagazineHide` |
 
 #### WeaponEventID
 
@@ -105,65 +105,65 @@ m_fsm.AddTransition(new WeaponTransition(srcState, event, dstState, action, guar
 
 #### ValidateAndRepair
 
-После каждого перехода, если текущее стабильное состояние `IsRepairEnabled()=true` — проверяет соответствие физического состояния (патронник/магазин) и декларации FSM. При рассинхроне — принудительная коррекция.
+After every transition, if the current stable state has `IsRepairEnabled()=true`, it verifies that the physical state (chamber/magazine) matches the FSM's declaration. On mismatch — forced correction.
 
 ---
 
-### Отдача (RecoilBase)
+### Recoil (RecoilBase)
 
-Создаётся за выстрел, живёт до конца перезарядки.
+Created per shot, lives until the end of the reload cycle.
 
-#### Параметры (задаются в `Init()`)
+#### Parameters (set in `Init()`)
 
-| Поле | Описание |
+| Field | Description |
 |------|----------|
-| `m_MouseOffsetRangeMin/Max` | Диапазон случайного угла (градусы) |
-| `m_MouseOffsetDistance` | Суммарное смещение мыши |
-| `m_MouseOffsetRelativeTime` | Доля времени перезарядки для мыши (0..1) |
-| `m_HandsOffsetRelativeTime` | Доля для анимации рук |
-| `m_CamOffsetRelativeTime` | Доля для Z-смещения камеры |
-| `m_CamOffsetDistance` | Расстояние Z-смещения |
-| `m_HandsCurvePoints` | Bezier-точки анимации рук |
+| `m_MouseOffsetRangeMin/Max` | Random angle range (degrees) |
+| `m_MouseOffsetDistance` | Total mouse offset |
+| `m_MouseOffsetRelativeTime` | Fraction of reload time for mouse (0..1) |
+| `m_HandsOffsetRelativeTime` | Fraction for hands animation |
+| `m_CamOffsetRelativeTime` | Fraction for camera Z offset |
+| `m_CamOffsetDistance` | Camera Z offset distance |
+| `m_HandsCurvePoints` | Bezier points for hands animation |
 
-#### Модификаторы
+#### Modifiers
 
-`GetRecoilModifier(Weapon_Base)` читает `weapon.GetPropertyModifierObject().m_RecoilModifiers` → вектор `(x_scale, y_scale, cam_scale)`. Глушители/приклады модифицируют отдачу через этот вектор.
+`GetRecoilModifier(Weapon_Base)` reads `weapon.GetPropertyModifierObject().m_RecoilModifiers` → vector `(x_scale, y_scale, cam_scale)`. Suppressors/stocks modify recoil through this vector.
 
-#### Три системы смещения (каждый кадр)
+#### Three offset systems (each frame)
 
-1. `ApplyMouseOffset()` — плавное движение курсора к цели
-2. `ApplyHandsOffset()` — Bezier-кривая для рук
-3. `ApplyCamOffset()` — Z-push камеры с EaseOutBack
-
----
-
-### Магазины (Magazine)
-
-`Magazine extends InventoryItemSuper`. Алиас: `Magazine_Base`.
-
-#### Нативные методы (C++)
-
-| Метод | Описание |
-|-------|----------|
-| `GetAmmoCount()` / `ServerSetAmmoCount(int)` | Текущее/установить кол-во |
-| `ServerAcquireCartridge(out float dmg, out string type)` | Извлечь патрон (сервер) |
-| `ServerStoreCartridge(float dmg, string type)` | Вставить патрон (сервер) |
-| `GetCartridgeAtIndex(int, out float, out string)` | Патрон по индексу |
-
-#### Скриптовые методы
-
-| Метод | Описание |
-|-------|----------|
-| `GetAmmoMax()` | Максимум (из конфига `count`) |
-| `CanAddCartridges(int count)` | Есть место |
-| `IsCompatiableAmmo(ItemBase)` | Совместимый тип боеприпаса |
-| `GetChanceToJam()` | Шанс заклинивания по здоровью |
-| `CanBeSplit()` | Можно разделить (count > 1) |
+1. `ApplyMouseOffset()` — smooth cursor movement toward the target
+2. `ApplyHandsOffset()` — Bezier curve for the hands
+3. `ApplyCamOffset()` — camera Z-push with EaseOutBack
 
 ---
 
-### Аттачменты оружия
+### Magazines (Magazine)
 
-- `ButtstockBase` → `OnWasAttached` вызывает `parent.SetButtstockAttached(true)`
-- `SuppressorBase` — партиклы дула, нагрев через `ItemBase.HasMuzzle()=true`
-- `PoweredOptic_Base extends ItemBase` — прицелы с батареей (NVG)
+`Magazine extends InventoryItemSuper`. Alias: `Magazine_Base`.
+
+#### Native methods (C++)
+
+| Method | Description |
+|-------|----------|
+| `GetAmmoCount()` / `ServerSetAmmoCount(int)` | Current/set count |
+| `ServerAcquireCartridge(out float dmg, out string type)` | Take a cartridge (server) |
+| `ServerStoreCartridge(float dmg, string type)` | Insert a cartridge (server) |
+| `GetCartridgeAtIndex(int, out float, out string)` | Cartridge by index |
+
+#### Script methods
+
+| Method | Description |
+|-------|----------|
+| `GetAmmoMax()` | Maximum (from the `count` config) |
+| `CanAddCartridges(int count)` | Has space |
+| `IsCompatiableAmmo(ItemBase)` | Compatible ammo type |
+| `GetChanceToJam()` | Jam chance based on health |
+| `CanBeSplit()` | Can be split (count > 1) |
+
+---
+
+### Weapon attachments
+
+- `ButtstockBase` → `OnWasAttached` calls `parent.SetButtstockAttached(true)`
+- `SuppressorBase` — muzzle particles, heating via `ItemBase.HasMuzzle()=true`
+- `PoweredOptic_Base extends ItemBase` — battery-powered scopes (NVG)

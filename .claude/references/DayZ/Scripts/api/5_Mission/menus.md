@@ -1,49 +1,49 @@
-In-game меню — все `UIScriptedMenu`'ы открываемые во время игры. Источники: `gui/*.c`
+In-game menus — all `UIScriptedMenu`s opened during gameplay. Sources: `gui/*.c`
 
-### Регистрация
+### Registration
 
-Все меню создаются единственной фабрикой `MissionBase.CreateScriptedMenu(MENU_ID)` (см. [mission.md](mission.md)). Открываются через `g_Game.GetUIManager().EnterScriptedMenu(MENU_ID, parent)` (push) или `EnterScriptedMenu_Temp` (overlay).
+All menus are created by a single factory `MissionBase.CreateScriptedMenu(MENU_ID)` (see [mission.md](mission.md)). Opened via `g_Game.GetUIManager().EnterScriptedMenu(MENU_ID, parent)` (push) or `EnterScriptedMenu_Temp` (overlay).
 
-`MENU_*` константы определены в 3_Game (`scripts/3_Game/constants.c`). Этот файл — справочник по концретным реализациям, открываемым во время `MissionGameplay` (in-game). Главное меню — см. [mainmenu.md](mainmenu.md).
-
----
-
-### Каталог menu
-
-| MENU_ID | Класс (PC) | Класс (Console) | Layout | Назначение |
-|---------|------------|------------------|--------|------------|
-| `MENU_INGAME` | `InGameMenu` | `InGameMenuXbox` | `day_z_ingamemenu.layout` | Пауза/выход/respawn/options |
-| `MENU_INVENTORY` | `InventoryMenu` | (тот же) | `day_z_inventory.layout` | Инвентарь — см. [inventory.md](inventory.md) |
-| `MENU_INSPECT` | `InspectMenuNew` | (тот же) | `inventory_new/day_z_inventory_new_inspect.layout` | Осмотр предмета (3D-preview) |
-| `MENU_MAP` | `MapMenu` | (тот же) | `day_z_map.layout` | Бумажная карта (compass/GPS опционально) |
-| `MENU_NOTE` | `NoteMenu` | (тот же) | `day_z_inventory_note.layout` | Чтение/запись бумажной заметки |
-| `MENU_BOOK` | `BookMenu` | (тот же) | `day_z_book.layout` | Чтение книги |
-| `MENU_GESTURES` | `GesturesMenu` | (тот же) | `radial_menu.layout` | Радиальное меню эмоутов |
-| `MENU_RADIAL_QUICKBAR` | `RadialQuickbarMenu` | (тот же) | `radial_menu.layout` | Радиальный quickbar |
-| `MENU_LOGOUT` | `LogoutMenu` | (тот же) | `day_z_logout_dialog.layout` | Таймер дисконнекта |
-| `MENU_RESPAWN_DIALOGUE` | `RespawnDialogue` | (тот же) | `day_z_respawn_dialogue.layout` | Выбор respawn random/custom |
-| `MENU_INVITE_TIMER` | `InviteMenu` | (тот же) | `day_z_invite_dialog.layout` | Прогресс присоединения по invite |
-| `MENU_HELP_SCREEN` | `HelpScreen` | (тот же) | `day_z_help_screen.layout` | Экран помощи |
-| `MENU_LOADING` | `LoadingMenu` | (тот же) | `loading.layout` | Загрузочный экран |
-| `MENU_CHAT_INPUT` | `ChatInputMenu` | (тот же) | — | Поле ввода чата (см. [chat.md](chat.md)) |
-| `MENU_CONNECTION_DIALOGUE` | `ConnectionDialogue` | (тот же) | `day_z_connection_dialogue.layout` | Сетевой буфер переполнен |
-| `MENU_WARNING_ITEMDROP` | `ItemDropWarningMenu` | (тот же) | `day_z_dropped_items.layout` | Warning о сбросе предметов |
-| `MENU_WARNING_TELEPORT` | `PlayerRepositionWarningMenu` | (тот же) | (тот же) | Warning о телепорте |
-| `MENU_WARNING_INPUTDEVICE_DISCONNECT` | `InputDeviceDisconnectWarningMenu` | (тот же) | — | Warning об отключении контроллера |
-| `MENU_EARLYACCESS` | `EarlyAccessMenu` | (тот же) | — | Early access splash |
-| `MENU_CONTROLS_PRESET` | `PresetsMenu` | (тот же) | — | Выбор пресета управления |
-
-Главные/lobby меню (`MENU_MAIN`, `MENU_TITLE_SCREEN`, `MENU_OPTIONS`, `MENU_SERVER_BROWSER`, `MENU_CHARACTER`, …) — см. [mainmenu.md](mainmenu.md).
-
-Dev меню (`MENU_SCRIPTCONSOLE*`, `MENU_SCENE_EDITOR`, `MENU_CAMERA_TOOLS`, `MENU_LOC_ADD`) — см. [dev_tools.md](dev_tools.md).
+The `MENU_*` constants are defined in 3_Game (`scripts/3_Game/constants.c`). This file is a reference for the concrete implementations opened during `MissionGameplay` (in-game). The main menu — see [mainmenu.md](mainmenu.md).
 
 ---
 
-### Общие паттерны
+### Menu catalog
+
+| MENU_ID | Class (PC) | Class (Console) | Layout | Purpose |
+|---------|------------|------------------|--------|---------|
+| `MENU_INGAME` | `InGameMenu` | `InGameMenuXbox` | `day_z_ingamemenu.layout` | Pause/exit/respawn/options |
+| `MENU_INVENTORY` | `InventoryMenu` | (same) | `day_z_inventory.layout` | Inventory — see [inventory.md](inventory.md) |
+| `MENU_INSPECT` | `InspectMenuNew` | (same) | `inventory_new/day_z_inventory_new_inspect.layout` | Item inspection (3D preview) |
+| `MENU_MAP` | `MapMenu` | (same) | `day_z_map.layout` | Paper map (compass/GPS optional) |
+| `MENU_NOTE` | `NoteMenu` | (same) | `day_z_inventory_note.layout` | Read/write a paper note |
+| `MENU_BOOK` | `BookMenu` | (same) | `day_z_book.layout` | Read a book |
+| `MENU_GESTURES` | `GesturesMenu` | (same) | `radial_menu.layout` | Radial emotes menu |
+| `MENU_RADIAL_QUICKBAR` | `RadialQuickbarMenu` | (same) | `radial_menu.layout` | Radial quickbar |
+| `MENU_LOGOUT` | `LogoutMenu` | (same) | `day_z_logout_dialog.layout` | Disconnect timer |
+| `MENU_RESPAWN_DIALOGUE` | `RespawnDialogue` | (same) | `day_z_respawn_dialogue.layout` | Random/custom respawn selection |
+| `MENU_INVITE_TIMER` | `InviteMenu` | (same) | `day_z_invite_dialog.layout` | Join-by-invite progress |
+| `MENU_HELP_SCREEN` | `HelpScreen` | (same) | `day_z_help_screen.layout` | Help screen |
+| `MENU_LOADING` | `LoadingMenu` | (same) | `loading.layout` | Loading screen |
+| `MENU_CHAT_INPUT` | `ChatInputMenu` | (same) | — | Chat input box (see [chat.md](chat.md)) |
+| `MENU_CONNECTION_DIALOGUE` | `ConnectionDialogue` | (same) | `day_z_connection_dialogue.layout` | Network input buffer overflowed |
+| `MENU_WARNING_ITEMDROP` | `ItemDropWarningMenu` | (same) | `day_z_dropped_items.layout` | Warning about dropping items |
+| `MENU_WARNING_TELEPORT` | `PlayerRepositionWarningMenu` | (same) | (same) | Warning about teleport |
+| `MENU_WARNING_INPUTDEVICE_DISCONNECT` | `InputDeviceDisconnectWarningMenu` | (same) | — | Warning about controller disconnect |
+| `MENU_EARLYACCESS` | `EarlyAccessMenu` | (same) | — | Early access splash |
+| `MENU_CONTROLS_PRESET` | `PresetsMenu` | (same) | — | Controls preset selection |
+
+Main/lobby menus (`MENU_MAIN`, `MENU_TITLE_SCREEN`, `MENU_OPTIONS`, `MENU_SERVER_BROWSER`, `MENU_CHARACTER`, …) — see [mainmenu.md](mainmenu.md).
+
+Dev menus (`MENU_SCRIPTCONSOLE*`, `MENU_SCENE_EDITOR`, `MENU_CAMERA_TOOLS`, `MENU_LOC_ADD`) — see [dev_tools.md](dev_tools.md).
+
+---
+
+### Common patterns
 
 #### Pause/Continue
 
-Открытие большинства in-game меню должно поставить игру на паузу:
+Opening most in-game menus should pause the game:
 
 ```c
 void InGameMenu()
@@ -64,41 +64,41 @@ void ~InGameMenu()
 
 #### Input excludes
 
-Меню которые блокируют игровой ввод регистрируют группу из `specific.xml`:
+Menus that block game input register a group from `specific.xml`:
 
 ```c
-g_Game.GetMission().AddActiveInputExcludes({"menu"});       // полное блокирование
-g_Game.GetMission().AddActiveInputExcludes({"inventory"});  // только нужные слои
-g_Game.GetMission().AddActiveInputExcludes({"radialmenu"}); // радиальные меню
+g_Game.GetMission().AddActiveInputExcludes({"menu"});       // full block
+g_Game.GetMission().AddActiveInputExcludes({"inventory"});  // only the required layers
+g_Game.GetMission().AddActiveInputExcludes({"radialmenu"}); // radial menus
 g_Game.GetMission().AddActiveInputExcludes({"map"});
 g_Game.GetMission().AddActiveInputExcludes({"inspect"});
 ```
 
-В деструкторе обязательно `RemoveActiveInputExcludes(...)`. См. [mission.md](mission.md) — input excludes.
+In the destructor `RemoveActiveInputExcludes(...)` is mandatory. See [mission.md](mission.md) — input excludes.
 
-#### HUD скрытие
+#### HUD hiding
 
-Меню часто прячут HUD:
+Menus often hide the HUD:
 
 ```c
-hud.ShowHudUI(false);       // всё кроме quickbar
+hud.ShowHudUI(false);       // everything except quickbar
 hud.ShowQuickbarUI(false);
 ```
 
-См. [hud.md](hud.md) — HUD visibility API.
+See [hud.md](hud.md) — HUD visibility API.
 
 #### Console toolbar / Input device hooks
 
-Любое меню с консольной поддержкой:
-1. Подписывается на `mission.GetOnInputPresetChanged()` и `GetOnInputDeviceChanged()` в `Init()`/конструкторе
-2. В `OnInputDeviceChanged(EInputDeviceType)` переключает курсор/фокус кнопки
-3. Использует `InputUtils.GetRichtextButtonIconFromInputAction(actionName, label, deviceType, scale)` для динамических иконок
+Any menu with console support:
+1. Subscribes to `mission.GetOnInputPresetChanged()` and `GetOnInputDeviceChanged()` in `Init()`/constructor
+2. In `OnInputDeviceChanged(EInputDeviceType)` switches the cursor/focus button
+3. Uses `InputUtils.GetRichtextButtonIconFromInputAction(actionName, label, deviceType, scale)` for dynamic icons
 
 ---
 
 ### InGameMenu / InGameMenuXbox
 
-`MENU_INGAME` — пауза. Платформозависимый класс через switch в `MissionBase.CreateScriptedMenu`:
+`MENU_INGAME` — pause. Platform-dependent class via switch in `MissionBase.CreateScriptedMenu`:
 
 ```c
 case MENU_INGAME:
@@ -111,27 +111,27 @@ case MENU_INGAME:
 
 #### InGameMenu (PC)
 
-Кнопки: Continue, Restart/Respawn (зависит от MP/SP), Options, Exit, Feedback, Copy server info, Favorite. Плюс отдельные `respawn_button_random/custom` если игрок мёртв.
+Buttons: Continue, Restart/Respawn (depends on MP/SP), Options, Exit, Feedback, Copy server info, Favorite. Plus separate `respawn_button_random/custom` if the player is dead.
 
-| Метод | Описание |
-|-------|----------|
-| `SetGameVersion()` | Прочитать `g_Game.GetVersion()`, написать в `version` widget |
-| `SetServerInfo()` | Заполнить server name/IP/port из `OnlineServices.GetCurrentServerInfo()` |
-| `OnFavoriteChanged(checked)` | Toggle favorite через `OnlineServices.SetServerFavorited` |
-| `CopyServerInfo()` | В буфер обмена — для bug reports |
-| `HudShow(bool)` | Прячет/показывает HUD при открытии/закрытии |
-| `m_HintPanel : UiHintPanel` | Подсказки на экране паузы |
+| Method | Description |
+|--------|-------------|
+| `SetGameVersion()` | Read `g_Game.GetVersion()`, write into the `version` widget |
+| `SetServerInfo()` | Populate server name/IP/port from `OnlineServices.GetCurrentServerInfo()` |
+| `OnFavoriteChanged(checked)` | Toggle favorite via `OnlineServices.SetServerFavorited` |
+| `CopyServerInfo()` | To clipboard — for bug reports |
+| `HudShow(bool)` | Hides/shows the HUD on open/close |
+| `m_HintPanel : UiHintPanel` | Hints on the pause screen |
 
 #### InGameMenuXbox (Console)
 
-Расширенный вариант с интеграцией Xbox Live: список игроков (`PlayerListScriptedWidget`), invite, mute/unmute, gamercard, feedback QR-код. Динамика exit-button cooldown через `m_ExitButtonUpdateTimerSum`/`m_ExitOnCooldown`. Слушает `ClientData.SyncEvent_OnPlayerListUpdate` и `OnlineServices.m_PermissionsAsyncInvoker`.
+Extended version with Xbox Live integration: player list (`PlayerListScriptedWidget`), invite, mute/unmute, gamercard, feedback QR code. Dynamic exit-button cooldown via `m_ExitButtonUpdateTimerSum`/`m_ExitOnCooldown`. Listens to `ClientData.SyncEvent_OnPlayerListUpdate` and `OnlineServices.m_PermissionsAsyncInvoker`.
 
-| Метод | Описание |
-|-------|----------|
-| `SyncEvent_OnRecievedPlayerList(players)` | Обновить `m_ServerInfoPanel` |
-| `OnPermissionsUpdate(...)` | Перепроверить доступность mute/invite/gamercard |
-| `OnInputPresetChanged()` / `OnInputDeviceChanged(...)` | Сменить иконки toolbar |
-| `UpdateControlsElements()` | Полное обновление button hints |
+| Method | Description |
+|--------|-------------|
+| `SyncEvent_OnRecievedPlayerList(players)` | Update `m_ServerInfoPanel` |
+| `OnPermissionsUpdate(...)` | Re-check availability of mute/invite/gamercard |
+| `OnInputPresetChanged()` / `OnInputDeviceChanged(...)` | Swap toolbar icons |
+| `UpdateControlsElements()` | Full refresh of button hints |
 
 ---
 
@@ -141,16 +141,16 @@ case MENU_INGAME:
 class InspectMenuNew extends UIScriptedMenu
 ```
 
-Открывается из `LayoutHolder.InspectItem(item)` (см. [inventory.md](inventory.md)). В конструкторе ставит `AddActiveInputExcludes({"inspect"})`. В `Init()` создаёт `inventory_new/day_z_inventory_new_inspect.layout`. Запускает `PPERequester_InventoryBlur` (постпроцесс blur).
+Opened from `LayoutHolder.InspectItem(item)` (see [inventory.md](inventory.md)). The constructor calls `AddActiveInputExcludes({"inspect"})`. `Init()` creates `inventory_new/day_z_inventory_new_inspect.layout`. Starts `PPERequester_InventoryBlur` (post-process blur).
 
-| Метод | Описание |
-|-------|----------|
-| `SetItem(EntityAI item)` | Установить отображаемый предмет, вызвать `UpdateItemInfo` |
-| `static UpdateItemInfo(layoutRoot, item)` | Заполнить все info-поля (название, weight, status…) |
-| `OnMouseButtonDown(w, x, y, button)` | Начало вращения мышью |
-| `Update(timeslice)` | Обработка вращения/zoom |
+| Method | Description |
+|--------|-------------|
+| `SetItem(EntityAI item)` | Set the displayed item, call `UpdateItemInfo` |
+| `static UpdateItemInfo(layoutRoot, item)` | Fill all info fields (name, weight, status…) |
+| `OnMouseButtonDown(w, x, y, button)` | Start mouse rotation |
+| `Update(timeslice)` | Handle rotation/zoom |
 
-3D-модель — `ItemPreviewWidget`, читается `item.GetViewIndex()`. Поддерживает rotation X/Y и scale через mouse drag/wheel.
+3D model — `ItemPreviewWidget`, reads `item.GetViewIndex()`. Supports X/Y rotation and scale via mouse drag/wheel.
 
 ---
 
@@ -160,27 +160,27 @@ class InspectMenuNew extends UIScriptedMenu
 class MapMenu extends UIScriptedMenu
 ```
 
-Бумажная карта. Открывается через `UAMapToggle` если игрок владеет картой (или `ignoreMapOwnership` параметр).
+Paper map. Opened via `UAMapToggle` if the player owns a map (or the `ignoreMapOwnership` parameter).
 
-#### Состояние
+#### State
 
-| Поле | Описание |
-|------|----------|
-| `m_MapWidgetInstance : MapWidget` | Сам widget карты (engine-side) |
-| `m_HasCompass` / `m_HasGPS` | Доп. инструменты в инвентаре игрока |
-| `m_MapMenuHandler : MapHandler` | Обработчик кликов/drag (см. `gui/maphandler.c`) |
-| `m_MapNavigationBehaviour` | Pan/zoom поведение |
-| `m_GPSMarker` / `m_GPSMarkerArrow` | Иконка позиции игрока (если есть GPS) |
-| `m_ToolsCompassBase`/`Arrow`/`Azimuth` | Compass UI (если есть компас) |
-| `m_ToolsScale*` | Масштабная линейка |
+| Field | Description |
+|-------|-------------|
+| `m_MapWidgetInstance : MapWidget` | The map widget itself (engine-side) |
+| `m_HasCompass` / `m_HasGPS` | Additional tools in the player's inventory |
+| `m_MapMenuHandler : MapHandler` | Handler for clicks/drag (see `gui/maphandler.c`) |
+| `m_MapNavigationBehaviour` | Pan/zoom behavior |
+| `m_GPSMarker` / `m_GPSMarkerArrow` | Player position icon (if GPS is present) |
+| `m_ToolsCompassBase`/`Arrow`/`Azimuth` | Compass UI (if a compass is present) |
+| `m_ToolsScale*` | Scale ruler |
 
-#### Поведение
+#### Behavior
 
-- Стартовая позиция/масштаб через `player.GetLastMapInfo()` или `CfgWorlds %1 centerPosition`
-- Сохранение позиции через `player.SetLastMapInfo(scale, pos)` при закрытии
+- Starting position/zoom via `player.GetLastMapInfo()` or `CfgWorlds %1 centerPosition`
+- Position is saved via `player.SetLastMapInfo(scale, pos)` on close
 - Compass: `azimuth = -m_MapWidgetInstance.GetMapRotation() % 360`
-- GPS: `m_GPSMarker.SetPos(...)` обновляется в `Update()` от `player.GetPosition()`
-- Маркеры мира — статический реестр `MapMarkerTypes` (см. [hud.md](hud.md))
+- GPS: `m_GPSMarker.SetPos(...)` is updated in `Update()` from `player.GetPosition()`
+- World markers — static registry `MapMarkerTypes` (see [hud.md](hud.md))
 
 ---
 
@@ -190,21 +190,21 @@ class MapMenu extends UIScriptedMenu
 class NoteMenu extends UIScriptedMenu
 ```
 
-Чтение/запись бумажной заметки.
+Read/write a paper note.
 
-| Метод | Описание |
-|-------|----------|
-| `InitNoteRead(text)` | Read-only, показывает `HtmlWidget` |
-| `InitNoteWrite(paper, pen, text)` | Edit-mode с `MultilineEditBoxWidget`, читает `pen.ConfigGetString("writingColor")` |
-| `OnClick → IDC_OK` | Шлёт `RPC_WRITE_NOTE_CLIENT` с санитизированным текстом через `MiscGameplayFunctions.SanitizeString` |
+| Method | Description |
+|--------|-------------|
+| `InitNoteRead(text)` | Read-only, shows `HtmlWidget` |
+| `InitNoteWrite(paper, pen, text)` | Edit mode with `MultilineEditBoxWidget`, reads `pen.ConfigGetString("writingColor")` |
+| `OnClick → IDC_OK` | Sends `RPC_WRITE_NOTE_CLIENT` with text sanitized via `MiscGameplayFunctions.SanitizeString` |
 
-В конструкторе/деструкторе прячет/показывает HUD UI. Поддерживает `UAUIBack` для закрытия.
+The constructor/destructor hides/shows the HUD UI. Supports `UAUIBack` for closing.
 
 ---
 
 ### BookMenu
 
-Чтение многостраничной книги (`day_z_book.layout`). Простая навигация next/prev page.
+Reading a multi-page book (`day_z_book.layout`). Simple next/prev page navigation.
 
 ---
 
@@ -214,7 +214,7 @@ class NoteMenu extends UIScriptedMenu
 class GesturesMenu extends UIScriptedMenu
 ```
 
-Радиальное меню эмоутов с пятью категориями + console-категория:
+Radial emote menu with five categories + a console category:
 
 ```c
 enum GestureCategories
@@ -224,15 +224,15 @@ enum GestureCategories
 }
 ```
 
-Каждый эмоут — `GestureMenuItem(id, name, category)`, ссылается на `EmoteBase` через `player.GetEmoteManager().GetNameEmoteMap()`. Показывает забинденную клавишу через `InputUtils.GetComboButtonNamesFromInput(emoteClass.GetInputActionName(), MOUSE_AND_KEYBOARD)`.
+Each emote is a `GestureMenuItem(id, name, category)`, referencing an `EmoteBase` via `player.GetEmoteManager().GetNameEmoteMap()`. Shows the bound key via `InputUtils.GetComboButtonNamesFromInput(emoteClass.GetInputActionName(), MOUSE_AND_KEYBOARD)`.
 
-| Метод | Описание |
-|-------|----------|
-| `static OpenMenu(parent)` / `CloseMenu()` | Открыть `MENU_GESTURES` |
-| `SwitchCategory(int)` | Переключить страницу |
-| `PerformGesture(id)` | Через `player.GetEmoteManager().CreateEmoteCBFromMenu(id)` |
+| Method | Description |
+|--------|-------------|
+| `static OpenMenu(parent)` / `CloseMenu()` | Open `MENU_GESTURES` |
+| `SwitchCategory(int)` | Switch the page |
+| `PerformGesture(id)` | Via `player.GetEmoteManager().CreateEmoteCBFromMenu(id)` |
 
-`AddActiveInputExcludes({"radialmenu"})` в конструкторе.
+`AddActiveInputExcludes({"radialmenu"})` in the constructor.
 
 ---
 
@@ -242,22 +242,22 @@ enum GestureCategories
 class RadialQuickbarMenu extends UIScriptedMenu
 ```
 
-Радиальный quickbar для назначения предмета в hotkey-слот.
+Radial quickbar for assigning an item to a hotkey slot.
 
-| Поле | Описание |
-|------|----------|
+| Field | Description |
+|-------|-------------|
 | `static instance` | Singleton |
-| `static m_ItemToAssign : EntityAI` | Предмет, который ставится в слот (если открыто из drag) |
-| `m_CurrentCategory : int` | Текущая категория (`RadialQuickbarCategory.DEFAULT`) |
-| `m_Items : array<RadialQuickbarItem>` | Слоты квикбара как radial-элементы |
+| `static m_ItemToAssign : EntityAI` | Item to place into the slot (if opened from drag) |
+| `m_CurrentCategory : int` | Current category (`RadialQuickbarCategory.DEFAULT`) |
+| `m_Items : array<RadialQuickbarItem>` | Quickbar slots as radial elements |
 
-| Метод | Описание |
-|-------|----------|
-| `static OpenMenu(parent)` | Через `g_Game.GetUIManager().EnterScriptedMenu(MENU_RADIAL_QUICKBAR, parent)` |
+| Method | Description |
+|--------|-------------|
+| `static OpenMenu(parent)` | Via `g_Game.GetUIManager().EnterScriptedMenu(MENU_RADIAL_QUICKBAR, parent)` |
 | `static CloseMenu()` | `Back()` |
-| `static SetItemToAssign(item)` / `GetItemToAssign()` | Используется для drag→radial flow из инвентаря |
+| `static SetItemToAssign(item)` / `GetItemToAssign()` | Used for the drag→radial flow from inventory |
 
-`AddActiveInputExcludes({"radialmenu"})` в конструкторе.
+`AddActiveInputExcludes({"radialmenu"})` in the constructor.
 
 ---
 
@@ -267,15 +267,15 @@ class RadialQuickbarMenu extends UIScriptedMenu
 class LogoutMenu extends UIScriptedMenu
 ```
 
-Таймер дисконнекта (`MissionGameplay.StartLogoutMenu(time)`).
+Disconnect timer (`MissionGameplay.StartLogoutMenu(time)`).
 
-| Поле | Описание |
-|------|----------|
-| `m_iTime` | Оставшиеся секунды |
-| `m_FullTime : FullTimeData` | Помощник форматирования времени |
-| `m_bLogoutNow` / `m_bCancel` | Кнопки немедленного выхода/отмены |
+| Field | Description |
+|-------|-------------|
+| `m_iTime` | Remaining seconds |
+| `m_FullTime : FullTimeData` | Time formatting helper |
+| `m_bLogoutNow` / `m_bCancel` | Immediate exit / cancel buttons |
 
-В конструкторе: `g_Game.SetKeyboardHandle(this)`, в деструкторе сбрасывает + `Cancel()` если irregular close. Если игрок не restrained/unconscious — `player.GetEmoteManager().SetClientLoggingOut(true)` (садится).
+In the constructor: `g_Game.SetKeyboardHandle(this)`; the destructor resets it + `Cancel()` on irregular close. If the player is not restrained/unconscious — `player.GetEmoteManager().SetClientLoggingOut(true)` (sits down).
 
 ---
 
@@ -285,20 +285,20 @@ class LogoutMenu extends UIScriptedMenu
 class RespawnDialogue extends UIScriptedMenu
 ```
 
-Диалог выбора random/custom respawn после смерти.
+Dialog for choosing random/custom respawn after death.
 
-| Константа | Назначение |
-|-----------|------------|
-| `ID_RESPAWN_RANDOM = 102` | Случайная точка |
-| `ID_RESPAWN_CUSTOM = 101` | Выбор по карте (если поддерживается) |
+| Constant | Purpose |
+|----------|---------|
+| `ID_RESPAWN_RANDOM = 102` | Random point |
+| `ID_RESPAWN_CUSTOM = 101` | Pick on the map (if supported) |
 
-В `Update`: автозакрытие если `playerAlive && !IsUnconscious()`. `OnMouseEnter` показывает `m_DetailsRoot` tooltip с `#main_menu_respawn_random_tooltip`. `RequestRespawn(bool random)` — RPC к серверу.
+In `Update`: auto-closes if `playerAlive && !IsUnconscious()`. `OnMouseEnter` shows the `m_DetailsRoot` tooltip with `#main_menu_respawn_random_tooltip`. `RequestRespawn(bool random)` — RPC to the server.
 
 ---
 
 ### InviteMenu
 
-15-секундный таймер в режиме invite-присоединения. В конструкторе ставит игрока в эмоут SITA через `player.GetEmoteManager().CreateEmoteCBFromMenu(EmoteConstants.ID_EMOTE_SITA)` с `EmoteLauncher.FORCE_DIFFERENT`. Прячет HUD UI и quickbar, добавляет `"menu"` в excludes.
+15-second timer in invite-join mode. The constructor puts the player into the SITA emote via `player.GetEmoteManager().CreateEmoteCBFromMenu(EmoteConstants.ID_EMOTE_SITA)` with `EmoteLauncher.FORCE_DIFFERENT`. Hides HUD UI and quickbar, adds `"menu"` to excludes.
 
 ---
 
@@ -308,14 +308,14 @@ class RespawnDialogue extends UIScriptedMenu
 class WarningMenuBase : UIScriptedMenu
 ```
 
-База для warning popup'ов. В конструкторе/деструкторе ставит/снимает `"menu"` excludes и прячет HUD. `Init()` создаёт `day_z_dropped_items.layout`. Override `GetText()` возвращает текст.
+Base for warning popups. In the constructor/destructor sets/removes `"menu"` excludes and hides the HUD. `Init()` creates `day_z_dropped_items.layout`. Overriding `GetText()` returns the text.
 
-| Наследник | Назначение |
-|-----------|------------|
-| `ItemDropWarningMenu` | "Предметы будут сброшены при выходе" |
-| `PlayerRepositionWarningMenu` | "Игрок будет перемещён" |
+| Subclass | Purpose |
+|----------|---------|
+| `ItemDropWarningMenu` | "Items will be dropped on exit" |
+| `PlayerRepositionWarningMenu` | "The player will be moved" |
 
-`InputDeviceDisconnectWarningMenu` — отдельный класс (extends `UIScriptedMenu` напрямую), для warning об отключении контроллера.
+`InputDeviceDisconnectWarningMenu` is a separate class (extends `UIScriptedMenu` directly), for the controller-disconnect warning.
 
 ---
 
@@ -325,37 +325,37 @@ class WarningMenuBase : UIScriptedMenu
 class LoadingMenu extends UIScriptedMenu
 ```
 
-Минималистичный экран загрузки: `TextWidget m_label`, `ProgressBarWidget m_progressBar`, `ImageWidget m_image` со случайным фоном через `GetRandomLoadingBackground()`. На Xbox experimental сборках показывает `notification_root` widget.
+Minimal loading screen: `TextWidget m_label`, `ProgressBarWidget m_progressBar`, `ImageWidget m_image` with a random background via `GetRandomLoadingBackground()`. On Xbox experimental builds it shows a `notification_root` widget.
 
 ---
 
 ### ConnectionDialogue
 
-`MENU_CONNECTION_DIALOGUE` — диалог при `NetworkInputBufferEventTypeID` (буфер ввода переполнен). Открывается из `MissionGameplay.OnEvent`. Показывает `MultilineTextWidget m_Description` и кнопку Disconnect. Не может быть закрыто кроме как через disconnect.
+`MENU_CONNECTION_DIALOGUE` — dialog opened on `NetworkInputBufferEventTypeID` (input buffer overflow). Opened from `MissionGameplay.OnEvent`. Shows `MultilineTextWidget m_Description` and a Disconnect button. Cannot be closed except through disconnect.
 
 ---
 
 ### EarlyAccessMenu / HelpScreen
 
-`EarlyAccessMenu` — splash для experimental builds. `HelpScreen` — статический экран справки `day_z_help_screen.layout`. Оба тривиальны.
+`EarlyAccessMenu` — splash for experimental builds. `HelpScreen` — static help screen `day_z_help_screen.layout`. Both are trivial.
 
 ---
 
 ### PresetsMenu
 
-`MENU_CONTROLS_PRESET` — выбор пресета управления (для KeybindingsMenu). Заполняется из `g_Game.GetInput().GetProfilesCount()`. Простой list-select.
+`MENU_CONTROLS_PRESET` — selection of a controls preset (for KeybindingsMenu). Populated from `g_Game.GetInput().GetProfilesCount()`. Simple list select.
 
 ---
 
-### Расширение
+### Extension
 
-Чтобы добавить кастомное меню:
+To add a custom menu:
 
-1. Определить новый `MENU_*` ID в 3_Game `constants.c`
-2. Создать класс `extends UIScriptedMenu`
-3. Override `Init()` — создать layoutRoot из своего layout
-4. В `MissionBase.CreateScriptedMenu` (через override mod-mission) добавить `case MENU_MY: menu = new MyMenu; break;`
-5. Открывать через `g_Game.GetUIManager().EnterScriptedMenu(MENU_MY, parent_menu)`
-6. Не забыть Pause/Continue, input excludes, HUD hide, отписки в деструкторе
+1. Define a new `MENU_*` ID in 3_Game `constants.c`
+2. Create a class `extends UIScriptedMenu`
+3. Override `Init()` — create layoutRoot from your layout
+4. In `MissionBase.CreateScriptedMenu` (via a mod-mission override) add `case MENU_MY: menu = new MyMenu; break;`
+5. Open via `g_Game.GetUIManager().EnterScriptedMenu(MENU_MY, parent_menu)`
+6. Don't forget Pause/Continue, input excludes, HUD hide, unsubscribing in the destructor
 
-См. [mission.md](mission.md) для overview lifecycle и input excludes API.
+See [mission.md](mission.md) for lifecycle overview and input excludes API.

@@ -1,42 +1,42 @@
-Система ввода: действия, контексты, слушатели. Условие: `GAME_TEMPLATE`. Источник: `inputmanager.c`
+Input system: actions, contexts, listeners. Condition: `GAME_TEMPLATE`. Source: `inputmanager.c`
 
 ### InputTrigger
 
-Режимы срабатывания слушателей действий.
+Trigger modes for action listeners.
 
-| Значение | Описание |
-|----------|----------|
-| `UP` | Кнопка отпущена |
-| `DOWN` | Кнопка нажата |
-| `PRESSED` | Каждый тик пока кнопка зажата |
-| `VALUE` | Каждый тик с текущим значением |
+| Value | Description |
+|-------|-------------|
+| `UP` | Button released |
+| `DOWN` | Button pressed |
+| `PRESSED` | Every tick while the button is held |
+| `VALUE` | Every tick with the current value |
 
 ### ActionManager
 
-Базовый менеджер действий. Поддерживает иерархию (parent).
+Base action manager. Supports a hierarchy (parent).
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `RegisterAction(string actionName)` | `bool` | Зарегистрировать действие |
-| `RegisterContext(string contextName)` | `bool` | Зарегистрировать контекст |
-| `LocalValue(string actionName)` | `float` | Текущее значение действия |
-| `GetActionTriggered(string actionName)` | `bool` | Было ли действие активировано |
-| `ActivateAction(string actionName, int duration)` | `bool` | Программно активировать действие, `duration` мс (0 = один кадр) |
-| `IsActionActive(string actionName)` | `bool` | Активно ли действие |
-| `ActivateContext(string contextName, int duration)` | `bool` | Активировать контекст ввода |
-| `IsContextActive(string contextName)` | `bool` | Активен ли контекст |
-| `AddActionListener(string actionName, InputTrigger trigger, func callback)` | — | Подписать callback на действие с триггером |
-| `SetContextDebug(string contextName, bool bDebug)` | — | Включить отладку контекста |
-| `SetParent(ActionManager parent)` | — | Установить родительский менеджер |
-| `SetDebug(bool bDebug)` | — | Включить отладку |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `RegisterAction(string actionName)` | `bool` | Register an action |
+| `RegisterContext(string contextName)` | `bool` | Register a context |
+| `LocalValue(string actionName)` | `float` | Current action value |
+| `GetActionTriggered(string actionName)` | `bool` | Whether the action was triggered |
+| `ActivateAction(string actionName, int duration)` | `bool` | Programmatically activate an action, `duration` ms (0 = one frame) |
+| `IsActionActive(string actionName)` | `bool` | Whether the action is active |
+| `ActivateContext(string contextName, int duration)` | `bool` | Activate input context |
+| `IsContextActive(string contextName)` | `bool` | Whether the context is active |
+| `AddActionListener(string actionName, InputTrigger trigger, func callback)` | — | Subscribe a callback to an action with a trigger |
+| `SetContextDebug(string contextName, bool bDebug)` | — | Enable context debug |
+| `SetParent(ActionManager parent)` | — | Set parent manager |
+| `SetDebug(bool bDebug)` | — | Enable debug |
 
 ### InputManager
 
-Наследует `ActionManager`. Глобальный синглтон, доступен через `g_Game.GetInputManager()`. Конструктор/деструктор `private`.
+Inherits `ActionManager`. Global singleton, accessible via `g_Game.GetInputManager()`. Constructor/destructor are `private`.
 
-| Метод | Описание |
-|-------|----------|
-| `ResetAction(string actionName)` | Сбросить состояние действия |
-| `SetCursorPosition(int x, int y)` | Установить позицию курсора |
-| `RegisterActionManager(ActionManager pManager)` | Зарегистрировать дочерний менеджер |
-| `UnregisterActionManager(ActionManager pManager)` | Отключить дочерний менеджер |
+| Method | Description |
+|--------|-------------|
+| `ResetAction(string actionName)` | Reset action state |
+| `SetCursorPosition(int x, int y)` | Set cursor position |
+| `RegisterActionManager(ActionManager pManager)` | Register a child manager |
+| `UnregisterActionManager(ActionManager pManager)` | Unregister a child manager |

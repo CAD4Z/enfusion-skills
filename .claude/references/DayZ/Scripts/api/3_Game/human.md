@@ -1,206 +1,206 @@
-Управление игроком: ввод, камеры, предметы в руках, настройки движения. Источники: `human.c`, `humanitems.c`, `humansettings.c`, `dayzplayer.c`
+Player control: input, cameras, items in hands, movement settings. Sources: `human.c`, `humanitems.c`, `humansettings.c`, `dayzplayer.c`
 
 ### HumanInputController
 
-Интерфейс ввода игрока. Доступ: `human.GetInputController()`. Все методы — `proto native`.
+Player input interface. Access: `human.GetInputController()`. All methods are `proto native`.
 
-#### Движение
+#### Movement
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `SetDisabled(state)` | `void` | Вкл/выкл контроллер |
-| `GetMovement(out speed, out localDir)` | `void` | `speed`: 0=idle, 1=walk, 2=run, 3=sprint. `localDir` — нормализованный |
-| `GetHeadingAngle()` | `float` | Угол направления камеры (рад), `-PI..PI` |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `SetDisabled(state)` | `void` | Enable/disable controller |
+| `GetMovement(out speed, out localDir)` | `void` | `speed`: 0=idle, 1=walk, 2=run, 3=sprint. `localDir` is normalized |
+| `GetHeadingAngle()` | `float` | Camera heading angle (rad), `-PI..PI` |
 
-#### Прицеливание
+#### Aiming
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `GetAimChange()` | `vector` | Изменение прицела за тик (рад) |
-| `GetAimDelta(dt)` | `vector` | Изменение прицела (рад) |
-| `GetTracking()` | `vector` | Абсолютное изменение трекинга (рад) |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `GetAimChange()` | `vector` | Aim change per tick (rad) |
+| `GetAimDelta(dt)` | `vector` | Aim change (rad) |
+| `GetTracking()` | `vector` | Absolute tracking change (rad) |
 
-#### Камера
+#### Camera
 
-| Метод | Описание |
-|-------|----------|
-| `CameraViewChanged()` | Переключение 1-е/3-е лицо |
-| `CameraIsFreeLook()` | Свободный обзор активен |
-| `ResetFreeLookToggle()` | Сброс переключателя свободного обзора |
-| `CameraIsTracking()` | Трекинг (ИК-устройство) |
-| `Camera3rdIsRightShoulder()` | Правое/левое плечо (3-е лицо) |
+| Method | Description |
+|--------|-------------|
+| `CameraViewChanged()` | Switch 1st/3rd person |
+| `CameraIsFreeLook()` | Free look active |
+| `ResetFreeLookToggle()` | Reset free look toggle |
+| `CameraIsTracking()` | Tracking (IR device) |
+| `Camera3rdIsRightShoulder()` | Right/left shoulder (3rd person) |
 
-#### Стойка и движение
+#### Stance and movement
 
-| Метод | Описание |
-|-------|----------|
-| `IsStanceChange()` | Нажата смена стойки |
-| `IsJumpClimb()` | Нажат прыжок/подъём |
-| `IsWalkToggled()` | Ходьба переключена |
+| Method | Description |
+|--------|-------------|
+| `IsStanceChange()` | Stance change pressed |
+| `IsJumpClimb()` | Jump/climb pressed |
+| `IsWalkToggled()` | Walk toggled |
 
-#### Ближний бой
+#### Melee
 
-| Метод | Описание |
-|-------|----------|
-| `IsMeleeEvade()` | SHIFT (уклонение) |
-| `IsMeleeFastAttackModifier()` | SHIFT (быстрая/тяжёлая атака) |
-| `IsMeleeLREvade()` | 0=нет, 1=влево, 2=вправо |
-| `IsMeleeWeaponAttack()` | Модификатор атаки оружием |
+| Method | Description |
+|--------|-------------|
+| `IsMeleeEvade()` | SHIFT (evade) |
+| `IsMeleeFastAttackModifier()` | SHIFT (fast/heavy attack) |
+| `IsMeleeLREvade()` | 0=no, 1=left, 2=right |
+| `IsMeleeWeaponAttack()` | Weapon attack modifier |
 
-#### Оружие
+#### Weapon
 
-| Метод | Описание |
-|-------|----------|
-| `WeaponWasRaiseClick()` | Клик перед поднятием |
-| `IsWeaponRaised()` | Оружие поднято |
-| `WeaponADS()` | Режим прицеливания |
-| `ResetADS()` | Сброс ADS |
-| `IsThrowingModeChange()` / `ResetThrowingMode()` | Смена режима броска |
+| Method | Description |
+|--------|-------------|
+| `WeaponWasRaiseClick()` | Click before raising |
+| `IsWeaponRaised()` | Weapon raised |
+| `WeaponADS()` | Aim down sights mode |
+| `ResetADS()` | Reset ADS |
+| `IsThrowingModeChange()` / `ResetThrowingMode()` | Throwing mode change |
 
-#### Использование (Actions)
+#### Use (Actions)
 
-| Метод | Описание |
-|-------|----------|
+| Method | Description |
+|--------|-------------|
 | `IsUseButton()` / `IsUseButtonDown()` | **Deprecated** — UADefaultAction + UAFire |
-| `IsUseItemButton()` / `IsUseItemButtonDown()` | UADefaultAction (использовать) |
-| `IsAttackButton()` / `IsAttackButtonDown()` | UAFire (атака) |
-| `IsSingleUse()` | Одиночное использование (не поднято) |
-| `IsContinuousUse()` | Длительное использование |
-| `IsContinuousUseStart()` / `IsContinuousUseEnd()` | Начало/конец длительного |
-| `IsImmediateAction()` | Мгновенное действие (средняя кнопка) |
+| `IsUseItemButton()` / `IsUseItemButtonDown()` | UADefaultAction (use) |
+| `IsAttackButton()` / `IsAttackButtonDown()` | UAFire (attack) |
+| `IsSingleUse()` | Single use (not raised) |
+| `IsContinuousUse()` | Continuous use |
+| `IsContinuousUseStart()` / `IsContinuousUseEnd()` | Start/end of continuous use |
+| `IsImmediateAction()` | Immediate action (middle button) |
 
-#### Перезарядка
+#### Reload
 
-| Метод | Описание |
-|-------|----------|
-| `IsReloadOrMechanismSingleUse()` | R — одиночное (1 тик) |
-| `IsReloadOrMechanismContinuousUse()` | R — длительное |
-| `IsReloadOrMechanismContinuousUseStart()` / `...End()` | Начало/конец |
+| Method | Description |
+|--------|-------------|
+| `IsReloadOrMechanismSingleUse()` | R — single (1 tick) |
+| `IsReloadOrMechanismContinuousUse()` | R — continuous |
+| `IsReloadOrMechanismContinuousUseStart()` / `...End()` | Start/end |
 
-#### Прицел и зум
+#### Sight and zoom
 
-| Метод | Описание |
-|-------|----------|
-| `IsZoom()` / `IsZoomToggle()` / `ResetZoomToggle()` | Зум |
-| `IsSightChange()` | Смена прицела (in/out) |
-| `IsZoomIn()` / `IsZoomOut()` | Приблизить/отдалить |
-| `IsFireModeChange()` | Смена режима огня |
-| `IsZeroingUp()` / `IsZeroingDown()` | Пристрелка |
-| `IsHoldBreath()` / `ResetHoldBreath()` | Задержка дыхания |
+| Method | Description |
+|--------|-------------|
+| `IsZoom()` / `IsZoomToggle()` / `ResetZoomToggle()` | Zoom |
+| `IsSightChange()` | Sight change (in/out) |
+| `IsZoomIn()` / `IsZoomOut()` | Zoom in/out |
+| `IsFireModeChange()` | Fire mode change |
+| `IsZeroingUp()` / `IsZeroingDown()` | Zeroing |
+| `IsHoldBreath()` / `ResetHoldBreath()` | Hold breath |
 
-#### Прочее
+#### Other
 
-| Метод | Описание |
-|-------|----------|
-| `IsQuickBarSlot()` | 1..10 если слот quickbar, 0 иначе |
-| `IsGestureSlot()` | **Deprecated**. 1..12 если жест |
-| `IsOtherController()` | Управляет другой сущностью (транспорт) |
+| Method | Description |
+|--------|-------------|
+| `IsQuickBarSlot()` | 1..10 if quickbar slot, 0 otherwise |
+| `IsGestureSlot()` | **Deprecated**. 1..12 if gesture |
+| `IsOtherController()` | Controlling another entity (vehicle) |
 
-#### Override-система
+#### Override system
 
 `HumanInputControllerOverrideType`: `DISABLED`, `ENABLED`, `ONE_FRAME`
 
-Позволяет перехватывать и подменять значения ввода.
+Allows intercepting and substituting input values.
 
 ### DayZPlayerCamera
 
-Базовый класс камер игрока. Источник: `dayzplayer.c`
+Base class for player cameras. Source: `dayzplayer.c`
 
 #### DayZPlayerCameraResult
 
-| Поле | Тип | Описание |
-|------|-----|----------|
-| `m_CameraTM[4]` | `vector[4]` | Матрица трансформации камеры |
-| `m_fFovMultiplier` | `float` | Множитель FOV (1.0 = без изменений) |
-| `m_fFovAbsolute` | `float` | Абсолютный FOV (-1 = использовать множитель) |
-| `m_iDirectBone` | `int` | Индекс кости привязки (-1 = нет) |
-| `m_iDirectBoneMode` | `int` | Режим привязки |
-| `m_fNearPlane` | `float` | Ближняя плоскость отсечения |
-| `m_bUpdateWhenBlendOut` | `bool` | Обновлять при fade-out |
-| `m_fIgnoreParentRoll` | `float` | Игнорировать крен родителя (0..1) |
+| Field | Type | Description |
+|-------|------|-------------|
+| `m_CameraTM[4]` | `vector[4]` | Camera transformation matrix |
+| `m_fFovMultiplier` | `float` | FOV multiplier (1.0 = no change) |
+| `m_fFovAbsolute` | `float` | Absolute FOV (-1 = use multiplier) |
+| `m_iDirectBone` | `int` | Bound bone index (-1 = none) |
+| `m_iDirectBoneMode` | `int` | Binding mode |
+| `m_fNearPlane` | `float` | Near clipping plane |
+| `m_bUpdateWhenBlendOut` | `bool` | Update during fade-out |
+| `m_fIgnoreParentRoll` | `float` | Ignore parent roll (0..1) |
 
 #### DayZPlayerCamera
 
-| Метод | Описание |
-|-------|----------|
-| `OnActivate(prevCamera, prevResult)` | Камера активирована |
-| `OnUpdate(dt, out result)` | Обновление (абстрактный) |
-| `GetBaseAngles(out yaw, out pitch, out roll)` | Базовые углы |
-| `GetAdditiveAngles(out yaw, out pitch, out roll)` | Аддитивные углы |
-| `GetCurrentYaw()` / `GetCurrentPitch()` / `GetCurrentRoll()` | Текущие углы |
-| `IsCamera3rdRaised()` | Поднятая камера 3-го лица |
-| `CanFreeLook()` | Может свободно осматриваться |
-| `SpawnCameraShake(strength, radius, smoothness, radius)` | Тряска камеры |
+| Method | Description |
+|--------|-------------|
+| `OnActivate(prevCamera, prevResult)` | Camera activated |
+| `OnUpdate(dt, out result)` | Update (abstract) |
+| `GetBaseAngles(out yaw, out pitch, out roll)` | Base angles |
+| `GetAdditiveAngles(out yaw, out pitch, out roll)` | Additive angles |
+| `GetCurrentYaw()` / `GetCurrentPitch()` / `GetCurrentRoll()` | Current angles |
+| `IsCamera3rdRaised()` | Raised 3rd person camera |
+| `CanFreeLook()` | Can free look |
+| `SpawnCameraShake(strength, radius, smoothness, radius)` | Camera shake |
 
 ### HumanItemBehaviorCfg
 
-Конфигурация поведения предметов в руках. Источник: `humanitems.c`
+Configuration of in-hand item behaviour. Source: `humanitems.c`
 
-#### IK-настройки
+#### IK settings
 
-Константы: `IKSETTING_AIMING`, `IKSETTING_RHAND`, `IKSETTING_LHAND`
+Constants: `IKSETTING_AIMING`, `IKSETTING_RHAND`, `IKSETTING_LHAND`
 
-| Метод | Описание |
-|-------|----------|
-| `SetIK(stance, ik)` | Установить IK для стойки |
-| `SetIKStance(stance, ik)` | IK для конкретной стойки |
-| `SetIKMelee(ik)` | IK для ближнего боя |
-| `SetIKAll(ik)` | IK для всех стоек |
+| Method | Description |
+|--------|-------------|
+| `SetIK(stance, ik)` | Set IK for stance |
+| `SetIKStance(stance, ik)` | IK for specific stance |
+| `SetIKMelee(ik)` | IK for melee |
+| `SetIKAll(ik)` | IK for all stances |
 
-#### Поля
+#### Fields
 
-| Поле | Описание |
-|------|----------|
-| `m_StanceMask` | Маска разрешённых стоек |
-| `m_iPerStanceMovementDefinition[6]` | Определение движения для каждой стойки |
-| `m_bJumpAllowed` | Прыжок разрешён |
-| `m_bAttackLean` | Наклон при атаке |
+| Field | Description |
+|-------|-------------|
+| `m_StanceMask` | Mask of allowed stances |
+| `m_iPerStanceMovementDefinition[6]` | Movement definition per stance |
+| `m_bJumpAllowed` | Jump allowed |
+| `m_bAttackLean` | Lean while attacking |
 
 ### HumanItemAccessor
 
-Доступ к предмету в руках. Источник: `humanitems.c`
+Access to the item in hands. Source: `humanitems.c`
 
-| Метод | Описание |
-|-------|----------|
-| `OnItemInHandsChanged(instant)` | Предмет в руках изменился |
-| `ResetWeaponInHands()` | Сброс оружия |
-| `HideItemInHands()` / `IsItemInHandsHidden()` | Скрыть/проверить |
-| `IsItemInHandsWeapon()` | Предмет — оружие |
-| `WeaponGetCameraPoint(out pos, out dir)` | Точка камеры оружия |
-| `WeaponGetAimingModelDirTm(out tm[4])` | Матрица направления прицеливания |
-| `GetItemInHandsBehaviourCfg()` | Конфигурация поведения |
+| Method | Description |
+|--------|-------------|
+| `OnItemInHandsChanged(instant)` | Item in hands changed |
+| `ResetWeaponInHands()` | Reset weapon |
+| `HideItemInHands()` / `IsItemInHandsHidden()` | Hide/check |
+| `IsItemInHandsWeapon()` | Item is a weapon |
+| `WeaponGetCameraPoint(out pos, out dir)` | Weapon camera point |
+| `WeaponGetAimingModelDirTm(out tm[4])` | Aiming direction matrix |
+| `GetItemInHandsBehaviourCfg()` | Behaviour config |
 
-### Настройки движения
+### Movement settings
 
-Источник: `humansettings.c`. Структуры тонкой настройки физики персонажа.
+Source: `humansettings.c`. Structures for fine-tuning character physics.
 
 #### SHumanCommandMoveSettings
 
-Наземное движение: спринт, повороты, скольжение, наклон.
+Ground movement: sprint, turning, sliding, leaning.
 
-| Поле | Описание |
-|------|----------|
-| `m_fSprintTimeOut` | Таймаут спринта |
-| `m_fSprintChangeRate` | Скорость изменения спринта |
-| `m_fDirFilterTimeout` | Таймаут фильтра направления |
-| `m_fTurnAngle` / `m_fTurnTime` | Угол/время поворота |
-| `m_fSlidingPoseAngle` | Угол скольжения |
-| `m_fLeaningSpeed` | Скорость наклона |
+| Field | Description |
+|-------|-------------|
+| `m_fSprintTimeOut` | Sprint timeout |
+| `m_fSprintChangeRate` | Sprint change rate |
+| `m_fDirFilterTimeout` | Direction filter timeout |
+| `m_fTurnAngle` / `m_fTurnTime` | Turn angle/time |
+| `m_fSlidingPoseAngle` | Slide angle |
+| `m_fLeaningSpeed` | Lean speed |
 
 #### SHumanCommandSwimSettings
 
-Плавание: выравнивание, скорость, пороги уровня воды.
+Swimming: alignment, speed, water level thresholds.
 
 #### SHumanCommandClimbSettings
 
-Лазание: ширина/высота персонажа, высоты прохода, расстояния проверки.
+Climbing: character width/height, traversal heights, check distances.
 
-### EActions (ключевые значения)
+### EActions (key values)
 
-Определены в `enums/eactions.c`. Полный enum с 100+ значениями. Ключевые группы:
+Defined in `enums/eactions.c`. Full enum with 100+ values. Key groups:
 
-- **Базовые**: `NONE`, `DRINK`, `EAT`, `BANDAGE`, `FORCE_FEED`, `GIVE_BLOOD`, `INJECT_EPINEPHRINE/MORPHINE`
-- **Механизмы**: `OPERATE`, `TOGGLE_STOPPER`, `TOGGLE_HANDGUARD`, `RELEASE_BOLT/MAGAZINE`
-- **Мир**: `OPEN_DOOR`, `CLOSE_DOOR`, `LOCK_DOOR`, `BUILD_OVEN`, `UNPACK_BOX`
-- **Бот**: `PLAYER_BOT_ATTACH/DETACH/SWAP/DROP/EQUIP`
-- **Отладка**: `DEBUG_AGENTS_RANGE_*`
+- **Basics**: `NONE`, `DRINK`, `EAT`, `BANDAGE`, `FORCE_FEED`, `GIVE_BLOOD`, `INJECT_EPINEPHRINE/MORPHINE`
+- **Mechanisms**: `OPERATE`, `TOGGLE_STOPPER`, `TOGGLE_HANDGUARD`, `RELEASE_BOLT/MAGAZINE`
+- **World**: `OPEN_DOOR`, `CLOSE_DOOR`, `LOCK_DOOR`, `BUILD_OVEN`, `UNPACK_BOX`
+- **Bot**: `PLAYER_BOT_ATTACH/DETACH/SWAP/DROP/EQUIP`
+- **Debug**: `DEBUG_AGENTS_RANGE_*`

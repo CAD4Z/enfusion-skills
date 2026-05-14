@@ -1,74 +1,74 @@
-Центральная экономика — система спавна и управления лутом. Источник: `ce/`
+Central Economy — the loot spawn and management system. Source: `ce/`
 
 ### CentralEconomy
 
-Ядро системы (native). Доступ через `GetCEApi()`.
+Core of the system (native). Accessed via `GetCEApi()`.
 
-### ECE-флаги (Entity Creation)
+### ECE flags (Entity Creation)
 
-Флаги создания сущностей. Используются в `CreateObjectEx()` и CE-операциях. Комбинируются побитово.
+Entity creation flags. Used in `CreateObjectEx()` and CE operations. Combined bitwise.
 
-#### Базовые
+#### Basic
 
-| Флаг | Описание |
-|------|----------|
-| `ECE_SETUP` | Базовая настройка |
-| `ECE_TRACE` | Поставить на поверхность (трейс вниз) |
-| `ECE_CENTER` | Центрировать по поверхности |
-| `ECE_UPDATEPATHGRAPH` | Обновить навмеш |
-| `ECE_CREATEPHYSICS` | Создать физическое тело |
-| `ECE_INITAI` | Инициализировать ИИ |
-| `ECE_AIRBORNE` | В воздухе (без трейса) |
+| Flag | Description |
+|------|-------------|
+| `ECE_SETUP` | Basic setup |
+| `ECE_TRACE` | Place on surface (trace downwards) |
+| `ECE_CENTER` | Center on surface |
+| `ECE_UPDATEPATHGRAPH` | Update navmesh |
+| `ECE_CREATEPHYSICS` | Create physics body |
+| `ECE_INITAI` | Initialize AI |
+| `ECE_AIRBORNE` | Airborne (no trace) |
 
-#### Экипировка
+#### Equipment
 
-| Флаг | Описание |
-|------|----------|
-| `ECE_EQUIP_ATTACHMENTS` | Заспавнить аттачменты |
-| `ECE_EQUIP_CARGO` | Заспавнить лут в карго |
-| `ECE_EQUIP` | Аттачменты + карго |
-| `ECE_EQUIP_CONTAINER` | Контейнер с лутом |
+| Flag | Description |
+|------|-------------|
+| `ECE_EQUIP_ATTACHMENTS` | Spawn attachments |
+| `ECE_EQUIP_CARGO` | Spawn loot in cargo |
+| `ECE_EQUIP` | Attachments + cargo |
+| `ECE_EQUIP_CONTAINER` | Container with loot |
 
-#### Персистентность
+#### Persistence
 
-| Флаг | Описание |
-|------|----------|
-| `ECE_NOLIFETIME` | Без lifetime (не исчезает) |
-| `ECE_NOPERSISTENCY_WORLD` | Без сохранения в мир |
-| `ECE_NOPERSISTENCY_CHAR` | Без сохранения на персонажа |
-| `ECE_DYNAMIC_PERSISTENCY` | Динамическая персистентность |
+| Flag | Description |
+|------|-------------|
+| `ECE_NOLIFETIME` | No lifetime (doesn't despawn) |
+| `ECE_NOPERSISTENCY_WORLD` | Not saved to world |
+| `ECE_NOPERSISTENCY_CHAR` | Not saved on character |
+| `ECE_DYNAMIC_PERSISTENCY` | Dynamic persistence |
 
-#### Прочие
+#### Other
 
-| Флаг | Описание |
-|------|----------|
-| `ECE_NOSURFACEALIGN` | Без выравнивания по поверхности |
-| `ECE_KEEPHEIGHT` | Сохранить высоту |
+| Flag | Description |
+|------|-------------|
+| `ECE_NOSURFACEALIGN` | No alignment to surface |
+| `ECE_KEEPHEIGHT` | Preserve height |
 
-#### Пресеты
+#### Presets
 
-| Пресет | Описание |
-|--------|----------|
-| `ECE_IN_INVENTORY` | Для предметов в инвентаре |
-| `ECE_PLACE_ON_SURFACE` | Разместить на поверхности |
-| `ECE_OBJECT_SWAP` | Замена объекта |
-| `ECE_FULL` | Полная настройка (все основные флаги) |
+| Preset | Description |
+|--------|-------------|
+| `ECE_IN_INVENTORY` | For items in inventory |
+| `ECE_PLACE_ON_SURFACE` | Place on surface |
+| `ECE_OBJECT_SWAP` | Object swap |
+| `ECE_FULL` | Full setup (all main flags) |
 
-### RF-флаги (Rotation)
+### RF flags (Rotation)
 
-Ориентация при спавне:
+Orientation at spawn:
 
-| Флаг | Описание |
-|------|----------|
-| `RF_FRONT` | Лицом к поверхности |
-| `RF_TOP` | Вверх |
-| `RF_LEFT` / `RF_RIGHT` | Боком |
-| `RF_BACK` / `RF_BOTTOM` | Задом / низом |
-| `RF_RANDOMROT` | Случайное вращение по Y |
-| `RF_ORIGINAL` | Оригинальная ориентация |
-| `RF_DECORRECTION` | Коррекция при замене |
-| `RF_DEFAULT` | По умолчанию |
+| Flag | Description |
+|------|-------------|
+| `RF_FRONT` | Face the surface |
+| `RF_TOP` | Up |
+| `RF_LEFT` / `RF_RIGHT` | Sideways |
+| `RF_BACK` / `RF_BOTTOM` | Back / bottom |
+| `RF_RANDOMROT` | Random rotation on Y axis |
+| `RF_ORIGINAL` | Original orientation |
+| `RF_DECORRECTION` | Correction during swap |
+| `RF_DEFAULT` | Default |
 
 ### EconomyLogCategories
 
-Категории логирования CE: `economy`, `respawn_queue`, `container`, `matrix`, `uniqueloot`, `map`, `underground`, `lootable` и др.
+CE logging categories: `economy`, `respawn_queue`, `container`, `matrix`, `uniqueloot`, `map`, `underground`, `lootable`, etc.

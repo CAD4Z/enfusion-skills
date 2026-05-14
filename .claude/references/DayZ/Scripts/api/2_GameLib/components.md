@@ -1,80 +1,80 @@
-Компонентная система GameLib. Условие: `COMPONENT_SYSTEM`. Источник: `components/gamelibcomponents.c`
+GameLib component system. Condition: `COMPONENT_SYSTEM`. Source: `components/gamelibcomponents.c`
 
 ### IEntityComponentSource
 
-`typedef int[] IEntityComponentSource` — наследует `BaseContainer`. Источник данных компонента (из шаблона/редактора).
+`typedef int[] IEntityComponentSource` — inherits `BaseContainer`. Component data source (from template/editor).
 
 ### TouchEvent
 
-| Значение | Описание |
-|----------|----------|
-| `ON_ENTER` | Вход в зону касания |
-| `ON_STAY` | Нахождение в зоне |
-| `ON_EXIT` | Выход из зоны |
+| Value | Description |
+|-------|-------------|
+| `ON_ENTER` | Entering the touch zone |
+| `ON_STAY` | Staying inside the zone |
+| `ON_EXIT` | Exiting the zone |
 
 ### GenericComponent
 
-Базовый класс всех компонентов. Наследует `Managed`. Конструктор `protected`.
+Base class of all components. Inherits `Managed`. Constructor is `protected`.
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `GetEventMask()` | `int` | Текущая маска событий |
-| `SetEventMask(IEntity owner, int mask)` | `int` | Добавить биты к маске. Возвращает результат OR. **Не вызывать в конструкторе** — использовать `OnComponentInsert` |
-| `ClearEventMask(IEntity owner, int mask)` | `int` | Убрать биты из маски. Возвращает очищенные биты |
-| `Activate(IEntity owner)` | — | Активировать, вызовет `EOnActivate` |
-| `Deactivate(IEntity owner)` | — | Деактивировать, вызовет `EOnDeactivate` |
-| `IsActive()` | `bool` | Активен ли компонент |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `GetEventMask()` | `int` | Current event mask |
+| `SetEventMask(IEntity owner, int mask)` | `int` | Add bits to the mask. Returns the OR result. **Do not call in the constructor** — use `OnComponentInsert` |
+| `ClearEventMask(IEntity owner, int mask)` | `int` | Remove bits from the mask. Returns the cleared bits |
+| `Activate(IEntity owner)` | — | Activate, will call `EOnActivate` |
+| `Deactivate(IEntity owner)` | — | Deactivate, will call `EOnDeactivate` |
+| `IsActive()` | `bool` | Whether the component is active |
 
 ### ScriptComponent
 
-Наследует `GenericComponent`. Родитель всех скриптовых компонентов.
+Inherits `GenericComponent`. Parent of all script components.
 
-#### Жизненный цикл
+#### Lifecycle
 
-1. **Конструктор** — создание компонента
-2. **`OnComponentInsert(owner, other)`** — компонент добавлен в сущность. Последнее событие в Workbench edit mode
-3. **`EOnInit(owner, extra)`** — после вставки всех компонентов (нужна маска `EV_INIT`)
-4. **`EOnActivate(owner)`** — если сущность `TFL_ACTIVE` и компонент активен (по умолчанию — активен)
-5. **`EOn*` события** — по маске событий (см. `1_Core/entity.md` — `EntityEvent`)
-6. **`EOnDeactivate(owner)`** — при `Deactivate()` или удалении
-7. **`OnComponentRemove(owner, other)`** — компонент удалён из сущности
-8. **`OnDelete(owner)`** — сущность уничтожается
+1. **Constructor** — component creation
+2. **`OnComponentInsert(owner, other)`** — component added to entity. Last event in Workbench edit mode
+3. **`EOnInit(owner, extra)`** — after all components are inserted (requires `EV_INIT` mask)
+4. **`EOnActivate(owner)`** — if entity is `TFL_ACTIVE` and component is active (active by default)
+5. **`EOn*` events** — by event mask (see `1_Core/entity.md` — `EntityEvent`)
+6. **`EOnDeactivate(owner)`** — on `Deactivate()` or removal
+7. **`OnComponentRemove(owner, other)`** — component removed from entity
+8. **`OnDelete(owner)`** — entity is being destroyed
 
-#### Уникальные методы (не дублируют IEntity)
+#### Unique methods (not duplicates of IEntity)
 
-| Метод | Описание |
-|-------|----------|
-| `EOnActivate(IEntity owner)` | Компонент активирован |
-| `EOnDeactivate(IEntity owner)` | Компонент деактивирован |
-| `OnComponentInsert(IEntity owner, ScriptComponent other)` | Другой компонент добавлен в ту же сущность |
-| `OnComponentRemove(IEntity owner, ScriptComponent other)` | Другой компонент удалён из сущности |
-| `OnDelete(IEntity owner)` | Сущность/компонент уничтожается |
+| Method | Description |
+|--------|-------------|
+| `EOnActivate(IEntity owner)` | Component activated |
+| `EOnDeactivate(IEntity owner)` | Component deactivated |
+| `OnComponentInsert(IEntity owner, ScriptComponent other)` | Another component added to the same entity |
+| `OnComponentRemove(IEntity owner, ScriptComponent other)` | Another component removed from the entity |
+| `OnDelete(IEntity owner)` | Entity/component is being destroyed |
 
-Остальные `EOn*` события (Frame, Touch, Simulate, Contact и т.д.) аналогичны `IEntity` — см. `@.claude/references/DayZ/Scripts/api/1_Core/entity.md`.
+The remaining `EOn*` events (Frame, Touch, Simulate, Contact, etc.) are analogous to `IEntity` — see `@.claude/references/DayZ/Scripts/api/1_Core/entity.md`.
 
 ### GenericComponentClass
 
-| Метод | Описание |
-|-------|----------|
-| `DependsOn(typename otherClass, TypeID otherTypeID)` | Объявить зависимость от другого типа компонента |
+| Method | Description |
+|--------|-------------|
+| `DependsOn(typename otherClass, TypeID otherTypeID)` | Declare a dependency on another component type |
 
 ### BaseSoundComponent
 
-Наследует `GenericComponent`. Управление звуковыми событиями и сигналами.
+Inherits `GenericComponent`. Manages sound events and signals.
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `GetEventNames(out array<string> events)` | `int` | Список звуковых событий |
-| `GetSignalNames(out array<string> signals)` | `int` | Список сигналов |
-| `GetSignalIndex(string name)` | `int` | Индекс сигнала по имени |
-| `SetSignalValueName(string signal, float value)` | — | Установить значение сигнала по имени |
-| `SetSignalValue(int index, float value)` | — | Установить значение по индексу |
-| `Play(string name)` | `SoundHandle` | Воспроизвести звуковое событие |
-| `Update()` | `SoundHandle` | Воспроизвести по триггерам |
-| `Terminate(SoundHandle handle)` | — | Остановить звук |
-| `IsPlayed(SoundHandle handle)` | `bool` | Воспроизводится ли |
-| `IsHandleValid(SoundHandle handle)` | `bool` | Валиден ли хэндл |
-| `SetTransform(vector[] transf)` | — | Позиция источника звука |
-| `SetDebug(bool value)` | — | Режим отладки |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `GetEventNames(out array<string> events)` | `int` | List of sound events |
+| `GetSignalNames(out array<string> signals)` | `int` | List of signals |
+| `GetSignalIndex(string name)` | `int` | Signal index by name |
+| `SetSignalValueName(string signal, float value)` | — | Set signal value by name |
+| `SetSignalValue(int index, float value)` | — | Set value by index |
+| `Play(string name)` | `SoundHandle` | Play a sound event |
+| `Update()` | `SoundHandle` | Play via triggers |
+| `Terminate(SoundHandle handle)` | — | Stop the sound |
+| `IsPlayed(SoundHandle handle)` | `bool` | Whether it is playing |
+| `IsHandleValid(SoundHandle handle)` | `bool` | Whether the handle is valid |
+| `SetTransform(vector[] transf)` | — | Sound source position |
+| `SetDebug(bool value)` | — | Debug mode |
 
 `SoundHandle` — `typedef int[]`.

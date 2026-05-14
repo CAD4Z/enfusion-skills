@@ -1,108 +1,108 @@
-Система сущностей движка Enfusion. Источник: `proto/enentity.c`
+Enfusion engine entity system. Source: `proto/enentity.c`
 
 ### IEntity
 
-Базовый класс всех сущностей в мире. Наследует от `Managed`.
+Base class of all entities in the world. Inherits from `Managed`.
 
-#### События (EOn*)
+#### Events (EOn*)
 
-Переопределяйте в наследниках для получения событий. Работают только при установленной маске (`SetEventMask`).
+Override in subclasses to receive events. They only fire when the corresponding mask is set (`SetEventMask`).
 
-| Метод | Когда вызывается |
+| Method | When invoked |
 |-------|------------------|
-| `EOnInit(other, extra)` | После создания мира |
-| `EOnFrame(other, float timeSlice)` | Каждый кадр (нужен `EntityFlags.ACTIVE`) |
-| `EOnPostFrame(other, extra)` | Конец кадра / после перемещения |
-| `EOnVisible(other, extra)` | Сущность видима |
-| `EOnNotVisible(other, extra)` | Сущность не видима |
-| `EOnTouch(other, extra)` | Касание другой сущностью |
-| `EOnSimulate(other, float dt)` | Шаг физической симуляции |
-| `EOnPostSimulate(other, float timeSlice)` | После шага симуляции |
-| `EOnPhysicsMove(other, extra)` | Перемещение физикой |
-| `EOnContact(other, Contact extra)` | Физический контакт |
-| `EOnJointBreak(other, extra)` | Разрыв joint'а |
-| `EOnAnimEvent(other, AnimEvent extra)` | Событие анимации |
-| `EOnSoundEvent(other, SoundEvent extra)` | Событие звука |
-| `EOnEnter(other, extra)` | Вход в триггер |
-| `EOnLeave(other, extra)` | Выход из триггера |
+| `EOnInit(other, extra)` | After world creation |
+| `EOnFrame(other, float timeSlice)` | Every frame (requires `EntityFlags.ACTIVE`) |
+| `EOnPostFrame(other, extra)` | End of frame / after movement |
+| `EOnVisible(other, extra)` | Entity is visible |
+| `EOnNotVisible(other, extra)` | Entity is not visible |
+| `EOnTouch(other, extra)` | Touched by another entity |
+| `EOnSimulate(other, float dt)` | Physics simulation step |
+| `EOnPostSimulate(other, float timeSlice)` | After simulation step |
+| `EOnPhysicsMove(other, extra)` | Moved by physics |
+| `EOnContact(other, Contact extra)` | Physical contact |
+| `EOnJointBreak(other, extra)` | Joint break |
+| `EOnAnimEvent(other, AnimEvent extra)` | Animation event |
+| `EOnSoundEvent(other, SoundEvent extra)` | Sound event |
+| `EOnEnter(other, extra)` | Enters a trigger |
+| `EOnLeave(other, extra)` | Leaves a trigger |
 
-#### EntityEvent (маска событий)
+#### EntityEvent (event mask)
 
 `TOUCH`, `VISIBLE`, `NOTVISIBLE`, `FRAME`, `POSTFRAME`, `INIT`, `JOINTBREAK`, `SIMULATE`, `POSTSIMULATE`, `PHYSICSMOVE`, `CONTACT`, `EXTRA`, `ANIMEVENT`, `SOUNDEVENT`, `PHYSICSSTEADY`, `USER`, `ENTER`, `LEAVE`, `ALL`
 
 #### EntityFlags
 
-| Флаг | Описание |
+| Flag | Description |
 |------|----------|
-| `VISIBLE` | Видимый, рендерится |
-| `SOLID` | Коллизируемый при трейсах |
-| `TRIGGER` | Не коллизируемый, но генерирует touch-события |
-| `TOUCHTRIGGERS` | Взаимодействует с триггерами |
-| `ACTIVE` | Активно обновляется движком (EOnFrame) |
-| `STATIC` | Статичный объект, точнее но медленнее в scene-tree |
-| `TRANSLUCENT` | Игнорируется при `TraceFlags.PASSTRANSLUCENT` |
-| `WATER` | Только при трейсе с `TraceFlags.WATER` |
-| `USER1`..`USER6` | Пользовательские флаги для фильтрации |
+| `VISIBLE` | Visible, rendered |
+| `SOLID` | Collidable in traces |
+| `TRIGGER` | Not collidable, but generates touch events |
+| `TOUCHTRIGGERS` | Interacts with triggers |
+| `ACTIVE` | Actively updated by the engine (EOnFrame) |
+| `STATIC` | Static object, more accurate but slower in scene-tree |
+| `TRANSLUCENT` | Ignored with `TraceFlags.PASSTRANSLUCENT` |
+| `WATER` | Only when tracing with `TraceFlags.WATER` |
+| `USER1`..`USER6` | User-defined flags for filtering |
 
-#### Трансформации
+#### Transformations
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `GetTransform(out mat[])` | Мировая матрица трансформации |
-| `GetRenderTransform(out mat[4])` | Рендер-матрица |
-| `GetLocalTransform(out mat[])` | Локальная матрица (в иерархии) |
-| `GetTransformAxis(int axis)` | Ось матрицы (0-3) |
-| `SetTransform(mat[4])` | Установить мировую матрицу |
-| `GetOrigin()` | Мировая позиция |
-| `SetOrigin(vec)` | Установить позицию |
-| `GetLocalPosition()` | Локальная позиция |
-| `GetYawPitchRoll()` | Ориентация (Yaw, Pitch, Roll) |
-| `SetYawPitchRoll(angles)` | Установить ориентацию |
-| `GetAngles()` / `SetAngles(angles)` | Углы вращения по осям X, Y, Z |
-| `GetLocalYawPitchRoll()` / `GetLocalAngles()` | Локальные углы |
-| `GetScale()` / `SetScale(float)` | Масштаб |
+| `GetTransform(out mat[])` | World transformation matrix |
+| `GetRenderTransform(out mat[4])` | Render matrix |
+| `GetLocalTransform(out mat[])` | Local matrix (in hierarchy) |
+| `GetTransformAxis(int axis)` | Matrix axis (0-3) |
+| `SetTransform(mat[4])` | Set world matrix |
+| `GetOrigin()` | World position |
+| `SetOrigin(vec)` | Set position |
+| `GetLocalPosition()` | Local position |
+| `GetYawPitchRoll()` | Orientation (Yaw, Pitch, Roll) |
+| `SetYawPitchRoll(angles)` | Set orientation |
+| `GetAngles()` / `SetAngles(angles)` | Rotation angles around X, Y, Z axes |
+| `GetLocalYawPitchRoll()` / `GetLocalAngles()` | Local angles |
+| `GetScale()` / `SetScale(float)` | Scale |
 
-**Преобразование координат:**
+**Coordinate conversion:**
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `VectorToParent(vec)` | Локальный вектор -> мировой |
-| `CoordToParent(coord)` | Локальная позиция -> мировая |
-| `VectorToLocal(vec)` | Мировой вектор -> локальный |
-| `CoordToLocal(coord)` | Мировая позиция -> локальная |
+| `VectorToParent(vec)` | Local vector -> world |
+| `CoordToParent(coord)` | Local position -> world |
+| `VectorToLocal(vec)` | World vector -> local |
+| `CoordToLocal(coord)` | World position -> local |
 
-#### Иерархия
+#### Hierarchy
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `AddChild(child, pivot, positionOnly)` | Добавить дочернюю сущность |
-| `RemoveChild(child, keepTransform)` | Удалить из иерархии |
-| `GetParent()` | Родитель |
-| `GetChildren()` | Первый ребёнок |
-| `GetSibling()` | Следующий на том же уровне |
+| `AddChild(child, pivot, positionOnly)` | Add a child entity |
+| `RemoveChild(child, keepTransform)` | Remove from hierarchy |
+| `GetParent()` | Parent |
+| `GetChildren()` | First child |
+| `GetSibling()` | Next on the same level |
 
-#### Прочее
+#### Miscellaneous
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `GetID()` / `SetID(id)` | Уникальный ID |
-| `GetName()` / `SetName(name)` | Имя сущности |
-| `GetFlags()` / `SetFlags(flags, recursive)` / `ClearFlags(...)` | Управление флагами |
-| `IsFlagSet(flags)` | Проверка флага |
-| `GetEventMask()` / `SetEventMask(e)` / `ClearEventMask(e)` | Маска событий |
-| `SendEvent(actor, e, extra)` | Динамический вызов события |
-| `GetPhysics()` | Получить Physics объект |
-| `GetBounds(out mins, out maxs)` | Локальный bounding box |
-| `GetWorldBounds(out mins, out maxs)` | Мировой bounding box |
-| `SetObject(vobject, options)` | Установить визуальный объект |
-| `GetVObject()` | Получить визуальный объект |
-| `FilterNextTrace()` | Исключить из следующего трейса |
-| `Update()` | Ручное обновление состояния |
+| `GetID()` / `SetID(id)` | Unique ID |
+| `GetName()` / `SetName(name)` | Entity name |
+| `GetFlags()` / `SetFlags(flags, recursive)` / `ClearFlags(...)` | Flag management |
+| `IsFlagSet(flags)` | Check flag |
+| `GetEventMask()` / `SetEventMask(e)` / `ClearEventMask(e)` | Event mask |
+| `SendEvent(actor, e, extra)` | Dynamic event invocation |
+| `GetPhysics()` | Get the Physics object |
+| `GetBounds(out mins, out maxs)` | Local bounding box |
+| `GetWorldBounds(out mins, out maxs)` | World bounding box |
+| `SetObject(vobject, options)` | Set visual object |
+| `GetVObject()` | Get visual object |
+| `FilterNextTrace()` | Exclude from the next trace |
+| `Update()` | Manual state update |
 
-### Вспомогательные классы
+### Helper classes
 
-**BaseContainer** — доступ к данным редактора: `GetClassName()`, `GetName()`, `VarIndex(name)`, `IsVariableSet(idx)`, `Get(idx, out val)`
+**BaseContainer** — access to editor data: `GetClassName()`, `GetName()`, `VarIndex(name)`, `IsVariableSet(idx)`, `Get(idx, out val)`
 
-**IEntitySource** / **WidgetSource** — иерархия источников: `GetChildren()`, `GetSibling()`, `GetParent()`
+**IEntitySource** / **WidgetSource** — source hierarchy: `GetChildren()`, `GetSibling()`, `GetParent()`
 
-**Attribute** / **EditorAttribute** — атрибуты для Workbench (свойства в редакторе).
+**Attribute** / **EditorAttribute** — attributes for Workbench (properties in the editor).

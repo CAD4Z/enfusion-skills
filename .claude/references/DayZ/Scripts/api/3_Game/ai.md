@@ -1,55 +1,55 @@
-Система искусственного интеллекта: навмеш, группы, агенты. Источники: `ai/`
+Artificial intelligence system: navmesh, groups, agents. Sources: `ai/`
 
 ### AIWorld
 
-Мир ИИ и навигационная сетка. Доступ: `g_Game.GetWorld().GetAIWorld()`. Proto native.
+AI world and navigation mesh. Access: `g_Game.GetWorld().GetAIWorld()`. Proto native.
 
-#### Группы
+#### Groups
 
-| Метод | Описание |
-|-------|----------|
-| `CreateGroup()` | Создать группу |
-| `CreateDefaultGroup()` | Группа по умолчанию |
-| `DeleteGroup(group)` | Удалить группу |
+| Method | Description |
+|--------|-------------|
+| `CreateGroup()` | Create a group |
+| `CreateDefaultGroup()` | Default group |
+| `DeleteGroup(group)` | Delete a group |
 
-#### Навигация
+#### Navigation
 
-| Метод | Описание |
-|-------|----------|
-| `FindPath(start, end, filter, out path)` | Найти путь по навмешу |
-| `RaycastNavMesh(start, end, filter, out hitPos)` | Рейкаст по навмешу |
-| `SampleNavmeshPosition(pos, maxDist, filter, out result)` | Ближайшая точка на навмеше |
+| Method | Description |
+|--------|-------------|
+| `FindPath(start, end, filter, out path)` | Find a path on the navmesh |
+| `RaycastNavMesh(start, end, filter, out hitPos)` | Raycast on the navmesh |
+| `SampleNavmeshPosition(pos, maxDist, filter, out result)` | Nearest point on the navmesh |
 
 ### AIAgent
 
-Индивидуальный ИИ-агент. Proto native.
+Individual AI agent. Proto native.
 
-| Метод | Описание |
-|-------|----------|
-| `SetKeepInIdle(state)` | Удерживать в idle-состоянии |
-| `GetGroup()` | Получить группу |
+| Method | Description |
+|--------|-------------|
+| `SetKeepInIdle(state)` | Keep in idle state |
+| `GetGroup()` | Get the group |
 
 ### AIGroup
 
-Группа агентов. Proto native.
+Group of agents. Proto native.
 
 ### AIGroupBehaviour
 
-Поведение группы.
+Group behaviour.
 
 ### PGFilter
 
-Фильтр для навигационных запросов. Источник: `ai/`
+Filter for navigation queries. Source: `ai/`
 
-| Метод | Описание |
-|-------|----------|
-| `GetIncludeFlags()` / `GetExcludeFlags()` / `GetExlusiveFlags()` | Получить флаги |
-| `SetFlags(include, exclude, exclusive)` | Установить флаги |
-| `SetCost(areaType, cost)` | Стоимость прохода по типу зоны |
+| Method | Description |
+|--------|-------------|
+| `GetIncludeFlags()` / `GetExcludeFlags()` / `GetExlusiveFlags()` | Get flags |
+| `SetFlags(include, exclude, exclusive)` | Set flags |
+| `SetCost(areaType, cost)` | Traversal cost by area type |
 
 ### PGPolyFlags
 
-Флаги полигонов навмеша (битовая маска):
+Navmesh polygon flags (bitmask):
 
 ```
 NONE, WALK, DISABLED, DOOR, INSIDE, SWIM, SWIM_SEA, LADDER,
@@ -58,7 +58,7 @@ JUMP_OVER, JUMP_DOWN, CLIMB, CRAWL, CROUCH, UNREACHABLE, ALL, SPECIAL
 
 ### PGAreaType
 
-Типы зон навмеша:
+Navmesh area types:
 
 ```
 NONE, TERRAIN,

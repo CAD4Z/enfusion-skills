@@ -1,32 +1,32 @@
-`4_World` — строительство. Источники: `entities/itembase/basebuildingbase.c`, `classes/basebuilding/construction.c`
+`4_World` — construction. Sources: `entities/itembase/basebuildingbase.c`, `classes/basebuilding/construction.c`
 
-### Архитектура
+### Architecture
 
-`BaseBuildingBase extends ItemBase` владеет объектом `Construction` (`m_Construction`), который управляет `ConstructionPart` из конфига.
+`BaseBuildingBase extends ItemBase` owns a `Construction` object (`m_Construction`) which manages `ConstructionPart` entries from the config.
 
 ```
 BaseBuildingBase
  └── m_Construction: Construction
-      └── map<string, ConstructionPart>  // по имени части
+      └── map<string, ConstructionPart>  // keyed by part name
 ```
 
 ### ConstructionPart
 
-| Поле | Описание |
+| Field | Description |
 |------|----------|
-| `m_PartName` | Имя части |
-| `m_MainPartName` | Категория (Level) |
-| `m_Id` | 1–93, для битовой синхронизации |
-| `m_IsBuilt` | Построена ли |
-| `m_IsBase` | Базовая часть (первая, при размещении) |
-| `m_IsGate` | Ворота |
-| `m_RequiredParts` | Зависимости (должны быть построены) |
+| `m_PartName` | Part name |
+| `m_MainPartName` | Category (Level) |
+| `m_Id` | 1–93, used for bit sync |
+| `m_IsBuilt` | Whether it has been built |
+| `m_IsBase` | Base part (first, used when placing) |
+| `m_IsGate` | Gate |
+| `m_RequiredParts` | Dependencies (must already be built) |
 
-### Синхронизация
+### Synchronization
 
-Три `int` битовые маски (`m_SyncParts01/02/03`), до 93 частей (31 на int). `RegisterPartForSync(id)` ставит бит → `SetSynchDirty()` → клиент читает маски → `ShowConstructionPartPhysics()` / `HideConstructionPartPhysics()`.
+Three `int` bitmasks (`m_SyncParts01/02/03`), supporting up to 93 parts (31 per int). `RegisterPartForSync(id)` sets the bit → `SetSynchDirty()` → the client reads the masks → `ShowConstructionPartPhysics()` / `HideConstructionPartPhysics()`.
 
-### Конфигурация (CfgVehicles)
+### Configuration (CfgVehicles)
 
 ```
 CfgVehicles MyFence Construction {
@@ -46,64 +46,64 @@ CfgVehicles MyFence Construction {
 }
 ```
 
-### Lifecycle строительства
+### Construction lifecycle
 
-#### Постройка (сервер)
+#### Building (server)
 
 ```
 Construction.BuildPartServer(player, part_name, action_id)
- 1. Сброс здоровья зоны урона
- 2. TakeMaterialsServer() — потребить/заблокировать материалы
+ 1. Reset damage zone health
+ 2. TakeMaterialsServer() — consume/lock materials
  3. → BaseBuildingBase.OnPartBuiltServer()
-     ├── Если базовая → SetBaseState(true)
+     ├── If base part → SetBaseState(true)
      ├── RegisterPartForSync() + SetSynchDirty()
      ├── UpdateNavmesh()
      └── UpdateVisuals()
 ```
 
-#### Разборка (сервер)
+#### Dismantling (server)
 
 ```
 Construction.DismantlePartServer()
- 1. ReceiveMaterialsServer() — вернуть материалы игроку
- 2. DropNonUsableMaterialsServer() — сбросить непригодные
+ 1. ReceiveMaterialsServer() — return materials to the player
+ 2. DropNonUsableMaterialsServer() — drop the unusable ones
  3. → BaseBuildingBase.OnPartDismantledServer()
-     └── Если базовая → DestroyConstruction() (ObjectDelete, 200мс)
+     └── If base part → DestroyConstruction() (ObjectDelete, 200ms)
 ```
 
-#### Разрушение (сервер)
+#### Destruction (server)
 
 ```
 Construction.DestroyPartServer()
- 1. DestroyMaterialsServer() — удалить заблокированные
+ 1. DestroyMaterialsServer() — remove locked materials
  2. → BaseBuildingBase.OnPartDestroyedServer()
-     └── DestroyConnectedParts() — каскадное разрушение зависимых
+     └── DestroyConnectedParts() — cascading destruction of dependents
 ```
 
-При `EEHealthLevelChanged` → `STATE_RUINED` → автоматический `DestroyPartServer()`.
+On `EEHealthLevelChanged` → `STATE_RUINED` → automatic `DestroyPartServer()`.
 
-### Проверка постройки (`CanBuildPart`)
+### Build check (`CanBuildPart`)
 
-Все условия:
-1. Часть не построена
-2. `HasRequiredPart()` — все зависимости построены
-3. `!HasConflictPart()` — нет конфликтующих
-4. `HasMaterials()` — все слоты заполнены
-5. `!MaterialIsRuined()` — материалы не сломаны
-6. `CanUseToolToBuildPart()` — инструмент подходит
+All conditions:
+1. Part is not built
+2. `HasRequiredPart()` — all dependencies are built
+3. `!HasConflictPart()` — no conflicting parts
+4. `HasMaterials()` — all slots are filled
+5. `!MaterialIsRuined()` — materials are not ruined
+6. `CanUseToolToBuildPart()` — appropriate tool
 
-### Материалы
+### Materials
 
-Материалы — предметы в слотах инвентаря строения. `lockable=1` — блокируется при постройке (не вынимается). Ремонт стоит `REPAIR_MATERIAL_PERCENTAGE = 0.15` (15%) от стоимости постройки.
+Materials are items in the construction's inventory slots. `lockable=1` — locked once built (cannot be removed). Repair costs `REPAIR_MATERIAL_PERCENTAGE = 0.15` (15%) of the build cost.
 
-### Переопределяемые методы BaseBuildingBase
+### Overridable BaseBuildingBase methods
 
-| Метод | Назначение |
+| Method | Purpose |
 |-------|------------|
-| `GetConstructionKitType()` | Classname набора (напр. `"FenceKit"`) |
-| `OnPartBuiltServer(Man, string, int)` | Хук после постройки |
-| `OnPartBuiltClient(string, int)` | Клиент — звуки |
-| `OnPartDismantledServer(Man, string, int)` | Хук после разборки |
-| `OnPartDestroyedServer(Man, string, int, bool)` | Хук после разрушения |
-| `UpdateVisuals()` | Обновить визуал |
-| `IsOpened()` | Состояние ворот |
+| `GetConstructionKitType()` | Kit classname (e.g. `"FenceKit"`) |
+| `OnPartBuiltServer(Man, string, int)` | Hook after build |
+| `OnPartBuiltClient(string, int)` | Client — sounds |
+| `OnPartDismantledServer(Man, string, int)` | Hook after dismantle |
+| `OnPartDestroyedServer(Man, string, int, bool)` | Hook after destruction |
+| `UpdateVisuals()` | Refresh visuals |
+| `IsOpened()` | Gate state |

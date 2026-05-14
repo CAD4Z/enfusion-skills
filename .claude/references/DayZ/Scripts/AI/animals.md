@@ -1,183 +1,183 @@
-Животные: DayZAnimal (3_Game) → AnimalBase (4_World). Самая "native" ветка AI — почти всё поведение в C++, скриптовая часть тонкая.
+Animals: DayZAnimal (3_Game) → AnimalBase (4_World). The most "native" branch of AI — almost all behavior is in C++, the script portion is thin.
 
-### Иерархия
+### Hierarchy
 
 ```
 DayZCreatureAI
- └── DayZAnimal (3_Game)             — CommandHandler, команды, HitComponents, урон
-      └── AnimalBase (4_World)       — DeathUpdate, ArrowManager, базовый класс
-           ├── Animal_CanisLupus     — волк (IsDanger = true)
-           ├── Animal_UrsusArctos    — медведь (IsDanger = true)
-           ├── Animal_BosTaurus(F)   — корова
-           ├── Animal_CervusElaphus(F) — олень
-           ├── Animal_RangiferTarandus(F) — северный олень
-           ├── Animal_CapraHircus(F) — коза
-           ├── Animal_OvisAries(F)   — овца
-           ├── Animal_SusDomesticus  — свинья
-           ├── Animal_SusScrofa      — кабан
-           ├── Animal_GallusGallusDomesticus(F) — курица/петух (ReplaceOnDeath)
-           ├── Animal_LepusEuropaeus — заяц (ReplaceOnDeath)
-           └── Animal_VulpesVulpes   — лиса (ReplaceOnDeath)
+ └── DayZAnimal (3_Game)             — CommandHandler, commands, HitComponents, damage
+      └── AnimalBase (4_World)       — DeathUpdate, ArrowManager, base class
+           ├── Animal_CanisLupus     — wolf (IsDanger = true)
+           ├── Animal_UrsusArctos    — bear (IsDanger = true)
+           ├── Animal_BosTaurus(F)   — cow
+           ├── Animal_CervusElaphus(F) — deer
+           ├── Animal_RangiferTarandus(F) — reindeer
+           ├── Animal_CapraHircus(F) — goat
+           ├── Animal_OvisAries(F)   — sheep
+           ├── Animal_SusDomesticus  — pig
+           ├── Animal_SusScrofa      — boar
+           ├── Animal_GallusGallusDomesticus(F) — chicken/rooster (ReplaceOnDeath)
+           ├── Animal_LepusEuropaeus — hare (ReplaceOnDeath)
+           └── Animal_VulpesVulpes   — fox (ReplaceOnDeath)
 ```
 
-Суффикс `F` — женская особь (наследует мужскую без изменений или с другим DeadItem).
+The `F` suffix marks a female (inherits from the male unchanged or with a different DeadItem).
 
 ---
 
-### Ключевое отличие от заражённых
+### Key difference from infected
 
-У заражённых скрипт контролирует боевую логику, выбор атак, mind state реакцию. У животных **почти всё в native**:
+For infected, the script controls combat logic, attack selection, mind state reactions. For animals, **almost everything is in native**:
 
-- **Поведение** — полностью native AI. Слоты поведения (`DayZAnimalBehaviourSlot`) и действия (`DayZAnimalBehaviourAction`) — enum'ы определённые в C++
-- **Решения** — native AI решает когда пугаться, охотиться, атаковать
-- **Скрипт** — только CommandHandler (реактивный: смерть, урон, прыжки), HitComponents, звуки
+- **Behavior** — fully native AI. Behavior slots (`DayZAnimalBehaviourSlot`) and actions (`DayZAnimalBehaviourAction`) are enums defined in C++
+- **Decisions** — native AI decides when to be scared, hunt, attack
+- **Script** — only CommandHandler (reactive: death, damage, jumps), HitComponents, sounds
 
 ### DayZAnimalInputController
 
-Расширяет `DayZCreatureAIInputController`. Добавляет:
+Extends `DayZCreatureAIInputController`. Adds:
 
-- `IsDead()` — мертво ли (proto native)
-- `IsAttack()` — хочет ли AI атаковать (proto native)
-- `OverrideBehaviourAction(state, action)` / `GetBehaviourAction()` — перехват действия
+- `IsDead()` — whether dead (proto native)
+- `IsAttack()` — whether AI wants to attack (proto native)
+- `OverrideBehaviourAction(state, action)` / `GetBehaviourAction()` — action interception
 
-#### Слоты поведения (BehaviourSlot)
+#### Behavior slots (BehaviourSlot)
 
-Определены в C++, управляются native AI:
+Defined in C++, managed by native AI:
 
-| Слот | Контекст |
+| Slot | Context |
 |------|---------|
-| `CALM` | Спокойное состояние |
-| `CALM_RESTING` | Отдых |
-| `CALM_GRAZING` | Пастбище |
-| `CALM_TRAVELLING` | Перемещение |
-| `DRINKING` | Питьё |
-| `NON_SPECIFIC_THREAT` | Неопределённая угроза |
-| `SPECIFIC_THREAT` | Определённая угроза |
-| `ALERTED` | Насторожённость |
-| `ATTRACTED` | Привлечение |
-| `PREATTRACTED` | Предварительное привлечение |
-| `SCARED` | Страх (бегство) |
-| `HUNTING` | Охота (хищники) |
-| `EATING` | Поедание |
-| `SIEGE` | Осада |
-| `FIREPLACE` | Реакция на костёр |
-| `ENRAGED` | Ярость |
-| `ENRAGED_TARGETLOST` | Ярость, цель потеряна |
-| `INTIMIDATE` | Запугивание |
+| `CALM` | Calm state |
+| `CALM_RESTING` | Resting |
+| `CALM_GRAZING` | Grazing |
+| `CALM_TRAVELLING` | Traveling |
+| `DRINKING` | Drinking |
+| `NON_SPECIFIC_THREAT` | Unspecified threat |
+| `SPECIFIC_THREAT` | Specific threat |
+| `ALERTED` | Alertness |
+| `ATTRACTED` | Attraction |
+| `PREATTRACTED` | Pre-attraction |
+| `SCARED` | Fear (fleeing) |
+| `HUNTING` | Hunting (predators) |
+| `EATING` | Eating |
+| `SIEGE` | Siege |
+| `FIREPLACE` | Reaction to a fireplace |
+| `ENRAGED` | Rage |
+| `ENRAGED_TARGETLOST` | Rage, target lost |
+| `INTIMIDATE` | Intimidation |
 
-#### Действия поведения (BehaviourAction)
+#### Behavior actions (BehaviourAction)
 
-| Действие | Описание |
-|----------|---------|
-| `SAFETY_INPUT` | Уход от угрозы |
-| `GRAZE_WALKING/ON_SPOT_INPUT` | Пастьба |
-| `RESTING_INPUT` | Отдых |
-| `TRAVELING_INPUT` | Перемещение |
-| `EATING/DRINKING_INPUT` | Еда/питьё |
-| `CHARGING` | Атака с разбега |
-| `APPROACHING/REACH_INPUT` | Приближение к цели |
-| `WALKING/IDLE1-3_INPUT` | Варианты ходьбы/idle |
-| `THREAT_WALK_AWAY/TO/STAY_LOOKAT/STAY` | Реакции на угрозу |
+| Action | Description |
+|--------|-------------|
+| `SAFETY_INPUT` | Retreating from threat |
+| `GRAZE_WALKING/ON_SPOT_INPUT` | Grazing |
+| `RESTING_INPUT` | Resting |
+| `TRAVELING_INPUT` | Traveling |
+| `EATING/DRINKING_INPUT` | Eating/drinking |
+| `CHARGING` | Charging attack |
+| `APPROACHING/REACH_INPUT` | Approaching the target |
+| `WALKING/IDLE1-3_INPUT` | Walking/idle variants |
+| `THREAT_WALK_AWAY/TO/STAY_LOOKAT/STAY` | Reactions to a threat |
 
 ---
 
 ### CommandHandler
 
-Значительно проще чем у заражённых — нет mind states, нет боевой логики в скрипте:
+Significantly simpler than for infected — no mind states, no combat logic in the script:
 
 ```
 CommandHandler(dt, currentCommandID, currentCommandFinished)
- 1. ModCommandHandlerBefore()   → перехват мода
+ 1. ModCommandHandlerBefore()   → mod interception
  2. HandleDeath()               → StartCommand_Death(type, direction)
- 3. Если команда завершена:
-    - Если был Attack → SignalAIAttackEnded()
+ 3. If the command is finished:
+    - If it was Attack → SignalAIAttackEnded()
     - StartCommand_Move()
  4. ModCommandHandlerInside()
  5. HandleDamageHit()           → StartCommand_Hit(type, direction)
- 6. Если COMMANDID_MOVE:
+ 6. If COMMANDID_MOVE:
     - IsJump() → StartCommand_Jump()
     - IsAttack() → StartCommand_Attack() + SignalAIAttackStarted()
  7. ModCommandHandlerAfter()
 ```
 
-**Сигналы атаки**: `SignalAIAttackStarted()` / `SignalAIAttackEnded()` — proto native уведомления для AI-мозга о начале/конце атаки. Позволяют native AI координировать атаки с анимациями.
+**Attack signals**: `SignalAIAttackStarted()` / `SignalAIAttackEnded()` — proto native notifications to the AI brain about the start/end of an attack. They let native AI coordinate attacks with animations.
 
-### Команды (proto native)
+### Commands (proto native)
 
-| Команда | Назначение |
-|---------|-----------|
-| `StartCommand_Move()` | Обычное движение |
-| `StartCommand_Jump()` | Прыжок |
-| `StartCommand_Attack()` | Атака |
-| `StartCommand_Death(type, dir)` | Смерть |
-| `StartCommand_Hit(type, dir)` | Реакция на попадание |
-| `StartCommand_Script(cmd)` | Скриптовая команда |
-
----
-
-### Смерть
-
-Два механизма в зависимости от типа животного:
-
-**Крупные** (корова, олень, медведь, волк, коза, овца, свинья, кабан):
-- Остаются в мире как труп
-- `CanBeSkinned() = true` (если не заморожены) → можно разделать
-- `AnimalBase.DeathUpdate()` → создаёт dead-объект, переносит свойства через `MiscGameplayFunctions.TransferItemProperties()`, устанавливает полное здоровье
-
-**Мелкие** (курица, заяц, лиса):
-- `ReplaceOnDeath() = true` → заменяются на предмет (DeadRooster, DeadChicken_*, DeadRabbit, DeadFox)
-- `CanBeSkinned() = false` — разделка только через предмет
-- `KeepHealthOnReplace() = false` — предмет создаётся с полным здоровьем
+| Command | Purpose |
+|---------|---------|
+| `StartCommand_Move()` | Normal movement |
+| `StartCommand_Jump()` | Jump |
+| `StartCommand_Attack()` | Attack |
+| `StartCommand_Death(type, dir)` | Death |
+| `StartCommand_Hit(type, dir)` | Hit reaction |
+| `StartCommand_Script(cmd)` | Script command |
 
 ---
 
-### IsDanger — хищники vs добыча
+### Death
 
-`IsDanger()` определяет роль в пищевой цепи:
+Two mechanisms depending on animal type:
+
+**Large** (cow, deer, bear, wolf, goat, sheep, pig, boar):
+- Remain in the world as a corpse
+- `CanBeSkinned() = true` (if not frozen) → can be skinned
+- `AnimalBase.DeathUpdate()` → creates a dead object, transfers properties via `MiscGameplayFunctions.TransferItemProperties()`, sets full health
+
+**Small** (chicken, hare, fox):
+- `ReplaceOnDeath() = true` → replaced with an item (DeadRooster, DeadChicken_*, DeadRabbit, DeadFox)
+- `CanBeSkinned() = false` — skinning is done via the item only
+- `KeepHealthOnReplace() = false` — the item is created with full health
+
+---
+
+### IsDanger — predators vs prey
+
+`IsDanger()` defines the role in the food chain:
 
 | `IsDanger() = true` | `IsDanger() = false` |
 |---------------------|---------------------|
-| Волк (CanisLupus) | Все остальные |
-| Медведь (UrsusArctos) | |
+| Wolf (CanisLupus) | All others |
+| Bear (UrsusArctos) | |
 
-Используется ловушками (`TrapBase`) для определения звуков захвата/освобождения.
-
----
-
-### HitComponents — зоны попадания по видам
-
-Все животные переопределяют `RegisterHitComponentsForAI()`. Default: `Zone_Chest`, position: `Pelvis`.
-
-**Хищники** (волк, медведь): низкий вес головы (2–25), высокий вес ног (70–75).
-
-**Травоядные** (олень, коза, овца, северный олень): голова 2–4, шея 55–65, грудь 50, ноги 70.
-
-**Домашний скот** (корова, свинья, кабан): живот 15–25, шея 55–65, грудь 50, ноги 70.
-
-**Мелкие** (курица, заяц, лиса): голова 1–20, грудь/спина 70, ноги 5.
+Used by traps (`TrapBase`) to determine capture/release sounds.
 
 ---
 
-### Обработка урона
+### HitComponents — hit zones by species
 
-Общий pipeline из `DayZAnimal.EEHitBy()`:
+All animals override `RegisterHitComponentsForAI()`. Default: `Zone_Chest`, position: `Pelvis`.
 
-1. **Shock → Health**: если `transferShockToDamage = 1` → конверсия с множителем `NL_DAMAGE_CLOSECOMBAT/FIREARM_CONVERSION_ANIMALS`
-2. **Кровотечение**: `ComponentAnimalBleeding.CreateWound()` — отдельный компонент для животных
-3. **Hit-анимация**: `ComputeDamageHitParams()` → `QueueDamageHit(type, direction)`
+**Predators** (wolf, bear): low head weight (2–25), high leg weight (70–75).
 
-Расчёт направления: угол между направлением животного и вектором к источнику → front (±20°) / left / right. Дополнительный offset по зоне: Head (+4), грудь/шея (+8), остальное (+12).
+**Herbivores** (deer, goat, sheep, reindeer): head 2–4, neck 55–65, chest 50, legs 70.
+
+**Livestock** (cow, pig, boar): belly 15–25, neck 55–65, chest 50, legs 70.
+
+**Small** (chicken, hare, fox): head 1–20, chest/back 70, legs 5.
 
 ---
 
-### Звуки
+### Damage handling
 
-Система анимационных событий наследуется от `DayZCreatureAI` (см. creatures.md). Конфиг из `CfgVehicles → AnimEvents`.
+Shared pipeline from `DayZAnimal.EEHitBy()`:
 
-**Ловушки**: каждый вид определяет `CaptureSound()` / `ReleaseSound()` — звуки при попадании в ловушку и освобождении.
+1. **Shock → Health**: if `transferShockToDamage = 1` → conversion using the multiplier `NL_DAMAGE_CLOSECOMBAT/FIREARM_CONVERSION_ANIMALS`
+2. **Bleeding**: `ComponentAnimalBleeding.CreateWound()` — a separate component for animals
+3. **Hit animation**: `ComputeDamageHitParams()` → `QueueDamageHit(type, direction)`
+
+Direction calculation: the angle between the animal's facing direction and the vector to the source → front (±20°) / left / right. Additional offset by zone: Head (+4), chest/neck (+8), other (+12).
+
+---
+
+### Sounds
+
+The animation event system is inherited from `DayZCreatureAI` (see creatures.md). Config from `CfgVehicles → AnimEvents`.
+
+**Traps**: each species defines `CaptureSound()` / `ReleaseSound()` — sounds when caught in a trap and when released.
 
 ---
 
 ### Cinematic Controller
 
-Наследуется от `DayZCreatureAI`. Позволяет игроку управлять животным через Override-методы InputController. Через `ModCommandHandlerBefore()` перехватывает ввод игрока и транслирует в движение, повороты, слоты поведения. При низкой скорости (<0.5) автоматически повышает alert level для перехода к более активным анимациям.
+Inherited from `DayZCreatureAI`. Allows the player to control an animal via the InputController Override methods. Through `ModCommandHandlerBefore()` it intercepts player input and translates it into movement, turns, and behavior slots. At low speed (<0.5), it automatically raises the alert level to transition to more active animations.

@@ -1,45 +1,45 @@
-| Класс | Описание |
-|-------|----------|
-| `CfgAddons` | Предзагрузка аддонов (`PreloadBanks`, `PreloadAddons`) |
-| `CfgAIBehaviours` | Поведение AI (зомби, животные) |
-| `CfgAimHelperParameters` | Параметры помощи прицеливания |
-| `CfgCloudlets` | Определения частиц (дым, пыль, кровь) |
-| `CfgCloudletShapes` | Формы частиц |
-| `CfgCoreData` | Дефолтные текстуры и базовые ресурсы движка |
-| `CfgDamages` | Конфигурация типов урона |
-| `CfgDestroy` | Параметры разрушения объектов |
-| `CfgDifficulties` | Настройки сложности |
-| `CfgDistanceFilters` | Фильтры дистанции (LOD) |
-| `CfgEffectSets` | Наборы визуальных эффектов |
-| `CfgEnvSounds` | Звуки окружения |
-| `CfgFaces` | Определения лиц персонажей |
-| `CfgFSMs` | Конечные автоматы состояний (AI FSM) |
-| `CfgHeads` | Конфигурация голов персонажей |
-| `CfgHorticulture` | Садоводство (растения, семена, удобрения) |
-| `CfgIdentities` | Идентичности NPC (голос, лицо) |
-| `CfgLanguages` | Поддерживаемые языки |
-| `CfgLocationTypes` | Типы локаций на карте |
-| `CfgMaterials` | Определения материалов (шейдеры, текстуры) |
-| `CfgMissions` | Конфигурация миссий |
-| `CfgNoises` | Определения шумов для AI |
-| `CfgNoMipmapTextures` | Текстуры без mipmap |
-| `CfgNonAIVehicles` | Статичные объекты без AI (камни, растения, прокси) |
-| `CfgOpticsEffect` | Эффекты оптики |
-| `CfgRadio` | Радио-протоколы |
-| `CfgSFX` | Звуковые эффекты |
-| `CfgSlots` | Определения слотов инвентаря (Head, Body, Back...) |
-| `CfgSound` | Отдельные звуки |
-| `CfgSoundCurves` | Кривые затухания звука |
-| `CfgSoundEffects` | Звуковые эффекты |
-| `CfgSoundSets` | Наборы звуков (основная единица воспроизведения) |
-| `CfgSoundShaders` | Звуковые шейдеры (сэмплы + параметры) |
-| `CfgSoundTables` | Таблицы соответствия звуков (поверхности, материалы) |
-| `CfgSounds` | Звуковые ресурсы |
-| `CfgSurfaceCharacters` | Визуал поверхностей (трава, клаттер) |
-| `CfgSurfaces` | Типы поверхностей (трение, звук шагов, копание) |
-| `CfgTasks` | Определения задач AI |
-| `CfgVehicleClasses` | Категории транспорта (People, Cars, Boats...) |
-| `CfgVehicleSurfaces` | Взаимодействие транспорта с поверхностями |
-| `CfgVideoOptions` | Настройки видео |
-| `CfgVoice` | Голоса персонажей |
-| `CfgWorlds` | Конфигурация миров/карт |
+| Class | Description |
+|-------|-------------|
+| `CfgAddons` | Addon preloading (`PreloadBanks`, `PreloadAddons`) |
+| `CfgAIBehaviours` | AI behavior (zombies, animals) |
+| `CfgAimHelperParameters` | Aim assist parameters |
+| `CfgCloudlets` | Particle definitions (smoke, dust, blood) |
+| `CfgCloudletShapes` | Particle shapes |
+| `CfgCoreData` | Default textures and base engine resources |
+| `CfgDamages` | Damage type configuration |
+| `CfgDestroy` | Object destruction parameters |
+| `CfgDifficulties` | Difficulty settings |
+| `CfgDistanceFilters` | Distance filters (LOD) |
+| `CfgEffectSets` | Visual effect sets |
+| `CfgEnvSounds` | Environmental sounds |
+| `CfgFaces` | Character face definitions |
+| `CfgFSMs` | Finite state machines (AI FSM) |
+| `CfgHeads` | Character head configuration |
+| `CfgHorticulture` | Horticulture (plants, seeds, fertilizers) |
+| `CfgIdentities` | NPC identities (voice, face) |
+| `CfgLanguages` | Supported languages |
+| `CfgLocationTypes` | Map location types |
+| `CfgMaterials` | Material definitions (shaders, textures) |
+| `CfgMissions` | Mission configuration |
+| `CfgNoises` | Noise definitions for AI |
+| `CfgNoMipmapTextures` | Textures without mipmaps |
+| `CfgNonAIVehicles` | Static objects without AI (rocks, plants, proxies) |
+| `CfgOpticsEffect` | Optics effects |
+| `CfgRadio` | Radio protocols |
+| `CfgSFX` | Sound effects |
+| `CfgSlots` | Inventory slot definitions (Head, Body, Back...) |
+| `CfgSound` | Individual sounds |
+| `CfgSoundCurves` | Sound falloff curves |
+| `CfgSoundEffects` | Sound effects |
+| `CfgSoundSets` | Sound sets (the main playback unit) |
+| `CfgSoundShaders` | Sound shaders (samples + parameters) |
+| `CfgSoundTables` | Sound mapping tables (surfaces, materials) |
+| `CfgSounds` | Sound resources |
+| `CfgSurfaceCharacters` | Surface visuals (grass, clutter) |
+| `CfgSurfaces` | Surface types (friction, footstep sound, digging) |
+| `CfgTasks` | AI task definitions |
+| `CfgVehicleClasses` | Vehicle categories (People, Cars, Boats...) |
+| `CfgVehicleSurfaces` | Vehicle interaction with surfaces |
+| `CfgVideoOptions` | Video settings |
+| `CfgVoice` | Character voices |
+| `CfgWorlds` | World/map configuration |

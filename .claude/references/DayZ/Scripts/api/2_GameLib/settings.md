@@ -1,22 +1,22 @@
-Система настроек с UI. Условие: `GAME_TEMPLATE`. Источник: `settings.c`
+Settings system with UI. Condition: `GAME_TEMPLATE`. Source: `settings.c`
 
 ### Settings
 
-Базовый класс настроек. Конструктор/деструктор `private`. Все методы `static`.
+Base settings class. Constructor/destructor are `private`. All methods are `static`.
 
-| Метод | Когда |
-|-------|-------|
-| `OnChange(string variableName)` | Изменение конкретной переменной |
-| `OnAnyChange()` | Любое изменение |
-| `OnLoad()` | Загрузка настроек |
-| `OnSave()` | Сохранение |
-| `OnReset()` | Сброс к значениям по умолчанию |
-| `OnRevert()` | Откат изменений |
-| `OnApply()` | Применение изменений |
+| Method | When |
+|--------|------|
+| `OnChange(string variableName)` | A specific variable changed |
+| `OnAnyChange()` | Any change |
+| `OnLoad()` | Settings loaded |
+| `OnSave()` | Saved |
+| `OnReset()` | Reset to defaults |
+| `OnRevert()` | Changes reverted |
+| `OnApply()` | Changes applied |
 
 ### GameSettings
 
-Наследует `Settings`. Пример использования атрибутов для настроек:
+Inherits `Settings`. Example of using attributes for settings:
 
 ```cpp
 class GameSettings: Settings
@@ -31,17 +31,17 @@ class GameSettings: Settings
 }
 ```
 
-Поля с `[Attribute]` автоматически отображаются в `SettingsMenu`.
+Fields with `[Attribute]` are automatically displayed in `SettingsMenu`.
 
 ### SettingsMenu
 
-Наследует `MenuBase`. UI для редактирования настроек.
+Inherits `MenuBase`. UI for editing settings.
 
-| Метод | Описание |
-|-------|----------|
-| `AddSettings(typename settingsClass)` | Добавить класс настроек в меню |
-| `Save()` | Сохранить |
-| `Reset()` | Сбросить |
-| `Revert()` | Откатить |
-| `Apply()` | Применить |
-| `Back()` | Назад |
+| Method | Description |
+|--------|-------------|
+| `AddSettings(typename settingsClass)` | Add a settings class to the menu |
+| `Save()` | Save |
+| `Reset()` | Reset |
+| `Revert()` | Revert |
+| `Apply()` | Apply |
+| `Back()` | Back |

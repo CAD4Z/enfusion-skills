@@ -1,8 +1,8 @@
-Звуковая система и динамическая музыка. Источники: `sound.c`, `systems/dynamicmusicplayer/`
+Sound system and dynamic music. Sources: `sound.c`, `systems/dynamicmusicplayer/`
 
 ### WaveKind
 
-Категории звуков:
+Sound categories:
 
 ```
 WAVEEFFECT, WAVEEFFECTEX, WAVESPEECH, WAVEMUSIC, WAVESPEECHEX,
@@ -12,92 +12,92 @@ WAVEATTALWAYS, WAVEUI
 
 ### AbstractSoundScene
 
-Главная звуковая сцена. Доступ: `g_Game.GetSoundScene()`. Proto native.
+Main sound scene. Access: `g_Game.GetSoundScene()`. Proto native.
 
-#### Воспроизведение
+#### Playback
 
-| Метод | Возврат | Описание |
-|-------|---------|----------|
-| `Play2D(soundObject, builder)` | `AbstractWave` | Воспроизвести 2D |
-| `Play3D(soundObject, builder)` | `AbstractWave` | Воспроизвести 3D |
-| `BuildSoundObject(builder)` | `SoundObject` | Создать объект из builder |
+| Method | Return | Description |
+|--------|--------|-------------|
+| `Play2D(soundObject, builder)` | `AbstractWave` | Play 2D |
+| `Play3D(soundObject, builder)` | `AbstractWave` | Play 3D |
+| `BuildSoundObject(builder)` | `SoundObject` | Build object from builder |
 
-#### Громкость
+#### Volume
 
-| Метод | Описание |
-|-------|----------|
-| `GetRadioVolume()` / `SetRadioVolume(vol)` | Радио |
-| `GetSpeechExVolume()` / `SetSpeechExVolume(vol)` | Речь |
-| `GetMusicVolume()` / `SetMusicVolume(vol)` | Музыка |
-| `GetSoundVolume()` / `SetSoundVolume(vol)` | Звуки |
-| `GetVOIPVolume()` / `SetVOIPVolume(vol)` | Голосовой чат |
-| `GetSilenceThreshold()` / `SetSilenceThreshold(val)` | Порог тишины |
-| `GetAudioLevel()` | Текущий уровень |
+| Method | Description |
+|--------|-------------|
+| `GetRadioVolume()` / `SetRadioVolume(vol)` | Radio |
+| `GetSpeechExVolume()` / `SetSpeechExVolume(vol)` | Speech |
+| `GetMusicVolume()` / `SetMusicVolume(vol)` | Music |
+| `GetSoundVolume()` / `SetSoundVolume(vol)` | Sounds |
+| `GetVOIPVolume()` / `SetVOIPVolume(vol)` | Voice chat |
+| `GetSilenceThreshold()` / `SetSilenceThreshold(val)` | Silence threshold |
+| `GetAudioLevel()` | Current level |
 
 ### SoundParams
 
-Параметры звука. Proto native.
+Sound parameters. Proto native.
 
-| Метод | Описание |
-|-------|----------|
-| `Load(name)` | Загрузить по имени |
-| `IsValid()` | Валидность |
-| `GetName()` | Имя |
+| Method | Description |
+|--------|-------------|
+| `Load(name)` | Load by name |
+| `IsValid()` | Validity |
+| `GetName()` | Name |
 
 ### SoundObjectBuilder
 
-Конфигуратор звукового объекта. Proto native.
+Sound object configurator. Proto native.
 
-| Метод | Описание |
-|-------|----------|
-| `Initialize(soundParams)` | Инициализация из SoundParams |
-| `AddEnvSoundVariables(position)` | Добавить переменные окружения для позиции |
-| `AddVariable(name, value)` | Добавить переменную |
+| Method | Description |
+|--------|-------------|
+| `Initialize(soundParams)` | Initialize from SoundParams |
+| `AddEnvSoundVariables(position)` | Add environment variables for position |
+| `AddVariable(name, value)` | Add a variable |
 
 ### SoundObject
 
-Экземпляр звукового объекта. Proto native.
+Sound object instance. Proto native.
 
-| Метод | Описание |
-|-------|----------|
-| `SetParent(entity, pivot)` / `GetParent()` | Привязка к сущности |
-| `SetPosition(pos)` / `GetPosition()` | Позиция |
-| `SetSpeed(vel)` / `GetSpeed()` | Скорость (для Doppler) |
-| `SetOcclusionObstruction(occlusion, obstruction)` | Окклюзия и препятствия |
-| `SetKind(WaveKind)` | Категория |
+| Method | Description |
+|--------|-------------|
+| `SetParent(entity, pivot)` / `GetParent()` | Bind to entity |
+| `SetPosition(pos)` / `GetPosition()` | Position |
+| `SetSpeed(vel)` / `GetSpeed()` | Velocity (for Doppler) |
+| `SetOcclusionObstruction(occlusion, obstruction)` | Occlusion and obstruction |
+| `SetKind(WaveKind)` | Category |
 
 ### AbstractWave
 
-Управление воспроизведением. Proto native.
+Playback control. Proto native.
 
-#### Воспроизведение
+#### Playback
 
-| Метод | Описание |
-|-------|----------|
-| `Play()` / `Stop()` / `Restart()` | Управление |
-| `Loop(enable)` | Зацикливание |
-| `GetLength()` | Длительность |
-| `GetCurrPosition()` | Текущая позиция |
-| `Skip(seconds)` | Пропустить |
+| Method | Description |
+|--------|-------------|
+| `Play()` / `Stop()` / `Restart()` | Control |
+| `Loop(enable)` | Looping |
+| `GetLength()` | Duration |
+| `GetCurrPosition()` | Current position |
+| `Skip(seconds)` | Skip |
 
-#### Громкость и частота
+#### Volume and frequency
 
-| Метод | Описание |
-|-------|----------|
-| `GetVolume()` / `SetVolume(vol)` | Громкость |
-| `SetVolumeRelative(vol)` | Относительная громкость |
-| `GetFrequency()` / `SetFrequency(freq)` | Частота |
-| `SetFadeInFactor(factor)` / `SetFadeOutFactor(factor)` | Факторы fade |
-| `SetDoppler(enable)` | Эффект Допплера |
+| Method | Description |
+|--------|-------------|
+| `GetVolume()` / `SetVolume(vol)` | Volume |
+| `SetVolumeRelative(vol)` | Relative volume |
+| `GetFrequency()` / `SetFrequency(freq)` | Frequency |
+| `SetFadeInFactor(factor)` / `SetFadeOutFactor(factor)` | Fade factors |
+| `SetDoppler(enable)` | Doppler effect |
 
-#### Позиция
+#### Position
 
-| Метод | Описание |
-|-------|----------|
-| `SetPosition(pos, velocity)` | Мировая позиция и скорость |
-| `IsHeaderLoaded()` | Заголовок загружен |
+| Method | Description |
+|--------|-------------|
+| `SetPosition(pos, velocity)` | World position and velocity |
+| `IsHeaderLoaded()` | Header loaded |
 
-#### События (ScriptInvoker)
+#### Events (ScriptInvoker)
 
 `Event_OnSoundWaveStarted`, `Event_OnSoundWaveStopped`, `Event_OnSoundWaveLoaded`, `Event_OnSoundWaveHeaderLoaded`, `Event_OnSoundWaveEnded`
 
@@ -107,7 +107,7 @@ WAVEATTALWAYS, WAVEUI
 None, Limit, Overwrite
 ```
 
-### Паттерн воспроизведения
+### Playback pattern
 
 ```enforcescript
 SoundParams params = new SoundParams("MySound_SoundSet");
@@ -122,20 +122,20 @@ wave.Loop(true);
 
 ### DynamicMusicPlayer
 
-Система динамической музыки. Источник: `systems/dynamicmusicplayer/`
+Dynamic music system. Source: `systems/dynamicmusicplayer/`
 
-Управляет фоновой музыкой в зависимости от игровой ситуации (бой, ночь, местоположение).
+Manages background music depending on the gameplay situation (combat, night, location).
 
-#### Категории (EDynamicMusicPlayerCategory)
+#### Categories (EDynamicMusicPlayerCategory)
 
-Определяют контекст воспроизведения: время суток, биом, ситуация.
+Define the playback context: time of day, biome, situation.
 
-#### Реестры по картам
+#### Per-map registries
 
-| Класс | Карта |
-|-------|-------|
-| `DynamicMusicPlayerRegistryChernarus` | Черноруссия |
-| `DynamicMusicPlayerRegistryEnoch` | Ливония |
-| `DynamicMusicPlayerRegistrySakhal` | Сахаль |
+| Class | Map |
+|-------|-----|
+| `DynamicMusicPlayerRegistryChernarus` | Chernarus |
+| `DynamicMusicPlayerRegistryEnoch` | Livonia |
+| `DynamicMusicPlayerRegistrySakhal` | Sakhal |
 
-Каждый реестр содержит массивы треков, привязанных к категориям и зонам карты.
+Each registry contains arrays of tracks bound to categories and map zones.

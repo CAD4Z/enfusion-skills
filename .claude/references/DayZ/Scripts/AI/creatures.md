@@ -1,79 +1,79 @@
-DayZCreature → DayZCreatureAI — общий pipeline для всех AI-управляемых существ (заражённые и животные). Промежуточный слой между EntityAI и конкретными типами.
+DayZCreature → DayZCreatureAI — the shared pipeline for all AI-controlled creatures (infected and animals). An intermediate layer between EntityAI and specific types.
 
-### Иерархия
+### Hierarchy
 
 ```
 EntityAI
- └── DayZCreature                    — анимации, кости, мод-хуки
-      └── DayZCreatureAI             — AI-агент, звуки, урон, события
-           ├── DayZInfected          — заражённые (см. infected.md)
-           └── DayZAnimal            — животные (см. animals.md)
+ └── DayZCreature                    — animations, bones, mod hooks
+      └── DayZCreatureAI             — AI agent, sounds, damage, events
+           ├── DayZInfected          — infected (see infected.md)
+           └── DayZAnimal            — animals (see animals.md)
 ```
 
-Рядом — типовые классы:
+Alongside — the type classes:
 ```
-EntityAIType → DayZCreatureAIType    — шаблон: AnimEvents из конфига
-               ├── DayZInfectedType  — атаки, HitComponents заражённых
-               └── DayZAnimalType    — (пуст)
+EntityAIType → DayZCreatureAIType    — template: AnimEvents from config
+               ├── DayZInfectedType  — attacks, infected HitComponents
+               └── DayZAnimalType    — (empty)
 ```
 
 ---
 
-### DayZCreature — анимационный фундамент
+### DayZCreature — the animation foundation
 
-Наследует EntityAI. Все ключевые методы — **proto native**.
+Inherits EntityAI. All key methods are **proto native**.
 
-**Анимационный интерфейс** (`DayZCreatureAnimInterface`):
-- `BindCommand(name)` — привязка команды анимграфа
-- `BindVariableFloat/Int/Bool(name)` — привязка переменных анимграфа
-- `BindTag(name)` / `BindEvent(name)` — теги и события
+**Animation interface** (`DayZCreatureAnimInterface`):
+- `BindCommand(name)` — bind an animgraph command
+- `BindVariableFloat/Int/Bool(name)` — bind animgraph variables
+- `BindTag(name)` / `BindEvent(name)` — tags and events
 
-**Управление анимациями**:
-- `SetAnimationInstanceByName(name, uuid, duration)` — смена набора анимаций
-- `GetCurrentAnimationInstanceUUID()` — текущий UUID
+**Animation control**:
+- `SetAnimationInstanceByName(name, uuid, duration)` — switch the animation set
+- `GetCurrentAnimationInstanceUUID()` — current UUID
 
-**Смерть** (proto native):
+**Death** (proto native):
 - `StartDeath()` / `ResetDeath()` / `ResetDeathCooldown()`
 - `IsDeathProcessed()` / `IsDeathConditionMet()`
 
-**Мод-хуки CommandHandler** — три точки перехвата, одинаковые для всех существ:
+**CommandHandler mod hooks** — three interception points, the same for all creatures:
 
-| Хук | Момент | Возврат true |
-|-----|--------|-------------|
-| `ModCommandHandlerBefore(dt, cmdID, finished)` | До стандартной логики | Полный перехват |
-| `ModCommandHandlerInside(dt, cmdID, finished)` | В середине | Прерывание |
-| `ModCommandHandlerAfter(dt, cmdID, finished)` | После стандартной логики | Перехват пост-обработки |
+| Hook | Moment | Returning true |
+|------|--------|----------------|
+| `ModCommandHandlerBefore(dt, cmdID, finished)` | Before standard logic | Full interception |
+| `ModCommandHandlerInside(dt, cmdID, finished)` | In the middle | Interruption |
+| `ModCommandHandlerAfter(dt, cmdID, finished)` | After standard logic | Post-processing interception |
 
 ---
 
-### DayZCreatureAI — AI-слой
+### DayZCreatureAI — the AI layer
 
-Добавляет к DayZCreature AI-агента и систему событий анимаций.
+Adds an AI agent and an animation event system on top of DayZCreature.
 
-**AI-агент** (proto native):
-- `GetAIAgent()` — получить AIAgent (связь с AIWorld)
-- `InitAIAgent(group)` — ручная инициализация (для сущностей, созданных с `init_ai = false`)
-- `DestroyAIAgent()` — уничтожить агента
+**AI agent** (proto native):
+- `GetAIAgent()` — get the AIAgent (link to AIWorld)
+- `InitAIAgent(group)` — manual initialization (for entities created with `init_ai = false`)
+- `DestroyAIAgent()` — destroy the agent
 
-**Зона урона** (proto native):
-- `AddDamageSphere(bone, ammo, radius, duration, invertTeams)` — создать сферу урона на кости модели на время duration. `invertTeams` — наносить урон своим (`false` = враждебным)
+**Damage zone** (proto native):
+- `AddDamageSphere(bone, ammo, radius, duration, invertTeams)` — create a damage sphere on a model bone for `duration` time. `invertTeams` — deal damage to allies (`false` = to hostiles)
 
-**При смерти**: создаёт `COMP_TYPE_BODY_STAGING` для системы разделки (скиннинга).
+**On death**: creates `COMP_TYPE_BODY_STAGING` for the skinning system.
 
-**Cinematic Controller**: позволяет игроку управлять существом через input напрямую (override `ModCommandHandlerBefore`).
+**Cinematic Controller**: lets the player control the creature directly through input (override `ModCommandHandlerBefore`).
 
-#### Система анимационных событий
+#### Animation event system
 
-Движок вызывает функции при наступлении событий в анимации. Регистрация в конструкторе через `RegisterAnimationEvent(eventName, functionName)`:
+The engine calls functions when events occur in an animation. Registered in the constructor via `RegisterAnimationEvent(eventName, functionName)`:
 
-| Событие | Функция | Что происходит |
-|---------|---------|---------------|
-| `"Sound"` | `OnSoundEvent` | Воспроизведение звука + шум для AI |
-| `"SoundVoice"` | `OnSoundVoiceEvent` | Голосовой звук + шум + аттенюация |
-| `"Step"` | `OnStepEvent` | Звук шага по поверхности (только клиент) |
-| `"Damage"` | `OnDamageEvent` | Создание DamageSphere |
+| Event | Function | What happens |
+|-------|----------|--------------|
+| `"Sound"` | `OnSoundEvent` | Plays a sound + emits noise for AI |
+| `"SoundVoice"` | `OnSoundVoiceEvent` | Voice sound + noise + attenuation |
+| `"Step"` | `OnStepEvent` | Footstep sound on the surface (client only) |
+| `"Damage"` | `OnDamageEvent` | Creates a DamageSphere |
 
-Конфиг событий загружается через `DayZCreatureAIType` из `CfgVehicles → <класс> → AnimEvents`:
+The event config is loaded via `DayZCreatureAIType` from `CfgVehicles → <class> → AnimEvents`:
 
 ```
 AnimEvents
@@ -83,77 +83,77 @@ AnimEvents
  └── Damages   → AnimDamageEvent     (ID → CfgDamages: bone, ammo, radius, duration)
 ```
 
-Каждый звуковой/голосовой ивент может нести `NoiseParams` — на сервере автоматически генерирует шум через `NoiseSystem` с учётом погоды.
+Each sound/voice event can carry `NoiseParams` — on the server it automatically generates noise via `NoiseSystem` taking weather into account.
 
-Аттенюация: если существо и игрок находятся по разные стороны стены здания (или игрок в машине), звук переключается на `WaveKind.WAVEATTALWAYS` (приглушённый).
-
----
-
-### DayZCreatureAIInputController — управление от AI
-
-**Полностью proto native**. Это интерфейс между native AI-мозгом и скриптовой логикой. AI (C++) управляет существом, скрипт может перехватить через Override-методы.
-
-| Параметр | Override | Get |
-|----------|---------|-----|
-| Скорость движения | `OverrideMovementSpeed(state, speed)` | `GetMovementSpeed()` |
-| Скорость поворота | `OverrideTurnSpeed(state, speed)` | `GetTurnSpeed()` |
-| Направление | `OverrideHeading(state, heading)` | `GetHeading()` |
-| Прыжок | `OverrideJump(state, type, height)` | `IsJump()`, `GetJumpType()`, `GetJumpHeight()` |
-| Взгляд | `OverrideLookAt(state, direction)` | `IsLookAtEnabled()`, `GetLookAtDirectionWS()` |
-| Уровень тревоги | `OverrideAlertLevel(state, alerted, level, inLevel)` | `GetAlertLevel()`, `IsAlerted()` |
-| Слот поведения | `OverrideBehaviourSlot(state, slot)` | `GetBehaviourSlot()` |
-
-Паттерн Override: `state=true` — скрипт берёт контроль, `state=false` — возврат управления AI.
+Attenuation: if the creature and the player are on opposite sides of a building wall (or the player is in a vehicle), the sound switches to `WaveKind.WAVEATTALWAYS` (muffled).
 
 ---
 
-### CommandHandler — центральный цикл
+### DayZCreatureAIInputController — control from AI
 
-Каждый тик движок вызывает `CommandHandler(dt, currentCommandID, currentCommandFinished)`. Это **главная точка принятия решений** для существа.
+**Fully proto native**. This is the interface between the native AI brain and script logic. The AI (C++) controls the creature; the script can override via Override methods.
 
-Общая структура (одинакова для животных и заражённых):
+| Parameter | Override | Get |
+|-----------|----------|-----|
+| Movement speed | `OverrideMovementSpeed(state, speed)` | `GetMovementSpeed()` |
+| Turn speed | `OverrideTurnSpeed(state, speed)` | `GetTurnSpeed()` |
+| Heading | `OverrideHeading(state, heading)` | `GetHeading()` |
+| Jump | `OverrideJump(state, type, height)` | `IsJump()`, `GetJumpType()`, `GetJumpHeight()` |
+| Look | `OverrideLookAt(state, direction)` | `IsLookAtEnabled()`, `GetLookAtDirectionWS()` |
+| Alert level | `OverrideAlertLevel(state, alerted, level, inLevel)` | `GetAlertLevel()`, `IsAlerted()` |
+| Behavior slot | `OverrideBehaviourSlot(state, slot)` | `GetBehaviourSlot()` |
+
+Override pattern: `state=true` — the script takes control, `state=false` — control returns to the AI.
+
+---
+
+### CommandHandler — the central loop
+
+Each tick the engine calls `CommandHandler(dt, currentCommandID, currentCommandFinished)`. This is the **main decision-making point** for the creature.
+
+General structure (the same for animals and infected):
 
 ```
-1. ModCommandHandlerBefore() → return true = мод перехватил
-2. HandleDeath() → если мёртв, остаться в Death
-3. Если currentCommandFinished → StartCommand_Move() (возврат к движению)
+1. ModCommandHandlerBefore() → return true = mod has intercepted
+2. HandleDeath() → if dead, stay in Death
+3. If currentCommandFinished → StartCommand_Move() (return to movement)
 4. ModCommandHandlerInside()
-5. HandleDamageHit() → обработка полученного урона
-6. Специфичная логика (атаки, vault, mind state...)
+5. HandleDamageHit() → handle received damage
+6. Specific logic (attacks, vault, mind state...)
 7. ModCommandHandlerAfter()
 ```
 
-**Команды** — proto native состояния, управляющие анимацией и физикой:
+**Commands** are proto native states controlling animation and physics:
 
-Животные (`DayZAnimalConstants`):
+Animals (`DayZAnimalConstants`):
 `COMMANDID_MOVE`, `COMMANDID_JUMP`, `COMMANDID_DEATH`, `COMMANDID_HIT`, `COMMANDID_ATTACK`, `COMMANDID_SCRIPT`
 
-Заражённые (`DayZInfectedConstants`):
+Infected (`DayZInfectedConstants`):
 `COMMANDID_MOVE`, `COMMANDID_VAULT`, `COMMANDID_DEATH`, `COMMANDID_HIT`, `COMMANDID_ATTACK`, `COMMANDID_CRAWL`, `COMMANDID_SCRIPT`
 
-`StartCommand_*()` — переключение на новую команду (proto native). Текущая команда прерывается, новая запускается. При завершении команды `currentCommandFinished = true`, и CommandHandler решает что делать дальше (обычно `StartCommand_Move()`).
+`StartCommand_*()` — switch to a new command (proto native). The current command is interrupted, the new one starts. When the command finishes, `currentCommandFinished = true`, and CommandHandler decides what to do next (usually `StartCommand_Move()`).
 
 ---
 
-### DayZAnimalCommandScript — скриптовые команды
+### DayZAnimalCommandScript — scripted commands
 
-Полностью скриптовое поведение для случаев, когда native-команд недостаточно. **Non-managed** — после передачи в CommandHandler управляется C++.
+Fully scripted behavior for cases when native commands are not enough. **Non-managed** — once handed to CommandHandler, it is controlled by C++.
 
-Два этапа per-tick:
-1. **PrePhys** — задать трансформацию до физики (`PrePhys_SetTranslation/Rotation` в локальном пространстве)
-2. **PostPhys** — скорректировать после физики (`PostPhys_SetPosition/Rotation` в мировом пространстве)
+Two per-tick stages:
+1. **PrePhys** — set the transform before physics (`PrePhys_SetTranslation/Rotation` in local space)
+2. **PostPhys** — correct after physics (`PostPhys_SetPosition/Rotation` in world space)
 
-`SetFlagFinished(true)` — завершить скриптовую команду, CommandHandler получит `currentCommandFinished = true`.
+`SetFlagFinished(true)` — finish the scripted command, CommandHandler will receive `currentCommandFinished = true`.
 
 ---
 
-### Обработка урона
+### Damage handling
 
-Общий паттерн для всех существ:
+Shared pattern for all creatures:
 
-1. `EEHitBy()` — получение урона от движка
-2. Подсчёт `type` и `direction` удара (`ComputeDamageHitParams`)
-3. `QueueDamageHit(type, direction)` — сохранить для следующего тика
-4. В `CommandHandler` → `HandleDamageHit()` → `StartCommand_Hit(type, direction)`
+1. `EEHitBy()` — damage received from the engine
+2. Compute hit `type` and `direction` (`ComputeDamageHitParams`)
+3. `QueueDamageHit(type, direction)` — store for the next tick
+4. In `CommandHandler` → `HandleDamageHit()` → `StartCommand_Hit(type, direction)`
 
-Направление удара: угол между направлением существа и вектором к источнику урона → front (±20°) / left / right. Дополнительный offset по зоне попадания (голова, грудь, другое).
+Hit direction: the angle between the creature's facing direction and the vector to the damage source → front (±20°) / left / right. Additional offset by hit zone (head, chest, other).

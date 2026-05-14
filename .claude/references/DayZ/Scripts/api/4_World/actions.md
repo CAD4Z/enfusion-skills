@@ -1,208 +1,208 @@
-`4_World` — система действий (User Actions). Самая частая точка расширения для моддеров. Источники: `classes/useractionscomponent/`
+`4_World` — the action system (User Actions). The most common extension point for modders. Sources: `classes/useractionscomponent/`
 
-### Иерархия классов
+### Class hierarchy
 
 ```
 ActionBase_Basic (C++)
  └── ActionBase
-      ├── ActionInstantBase           — без анимации, эффект в OnStart
-      ├── ActionSequentialBase        — многостадийные, без анимации
-      └── AnimatedActionBase          — с анимацией и callback
-           ├── ActionInteractBase     — взаимодействие (AC_INTERACT)
+      ├── ActionInstantBase           — no animation, effect in OnStart
+      ├── ActionSequentialBase        — multi-stage, no animation
+      └── AnimatedActionBase          — with animation and callback
+           ├── ActionInteractBase     — interaction (AC_INTERACT)
            │    └── ActionInteractLoopBase
-           ├── ActionSingleUseBase    — одноразовые (AC_SINGLE_USE)
-           ├── ActionContinuousBase   — продолжительные (AC_CONTINUOUS)
-           └── FirearmActionBase      — оружейные механики
+           ├── ActionSingleUseBase    — single-use (AC_SINGLE_USE)
+           ├── ActionContinuousBase   — continuous (AC_CONTINUOUS)
+           └── FirearmActionBase      — firearm mechanics
 ```
 
-### Пайплайн выполнения
+### Execution pipeline
 
 ```
-[Каждый кадр, нет активного действия]
+[Every frame, no active action]
   ActionManagerClient.FindContextualUserActions()
    → ActionInput.UpdatePossibleActions()
     → ActionBase.Can(player, target, item, conditionMask)
-        1. Проверка conditionMask (транспорт/лестница/плавание...)
-        2. Проверка стойки (StanceMask)
-        3. CCTBase.Can() — условие цели
-        4. CCIBase.Can() — условие предмета
-        5. ActionCondition() — кастомная логика
+        1. conditionMask check (vehicle/ladder/swimming...)
+        2. Stance check (StanceMask)
+        3. CCTBase.Can() — target condition
+        4. CCIBase.Can() — item condition
+        5. ActionCondition() — custom logic
 
-[Игрок нажимает кнопку]
+[Player presses button]
   ActionManager.ActionStart(action, target, item)
    → SetupAction() → CreateActionData()
-   → [MP] WriteToContext() → сеть → ReadFromContext() на сервере
-   → [Сервер] Can() повторно → AddActionJuncture() → ACK
-   → [Клиент получает ACK] action.Start()
+   → [MP] WriteToContext() → network → ReadFromContext() on server
+   → [Server] Can() rechecked → AddActionJuncture() → ACK
+   → [Client receives ACK] action.Start()
     → OnStart/OnStartServer/OnStartClient()
     → CreateAndSetupActionCallback() → player.StartCommand_Action()
     → ActionBaseCB.InitActionComponent() → CABase.Init()
 
-[Каждый кадр, действие выполняется]
+[Every frame, action running]
   AnimatedActionBase.Do(action_data, state)
    → UA_PROCESSING: CanContinue() → CABase.Execute()
    → UA_FINISHED: End()
    → UA_CANCEL: End()
 
-[Анимационное событие "ActionExec"]
+[Animation event "ActionExec"]
    → OnExecute() / OnExecuteServer() / OnExecuteClient()
 
-[Для ContinuousBase: анимационный цикл]
+[For ContinuousBase: animation loop]
    → "ActionExecStart" → OnStartAnimationLoop*()
    → "ActionExecEnd" → OnEndAnimationLoop*()
-   → CABase завершён → OnFinishProgress*()
+   → CABase finished → OnFinishProgress*()
 
-[Конец действия]
+[End of action]
    → OnEnd/OnEndServer/OnEndClient()
 ```
 
-### Состояния (UA_*)
+### States (UA_*)
 
-| Константа | Значение | Описание |
+| Constant | Value | Description |
 |-----------|----------|----------|
-| `UA_PROCESSING` | 2 | Компонент выполняется |
-| `UA_FINISHED` | 4 | Завершено нормально |
-| `UA_CANCEL` | 5 | Отменено |
-| `UA_AM_PENDING` | 14 | Ожидание ACK от сервера |
-| `UA_AM_ACCEPTED` | 15 | Сервер принял |
-| `UA_AM_REJECTED` | 16 | Сервер отклонил |
-| `UA_ANIM_EVENT` | 11 | Событие "ActionExec" |
+| `UA_PROCESSING` | 2 | Component running |
+| `UA_FINISHED` | 4 | Finished normally |
+| `UA_CANCEL` | 5 | Cancelled |
+| `UA_AM_PENDING` | 14 | Waiting for ACK from server |
+| `UA_AM_ACCEPTED` | 15 | Server accepted |
+| `UA_AM_REJECTED` | 16 | Server rejected |
+| `UA_ANIM_EVENT` | 11 | "ActionExec" event |
 
-### Типы действий
+### Action types
 
-| Тип | Категория | Анимация | Когда эффект |
+| Type | Category | Animation | When effect fires |
 |-----|-----------|----------|-------------|
-| `ActionInstantBase` | — | Нет | `OnStart()` |
-| `ActionInteractBase` | AC_INTERACT | CMD_ACTIONMOD_PICKUP_HANDS | `OnExecute()` на ActionExec |
-| `ActionSingleUseBase` | AC_SINGLE_USE | CMD_ACTIONMOD_PICKUP_HANDS | `OnExecuteServer()` на ActionExec |
+| `ActionInstantBase` | — | None | `OnStart()` |
+| `ActionInteractBase` | AC_INTERACT | CMD_ACTIONMOD_PICKUP_HANDS | `OnExecute()` on ActionExec |
+| `ActionSingleUseBase` | AC_SINGLE_USE | CMD_ACTIONMOD_PICKUP_HANDS | `OnExecuteServer()` on ActionExec |
 | `ActionContinuousBase` | AC_CONTINUOUS | CMD_ACTIONMOD_EAT | `OnFinishProgressServer()` |
-| `FirearmActionBase` | AC_SINGLE_USE | Weapon FSM | Через WeaponManager |
+| `FirearmActionBase` | AC_SINGLE_USE | Weapon FSM | Via WeaponManager |
 
 ---
 
-### ActionBase — ключевые переопределяемые методы
+### ActionBase — key overridable methods
 
-#### Идентификация
+#### Identification
 
-| Метод | Описание | По умолчанию |
+| Method | Description | Default |
 |-------|----------|-------------|
-| `HasTarget()` | Использует цель в мире | `true` |
-| `IsInstant()` | Мгновенное, без анимации | `false` |
-| `IsLocal()` | Только клиент, без синхронизации | `false` |
-| `HasProgress()` | Показывать прогресс-бар | `true` |
-| `UseMainItem()` | Предмет в руках задействован | `true` |
-| `GetText()` | Текст подсказки в HUD | `m_Text` |
+| `HasTarget()` | Uses a world target | `true` |
+| `IsInstant()` | Instant, no animation | `false` |
+| `IsLocal()` | Client only, no sync | `false` |
+| `HasProgress()` | Show progress bar | `true` |
+| `UseMainItem()` | Item in hands is involved | `true` |
+| `GetText()` | Tooltip text in HUD | `m_Text` |
 
-#### Условия
+#### Conditions
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `CreateConditionComponents()` | Установить `m_ConditionItem` и `m_ConditionTarget` |
-| `ActionCondition(PlayerBase, ActionTarget, ItemBase)` | Основная проверка (каждый кадр) |
-| `ActionConditionContinue(ActionData)` | Проверка во время выполнения |
-| `GetStanceMask(PlayerBase)` | Допустимые стойки |
+| `CreateConditionComponents()` | Set up `m_ConditionItem` and `m_ConditionTarget` |
+| `ActionCondition(PlayerBase, ActionTarget, ItemBase)` | Main check (every frame) |
+| `ActionConditionContinue(ActionData)` | Check during execution |
+| `GetStanceMask(PlayerBase)` | Allowed stances |
 
-#### Флаги состояний игрока (condition mask)
+#### Player state flags (condition mask)
 
 `CanBeUsedInVehicle()`, `CanBeUsedSwimming()`, `CanBeUsedOnLadder()`, `CanBeUsedInRestrain()`, `CanBeUsedRaised()`, `CanBeUsedOnBack()`, `CanBeUsedWithBrokenLegs()`
 
-#### Хуки выполнения
+#### Execution hooks
 
-| Метод | Когда |
+| Method | When |
 |-------|-------|
-| `OnStart/OnStartServer/OnStartClient(ActionData)` | Начало действия |
-| `OnEnd/OnEndServer/OnEndClient(ActionData)` | Конец действия |
-| `OnExecute/OnExecuteServer/OnExecuteClient(ActionData)` | Событие ActionExec |
-| `OnUpdate/OnUpdateServer/OnUpdateClient(ActionData)` | Каждый кадр |
+| `OnStart/OnStartServer/OnStartClient(ActionData)` | Action start |
+| `OnEnd/OnEndServer/OnEndClient(ActionData)` | Action end |
+| `OnExecute/OnExecuteServer/OnExecuteClient(ActionData)` | ActionExec event |
+| `OnUpdate/OnUpdateServer/OnUpdateClient(ActionData)` | Every frame |
 
-#### Дополнительные хуки ContinuousBase
+#### Extra ContinuousBase hooks
 
-| Метод | Когда |
+| Method | When |
 |-------|-------|
-| `OnStartAnimationLoopServer/Client(ActionData)` | Начало цикла анимации |
-| `OnEndAnimationLoopServer/Client(ActionData)` | Конец цикла анимации |
-| `OnFinishProgressServer/Client(ActionData)` | Компонент завершён |
+| `OnStartAnimationLoopServer/Client(ActionData)` | Animation loop start |
+| `OnEndAnimationLoopServer/Client(ActionData)` | Animation loop end |
+| `OnFinishProgressServer/Client(ActionData)` | Component finished |
 
-#### Синхронизация
+#### Synchronization
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `CreateActionData()` | Вернуть кастомный подкласс ActionData |
-| `WriteToContext(ctx, ActionData)` | Сериализация → сервер |
-| `ReadFromContext(ctx, out ActionReciveData)` | Десериализация на сервере |
-| `HandleReciveData(ActionReciveData, ActionData)` | Применить данные |
+| `CreateActionData()` | Return a custom ActionData subclass |
+| `WriteToContext(ctx, ActionData)` | Serialize → server |
+| `ReadFromContext(ctx, out ActionReciveData)` | Deserialize on server |
+| `HandleReciveData(ActionReciveData, ActionData)` | Apply data |
 
 ---
 
-### Компоненты действий (CABase)
+### Action components (CABase)
 
-Определяют **длительность и логику завершения** действия. Создаются в `ActionBaseCB::CreateActionComponent()`.
+Define the **duration and completion logic** of an action. Created in `ActionBaseCB::CreateActionComponent()`.
 
 ```
 CABase
- ├── CAInteract / CASingleUse      — мгновенное завершение
- ├── CAContinuousTime               — завершение через N секунд
- ├── CAContinuousRepeat             — повтор каждые N секунд
- ├── CAContinuousQuantity           — потребление количества предмета
+ ├── CAInteract / CASingleUse      — instant completion
+ ├── CAContinuousTime               — finish after N seconds
+ ├── CAContinuousRepeat             — repeat every N seconds
+ ├── CAContinuousQuantity           — consume item quantity
  │    ├── CAContinuousQuantityEdible
  │    ├── CAContinuousQuantityLiquidTransfer
  │    └── ...
- ├── CAContinuousFill / Empty       — жидкости
- ├── CAContinuousMineRock/Wood      — добыча
- ├── CAContinuousCraft              — крафт
+ ├── CAContinuousFill / Empty       — liquids
+ ├── CAContinuousMineRock/Wood      — mining
+ ├── CAContinuousCraft              — crafting
  └── ...
 ```
 
 #### CABase API
 
-| Метод | Описание |
+| Method | Description |
 |-------|----------|
-| `Setup(ActionData)` | Инициализация при старте |
-| `Execute(ActionData)` | Каждый кадр → `UA_PROCESSING` / `UA_FINISHED` / `UA_CANCEL` |
-| `Cancel(ActionData)` | Отмена игроком |
-| `GetProgress()` | 0..1 для прогресс-бара |
+| `Setup(ActionData)` | Initialization at start |
+| `Execute(ActionData)` | Every frame → `UA_PROCESSING` / `UA_FINISHED` / `UA_CANCEL` |
+| `Cancel(ActionData)` | Cancellation by the player |
+| `GetProgress()` | 0..1 for the progress bar |
 
-#### Основные компоненты
+#### Main components
 
-| Компонент | Конструктор | Логика |
+| Component | Constructor | Logic |
 |-----------|-------------|--------|
-| `CAContinuousTime(float sec)` | Время до завершения | `elapsed >= total` → FINISHED |
-| `CAContinuousRepeat(float sec)` | Время цикла | Сброс после каждого цикла, вечный |
-| `CAContinuousQuantity(float per_sec)` | Расход в секунду | `spent >= item.quantity` → FINISHED |
+| `CAContinuousTime(float sec)` | Time to completion | `elapsed >= total` → FINISHED |
+| `CAContinuousRepeat(float sec)` | Cycle time | Reset after each cycle, runs forever |
+| `CAContinuousQuantity(float per_sec)` | Consumption per second | `spent >= item.quantity` → FINISHED |
 
 ---
 
-### Условия предмета (CCI)
+### Item conditions (CCI)
 
-| Класс | Условие Can() | CanContinue() |
+| Class | Can() condition | CanContinue() |
 |-------|---------------|---------------|
-| `CCINone` | Всегда true | Всегда true |
-| `CCIDummy` | item != null | + предмет в руках |
-| `CCINonRuined` | Не null, не сломан | + в руках |
-| `CCINotEmpty` | Не null, quantity > 0 | + в руках |
-| `CCINotRuinedAndEmpty` | Не сломан, quantity > 0 | + в руках |
+| `CCINone` | Always true | Always true |
+| `CCIDummy` | item != null | + item in hands |
+| `CCINonRuined` | Not null, not ruined | + in hands |
+| `CCINotEmpty` | Not null, quantity > 0 | + in hands |
+| `CCINotRuinedAndEmpty` | Not ruined, quantity > 0 | + in hands |
 | `CCINotPresent` | item == null | Can() |
 
-### Условия цели (CCT)
+### Target conditions (CCT)
 
-| Класс | Условие | Дистанция от |
+| Class | Condition | Distance measured from |
 |-------|---------|-------------|
-| `CCTNone` | Всегда true | — |
-| `CCTObject(dist)` | Объект, не игрок, не сломан | Позиция объекта |
-| `CCTCursor(dist)` | Объект/родитель, не сломан | Позиция курсора |
-| `CCTNonRuined(dist)` | Не Man, не сломан | Корень игрока |
-| `CCTMan(dist, alive)` | Цель — Man, не сам, лицом к цели | Позиция объекта |
-| `CCTSelf` | Игрок жив | — |
-| `CCTSurface(dist)` | Нет объекта (земля) | Позиция курсора |
-| `CCTWaterSurface(dist)` | Водная поверхность | Позиция игрока |
+| `CCTNone` | Always true | — |
+| `CCTObject(dist)` | Object, not a player, not ruined | Object position |
+| `CCTCursor(dist)` | Object/parent, not ruined | Cursor position |
+| `CCTNonRuined(dist)` | Not Man, not ruined | Player root |
+| `CCTMan(dist, alive)` | Target is Man, not self, facing target | Object position |
+| `CCTSelf` | Player alive | — |
+| `CCTSurface(dist)` | No object (ground) | Cursor position |
+| `CCTWaterSurface(dist)` | Water surface | Player position |
 
-Дистанция проверяется от `player.GetPosition()` и от позиции головы — стойка не ломает проверку.
+Distance is checked from `player.GetPosition()` and from the head position — stance does not break the check.
 
 ---
 
-### Регистрация и привязка
+### Registration and binding
 
-#### Регистрация действия
+#### Registering an action
 
 ```
 modded class ActionConstructor
@@ -215,7 +215,7 @@ modded class ActionConstructor
 }
 ```
 
-#### Привязка к предмету
+#### Binding to an item
 
 ```
 modded class MyItem : ItemBase
@@ -228,7 +228,7 @@ modded class MyItem : ItemBase
 }
 ```
 
-#### Привязка к игроку (self-target)
+#### Binding to the player (self-target)
 
 ```
 modded class PlayerBase
@@ -243,7 +243,7 @@ modded class PlayerBase
 
 ---
 
-### Пример: создание ContinuousAction
+### Example: creating a ContinuousAction
 
 ```
 class MyActionCB : ActionContinuousBaseCB

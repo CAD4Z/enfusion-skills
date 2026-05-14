@@ -1,8 +1,8 @@
-EntityAI — базовый класс всех интерактивных сущностей. Наследует `Entity` (1_Core). От него наследуются предметы, существа, транспорт и игрок.
+EntityAI — the base class of all interactive entities. Inherits `Entity` (1_Core). Items, creatures, vehicles, and the player all inherit from it.
 
-Файл: `3_game/entities/entityai.c` (~4600 строк). Описывает не AI-поведение, а **общий фундамент для всех сущностей**, включая тех, которые управляются AI.
+File: `3_game/entities/entityai.c` (~4600 lines). Describes not AI behavior but the **common foundation for all entities**, including those controlled by AI.
 
-### Иерархия наследования
+### Inheritance hierarchy
 
 ```
 Entity (1_Core, proto native)
@@ -14,133 +14,133 @@ Entity (1_Core, proto native)
       └── AdvancedCommunication
 ```
 
-Типовые проверки: `IsMan()`, `IsAnimal()`, `IsZombie()`, `IsWeapon()`, `IsMagazine()`, `IsTransport()` — все возвращают `false` по умолчанию, переопределяются в наследниках.
+Type checks: `IsMan()`, `IsAnimal()`, `IsZombie()`, `IsWeapon()`, `IsMagazine()`, `IsTransport()` — all return `false` by default and are overridden in descendants.
 
 ---
 
-### Жизненный цикл
+### Lifecycle
 
-#### Инициализация
+#### Initialization
 
 ```
-Конструктор EntityAI()
- ├── Создание EnergyManager (если есть в конфиге)
- ├── Регистрация сетевых переменных
- ├── InitDamageZoneMapping() — маппинг зон урона из конфига
- ├── InitItemVariables() — температурные параметры из конфига
- └── CallLater(DeferredInit, 34ms) — отложенная инициализация
+Constructor EntityAI()
+ ├── Creation of EnergyManager (if defined in config)
+ ├── Registration of network variables
+ ├── InitDamageZoneMapping() — mapping of damage zones from config
+ ├── InitItemVariables() — temperature parameters from config
+ └── CallLater(DeferredInit, 34ms) — deferred initialization
       └── m_Initialized = true
 
-EEInit() — после создания сущности движком
- ├── Инициализация инвентаря
+EEInit() — after the entity has been created by the engine
+ ├── Inventory initialization
  ├── MaxLifetimeRefreshCalc()
- └── InitTemperature() (сервер)
+ └── InitTemperature() (server)
 ```
 
-`DeferredInit()` — вызывается через 34мс после конструктора. Нужен для операций, которые требуют полной инициализации сущности в мире.
+`DeferredInit()` — invoked 34ms after the constructor. Needed for operations that require the entity to be fully initialized in the world.
 
-#### CE (Central Economy) события
+#### CE (Central Economy) events
 
-- `EEOnCECreate()` — сущность создана системой центральной экономики
-- `AfterStoreLoad()` — загружена из БД (после загрузки всех дочерних сущностей)
-- `EEOnAfterLoad()` — восстановление связей (например, электроподключения)
+- `EEOnCECreate()` — the entity has been created by the central economy system
+- `AfterStoreLoad()` — loaded from the DB (after all child entities have been loaded)
+- `EEOnAfterLoad()` — link restoration (for example, electrical connections)
 
-#### Удаление
+#### Deletion
 
-- `EEDelete(parent)` — прямо перед удалением. Оповещает инвентарь и EnergyManager
-- `EEKilled(killer)` — при смерти. Вызывает `DeathUpdate()` через 250мс если `ReplaceOnDeath() == true`
-- `DeathUpdate()` — создаёт мёртвый объект (`GetDeadItemName()`), переносит ориентацию, удаляет оригинал
+- `EEDelete(parent)` — immediately before deletion. Notifies the inventory and EnergyManager
+- `EEKilled(killer)` — on death. Calls `DeathUpdate()` after 250ms if `ReplaceOnDeath() == true`
+- `DeathUpdate()` — creates a dead object (`GetDeadItemName()`), transfers orientation, deletes the original
 
-#### Персистентность
+#### Persistence
 
-- `OnStoreSave(ctx)` — сохранение в БД. Записывает состояние EnergyManager и переменные
-- `OnStoreLoad(ctx, version)` — загрузка из БД. `version` — для обратной совместимости
-- `GetPersistentID(out b1, b2, b3, b4)` — уникальный ID, переживает рестарт сервера
+- `OnStoreSave(ctx)` — save to the DB. Writes the EnergyManager state and variables
+- `OnStoreLoad(ctx, version)` — load from the DB. `version` is for backward compatibility
+- `GetPersistentID(out b1, b2, b3, b4)` — unique ID that survives a server restart
 
 ---
 
-### Система урона и зоны попадания
+### Damage system and hit zones
 
-#### Зоны урона (Damage Zones)
+#### Damage Zones
 
-`InitDamageZoneMapping()` при инициализации строит карту зон из конфига (`DamageSystem.GetDamageZoneMap()`). Каждая зона — именованная область модели с собственным здоровьем.
+`InitDamageZoneMapping()` during initialization builds the zone map from the config (`DamageSystem.GetDamageZoneMap()`). Each zone is a named region of the model with its own health.
 
-`EEHealthLevelChanged(oldLevel, newLevel, zone)` — ключевой callback при смене уровня здоровья. При достижении `STATE_RUINED`:
-- Уведомляет родителя (`OnAttachmentRuined`)
-- Если `zone` пуст (глобальное здоровье) — `OnDamageDestroyed()`
-- Запускает DestructionBehaviour если настроен
+`EEHealthLevelChanged(oldLevel, newLevel, zone)` — the key callback on health level changes. When `STATE_RUINED` is reached:
+- Notifies the parent (`OnAttachmentRuined`)
+- If `zone` is empty (global health) — `OnDamageDestroyed()`
+- Triggers DestructionBehaviour if configured
 
-#### HitComponents для AI
+#### HitComponents for AI
 
-Механизм, через который AI выбирает **куда целиться**:
+The mechanism by which the AI chooses **where to aim**:
 
-- `GetHitComponentForAI()` — взвешенный случайный выбор зоны. По умолчанию — ошибка (нужно переопределить)
-- `GetDefaultHitComponent()` — зона по умолчанию
-- `GetDefaultHitPosition()` — позиция по умолчанию
-- `GetSuitableFinisherHitComponents()` — зоны для финишера (backstab)
+- `GetHitComponentForAI()` — weighted random zone selection. By default — error (must be overridden)
+- `GetDefaultHitComponent()` — default zone
+- `GetDefaultHitPosition()` — default position
+- `GetSuitableFinisherHitComponents()` — zones for finishers (backstab)
 
-Каждый наследник реализует свою логику: у DayZInfected зоны берутся из `DayZInfectedType`, у DayZAnimal — через `RegisterHitComponentsForAI()` с весами.
+Each descendant implements its own logic: for DayZInfected zones come from `DayZInfectedType`, for DayZAnimal — via `RegisterHitComponentsForAI()` with weights.
 
 #### AI Targeting
 
-`CanBeTargetedByAI(EntityAI ai)` — может ли AI атаковать эту сущность:
-- `false` если AI в процессе backstab
-- `false` если физическое тело неактивно (и не Man)
-- `false` если `IsDamageDestroyed()`
+`CanBeTargetedByAI(EntityAI ai)` — whether the AI can attack this entity:
+- `false` if the AI is performing a backstab
+- `false` if the physical body is inactive (and it is not Man)
+- `false` if `IsDamageDestroyed()`
 
-`SetAITargetCallbacks(callbacks)` — proto native. Регистрирует callbacks видимости/позиции для AI-системы (см. infrastructure.md).
+`SetAITargetCallbacks(callbacks)` — proto native. Registers visibility/position callbacks for the AI system (see infrastructure.md).
 
 ---
 
-### Сетевая синхронизация
+### Network synchronization
 
-#### Регистрация переменных
+#### Variable registration
 
-Вызывается в конструкторе. Переменные синхронизируются автоматически при изменении:
+Called in the constructor. Variables synchronize automatically on change:
 
 - `RegisterNetSyncVariableBool(name)` — bool
-- `RegisterNetSyncVariableBoolSignal(name)` — bool-сигнал (автоматически сбрасывается в false после отправки)
-- `RegisterNetSyncVariableInt(name, min, max)` — int с квантизацией
-- `RegisterNetSyncVariableFloat(name, min, max, precision)` — float с квантизацией
-- `RegisterNetSyncVariableObject(name)` — ссылка на объект (по network ID)
+- `RegisterNetSyncVariableBoolSignal(name)` — bool signal (auto-resets to false after sending)
+- `RegisterNetSyncVariableInt(name, min, max)` — int with quantization
+- `RegisterNetSyncVariableFloat(name, min, max, precision)` — float with quantization
+- `RegisterNetSyncVariableObject(name)` — object reference (by network ID)
 
-`SetSynchDirty()` — пометить объект для синхронизации. `OnVariablesSynchronized()` — callback на клиенте при получении данных.
+`SetSynchDirty()` — mark the object for synchronization. `OnVariablesSynchronized()` — callback on the client when data arrives.
 
-Квантизация: при указании min/max значения сжимаются для экономии трафика. `precision` — количество знаков после запятой.
-
----
-
-### Иерархия и инвентарь
-
-- `GetHierarchyRoot()` — корень иерархии (proto native)
-- `GetHierarchyRootPlayer()` — корень как Man (proto native)
-- `GetHierarchyParent()` — прямой родитель (proto native)
-
-События инвентаря (вызываются на **родителе**):
-- `EEItemAttached(item, slot)` / `EEItemDetached(item, slot)` — аттачменты
-- `EECargoIn(item)` / `EECargoOut(item)` — карго
-- `EEItemLocationChanged(oldLoc, newLoc)` — любое перемещение
-
-Система exclusion-масок: при аттаче проверяет совместимость слотов (например, шлем + очки).
+Quantization: when min/max is specified, values are compressed to save traffic. `precision` is the number of decimal digits.
 
 ---
 
-### Компоненты
+### Hierarchy and inventory
 
-Ленивая система через `ComponentsBank`:
+- `GetHierarchyRoot()` — root of the hierarchy (proto native)
+- `GetHierarchyRootPlayer()` — root as Man (proto native)
+- `GetHierarchyParent()` — direct parent (proto native)
 
-- `CreateComponent(type)` — создать компонент (создаёт банк если нужно)
-- `HasComponent(type)` / `GetComponent(type)` — проверка/получение
-- Компоненты получают события: `Event_OnItemAttached`, `Event_OnItemDetached`, `Event_OnFrame`
+Inventory events (invoked on the **parent**):
+- `EEItemAttached(item, slot)` / `EEItemDetached(item, slot)` — attachments
+- `EECargoIn(item)` / `EECargoOut(item)` — cargo
+- `EEItemLocationChanged(oldLoc, newLoc)` — any movement
 
-Основные типы: `COMP_TYPE_ENERGY_MANAGER`, `COMP_TYPE_BODY_STAGING`, `COMP_TYPE_ETITY_DEBUG`.
+Exclusion-mask system: on attach, slot compatibility is checked (for example, helmet + goggles).
 
 ---
 
-### Ключевые подсистемы (кратко)
+### Components
 
-**Температура**: параметры из конфига (`varTemperatureInit/Min/Max`, `varTemperatureFreezePoint/ThawPoint`). Синхронизируется по сети. Заморозка/разморозка с прогрессом. Живые организмы (`IsMan/IsAnimal/IsZombie && IsAlive`) саморегулируют температуру.
+Lazy system via `ComponentsBank`:
 
-**Вес**: dirty-флаг система. `SetWeightDirty()` при любом изменении содержимого. Пересчёт рекурсивный по иерархии.
+- `CreateComponent(type)` — create a component (creates the bank if needed)
+- `HasComponent(type)` / `GetComponent(type)` — check/get
+- Components receive events: `Event_OnItemAttached`, `Event_OnItemDetached`, `Event_OnFrame`
 
-**Lifetime (CE)**: `SetLifetime()` / `GetLifetime()` — оставшееся время жизни в секундах. `IncreaseLifetimeUp()` — сброс таймера вверх по иерархии (взаимодействие с предметом продлевает жизнь контейнера).
+Main types: `COMP_TYPE_ENERGY_MANAGER`, `COMP_TYPE_BODY_STAGING`, `COMP_TYPE_ETITY_DEBUG`.
+
+---
+
+### Key subsystems (briefly)
+
+**Temperature**: parameters from config (`varTemperatureInit/Min/Max`, `varTemperatureFreezePoint/ThawPoint`). Synchronized over the network. Freezing/thawing with progress. Living organisms (`IsMan/IsAnimal/IsZombie && IsAlive`) self-regulate temperature.
+
+**Weight**: a dirty-flag system. `SetWeightDirty()` on any content change. Recomputation is recursive up the hierarchy.
+
+**Lifetime (CE)**: `SetLifetime()` / `GetLifetime()` — remaining lifetime in seconds. `IncreaseLifetimeUp()` — reset the timer up the hierarchy (interacting with an item extends the lifetime of the container).

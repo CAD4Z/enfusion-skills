@@ -1,11 +1,11 @@
-DayZ - многопользовательская игра про выживание в мире постапокалипсиса в открытом мире, построенная на движке Enfusion Engine. 
-Разделяется на два основных компонента: клиент и сервер - который содержит основные конфигурации геймплея. Оба модифицируемые.
+DayZ is a multiplayer post-apocalyptic open-world survival game built on the Enfusion Engine.
+It is split into two main components: the client and the server — the latter holding the core gameplay configuration. Both are moddable.
 
-Моддинг построен вокруг DayZ Tools который охватывает все компоненты игры, включает в себя инструменты редактирования Terrain Builder(Карта), Object Builder(Объекты), Central Economy(Экономика лута), Workbench(Минималистичное IDE для Enfusion Engine) и многое другое. Моды и файлы игры упаковываются в PBO файлы, а не хранятся в открытом виде. 
+Modding revolves around DayZ Tools, which covers every component of the game and includes editors such as Terrain Builder (map), Object Builder (objects), Central Economy (loot economy), Workbench (a minimal IDE for the Enfusion Engine), and more. Mods and game files are packed into PBO archives rather than kept as plain files.
 
-Игра использует специфичный язык Enforce Script(C++ подобный) для определения внутриигровой логики. Все исходные файлы просматриваемые, в общем доступе.
+The game uses a dedicated language, Enforce Script (C++-like), to define in-game logic. All source files are publicly viewable.
 
-Документация: `@.claude/references/.INDEX.md`
+Documentation: `@.claude/references/INDEX.md`
 
-### Критические ограничения
-1. Никогда не пытайся собрать PBO или запустить клиент/сервер. Все изменения тестируются вручную разработчиком.
+### Critical constraints
+1. Never attempt to build a PBO or launch the client/server. All changes are tested manually by the developer.

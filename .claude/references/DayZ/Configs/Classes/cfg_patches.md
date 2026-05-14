@@ -1,33 +1,33 @@
-Обязательный класс в каждом `config.cpp`. Регистрирует PBO в системе аддонов движка и определяет зависимости загрузки.
+A mandatory class in every `config.cpp`. Registers the PBO in the engine's addon system and defines load dependencies.
 
-### Структура
+### Structure
 
 ```cpp
 class CfgPatches
 {
-    class MyAddonName           // уникальное имя аддона
+    class MyAddonName           // unique addon name
     {
-        units[] = {};           // классы сущностей (CfgVehicles), объявленных в этом PBO
-        weapons[] = {};         // классы оружия (CfgWeapons), объявленных в этом PBO
-        requiredVersion = 0.1;  // минимальная версия движка
-        requiredAddons[] =      // зависимости — имена других CfgPatches
+        units[] = {};           // entity classes (CfgVehicles) declared in this PBO
+        weapons[] = {};         // weapon classes (CfgWeapons) declared in this PBO
+        requiredVersion = 0.1;  // minimum engine version
+        requiredAddons[] =      // dependencies — names of other CfgPatches
         {
-            "DZ_Data"           // этот аддон загрузится ДО текущего
+            "DZ_Data"           // this addon loads BEFORE the current one
         };
     };
 };
 ```
 
-### Ключевые поля
+### Key fields
 
-| Поле | Тип | Описание |
-|------|-----|----------|
-| `units[]` | string[] | Имена классов из CfgVehicles, которые объявляет этот PBO |
-| `weapons[]` | string[] | Имена классов из CfgWeapons, которые объявляет этот PBO |
-| `requiredVersion` | float | Минимальная версия движка |
-| `requiredAddons[]` | string[] | Имена CfgPatches-аддонов, от которых зависит этот PBO. Определяет порядок загрузки — все зависимости загружаются первыми |
+| Field | Type | Description |
+|-------|------|-------------|
+| `units[]` | string[] | Names of classes from CfgVehicles that this PBO declares |
+| `weapons[]` | string[] | Names of classes from CfgWeapons that this PBO declares |
+| `requiredVersion` | float | Minimum engine version |
+| `requiredAddons[]` | string[] | Names of CfgPatches addons that this PBO depends on. Defines load order — all dependencies are loaded first |
 
-### Пример
+### Example
 
 ```cpp
 class CfgPatches

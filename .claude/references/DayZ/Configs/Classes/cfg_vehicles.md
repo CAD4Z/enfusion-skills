@@ -1,108 +1,108 @@
-Основной реестр сущностей. Содержит **все** игровые объекты: предметы, одежду, строения, транспорт, животных, игроков, зоны. Константа в скриптах: `CFG_VEHICLESPATH = "CfgVehicles"`.
+The main entity registry. Contains **all** game objects: items, clothing, structures, vehicles, animals, players, zones. Script constant: `CFG_VEHICLESPATH = "CfgVehicles"`.
 
-### Иерархия базовых классов
+### Base class hierarchy
 
 ```
-All                              — корень всех сущностей
-├── AllVehicles                  — транспорт, живые существа
-│   └── Man                      — персонажи
+All                              — root of all entities
+├── AllVehicles                  — vehicles, living creatures
+│   └── Man                      — characters
 │       ├── Man_Base
-│       │   ├── DZ_LightAI       — зомби, AI
-│       │   └── SurvivorBase     — игрок
+│       │   ├── DZ_LightAI       — zombies, AI
+│       │   └── SurvivorBase     — player
 │       └── DZ_LightAI_old
-├── Static                       — статичные объекты
+├── Static                       — static objects
 │   ├── Building
 │   │   ├── Strategic
 │   │   │   └── FlagCarrierCore
 │   │   └── NonStrategic
 │   │       └── NonStrategic_Base
-│   ├── House                    — здания (разрушаемые)
-│   │   ├── HouseNoDestruct      — неразрушаемые
-│   │   │   └── EffectArea       — зоны эффектов
+│   ├── House                    — buildings (destructible)
+│   │   ├── HouseNoDestruct      — indestructible
+│   │   │   └── EffectArea       — effect zones
 │   │   ├── HouseHighCost
 │   │   └── Ruins
-│   └── Inventory_Base           — все подбираемые предметы
-│       ├── Clothing_Base        — одежда
-│       ├── Container_Base       — контейнеры
-│       ├── Edible_Base          — еда/питьё
+│   └── Inventory_Base           — all pickable items
+│       ├── Clothing_Base        — clothing
+│       ├── Container_Base       — containers
+│       ├── Edible_Base          — food/drink
 │       │   └── Bottle_Base
-│       ├── Powered_Base         — предметы с питанием
-│       │   └── Switchable_Base  — включаемые
-│       ├── ExplosivesBase       — взрывчатка
+│       ├── Powered_Base         — items with power
+│       │   └── Switchable_Base  — switchable
+│       ├── ExplosivesBase       — explosives
 │       │   └── Grenade_Base
-│       ├── Trap_Base            — ловушки
-│       ├── FishingRod_Base      — удочки
-│       ├── Book_Base            — книги
-│       ├── Box_Base             — коробки
-│       └── ItemOptics           — оптика
+│       ├── Trap_Base            — traps
+│       ├── FishingRod_Base      — fishing rods
+│       ├── Book_Base            — books
+│       ├── Box_Base             — boxes
+│       └── ItemOptics           — optics
 ```
 
-Транспорт определяется отдельно:
+Vehicles are defined separately:
 ```
-Car (движковый класс)
-└── CarScript                    — базовый скриптовый класс транспорта
+Car (engine class)
+└── CarScript                    — base script class for vehicles
     ├── OffroadHatchback
     ├── Hatchback_02
     └── ...
 ```
 
-### scope — видимость класса
+### scope — class visibility
 
-| Значение | Описание |
-|----------|----------|
-| `0` | Базовый/абстрактный класс — нельзя заспавнить, не виден в редакторах |
-| `1` | Внутренний — используется движком, но не спавнится напрямую |
-| `2` | Публичный — можно заспавнить, виден в редакторах |
+| Value | Description |
+|-------|-------------|
+| `0` | Base/abstract class — cannot be spawned, not visible in editors |
+| `1` | Internal — used by the engine but not spawned directly |
+| `2` | Public — can be spawned, visible in editors |
 
-### Ключевые свойства Inventory_Base
+### Key properties of Inventory_Base
 
 ```cpp
 class MyItem: Inventory_Base
 {
-    scope = 2;                          // 0/1/2 — видимость
-    displayName = "$STR_MyItem";        // локализованное имя
-    descriptionShort = "$STR_MyDesc";   // краткое описание
-    model = "\mymod\item.p3d";          // путь к модели
+    scope = 2;                          // 0/1/2 — visibility
+    displayName = "$STR_MyItem";        // localized name
+    descriptionShort = "$STR_MyDesc";   // short description
+    model = "\mymod\item.p3d";          // path to the model
 
-    // Инвентарь
-    itemSize[] = {2, 3};                // размер в слотах (ширина, высота)
-    weight = 1000;                      // вес в граммах
-    inventorySlot[] = { "Shoulder" };   // в какие слоты помещается
-    attachments[] = {};                 // слоты аттачментов на предмете
-    storageCategory = 1;                // категория хранения
-    itemInfo[] = {};                    // теги предмета
+    // Inventory
+    itemSize[] = {2, 3};                // size in slots (width, height)
+    weight = 1000;                      // weight in grams
+    inventorySlot[] = { "Shoulder" };   // which slots it fits into
+    attachments[] = {};                 // attachment slots on the item
+    storageCategory = 1;                // storage category
+    itemInfo[] = {};                    // item tags
 
-    // Визуал
-    hiddenSelections[] = { "camo" };                    // именованные области для замены текстур
-    hiddenSelectionsTextures[] = { "path\tex_co.paa" }; // текстуры для этих областей
+    // Visuals
+    hiddenSelections[] = { "camo" };                    // named areas for texture replacement
+    hiddenSelectionsTextures[] = { "path\tex_co.paa" }; // textures for those areas
 
-    // Физика
-    simulation = "inventoryItem";       // тип симуляции
-    physLayer = "item_small";           // физический слой
-    absorbency = 0;                     // впитываемость влаги
-    heatIsolation = 0;                  // теплоизоляция
-    fragility = 0.1;                    // хрупкость
-    soundImpactType = "default";        // звук удара
+    // Physics
+    simulation = "inventoryItem";       // simulation type
+    physLayer = "item_small";           // physical layer
+    absorbency = 0;                     // moisture absorbency
+    heatIsolation = 0;                  // heat insulation
+    fragility = 0.1;                    // fragility
+    soundImpactType = "default";        // impact sound
 
-    // Переменные состояния
-    varWetInit = 0;                     // начальная влажность
-    varTemperatureInit = 0;             // начальная температура
-    spawnDamageRange[] = {0, 0.6};      // диапазон урона при спавне
+    // State variables
+    varWetInit = 0;                     // initial wetness
+    varTemperatureInit = 0;             // initial temperature
+    spawnDamageRange[] = {0, 0.6};      // damage range on spawn
 
-    // Ремонт
-    repairableWithKits[] = {0};         // типы ремкомплектов (0=нет)
-    repairCosts[] = {0};                // стоимость ремонта
+    // Repair
+    repairableWithKits[] = {0};         // repair kit types (0=none)
+    repairCosts[] = {0};                // repair cost
 
-    // Система урона
+    // Damage system
     class DamageSystem
     {
         class GlobalHealth
         {
             class Health
             {
-                hitpoints = 100;        // макс. HP
-                healthLevels[] =        // визуальные уровни состояния
-                {                       // {порог, {материалы}}
+                hitpoints = 100;        // max HP
+                healthLevels[] =        // visual condition levels
+                {                       // {threshold, {materials}}
                     {1.0, {}},          // Pristine
                     {0.7, {}},          // Worn
                     {0.5, {}},          // Damaged
@@ -113,20 +113,20 @@ class MyItem: Inventory_Base
         };
     };
 
-    // Защита (для одежды)
+    // Protection (for clothing)
     class Protection
     {
         biological = 0;
         chemical = 0;
     };
 
-    // Ближний бой
+    // Melee
     isMeleeWeapon = 1;
     class MeleeModes
     {
         class Default
         {
-            ammo = "MeleeFist";         // класс из CfgAmmo
+            ammo = "MeleeFist";         // class from CfgAmmo
             range = 1;
         };
         class Heavy
@@ -138,9 +138,9 @@ class MyItem: Inventory_Base
 };
 ```
 
-### Clothing_Base — одежда
+### Clothing_Base — clothing
 
-Наследуется от `Inventory_Base`, добавляет:
+Inherits from `Inventory_Base`, adds:
 
 ```cpp
 class MyShirt: Clothing_Base
@@ -154,11 +154,11 @@ class MyShirt: Clothing_Base
     class DamageSystem
     {
         class GlobalHealth { /* ... */ };
-        class GlobalArmor               // броня — отсутствует у обычных предметов
+        class GlobalArmor               // armor — absent on ordinary items
         {
             class Projectile
             {
-                class Health { damage = 1; };   // множитель (1 = нет защиты)
+                class Health { damage = 1; };   // multiplier (1 = no protection)
                 class Blood  { damage = 1; };
                 class Shock  { damage = 1; };
             };
@@ -174,7 +174,7 @@ class MyShirt: Clothing_Base
 };
 ```
 
-### Пример — полный предмет (AlarmClock)
+### Example — complete item (AlarmClock)
 
 ```cpp
 class CfgVehicles
