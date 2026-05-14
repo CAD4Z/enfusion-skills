@@ -24,9 +24,9 @@ Claude Code plugin for DayZ modding — skills, agents, and reference docs for w
 
 ## Install
 
-```bash
-/plugin marketplace add https://github.com/TomatoLabz/Scope
-/plugin install dayz-scope
+```
+/plugin marketplace add TomatoLabz/Scope
+/plugin install dayz-scope@tomatolabz
 ```
 
 ## External dependencies
@@ -43,6 +43,7 @@ If the `P:` drive isn't set up, the agent will still work using local references
 ```
 .
 ├── .claude-plugin/
+│   ├── marketplace.json
 │   └── plugin.json
 ├── agents/
 │   ├── dayz-meticulous-reviewer.md

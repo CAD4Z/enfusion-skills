@@ -1,0 +1,14 @@
+{
+  "name": "tomatolabz",
+  "owner": {
+    "name": "hurfy",
+    "url": "https://github.com/hurfy"
+  },
+  "plugins": [
+    {
+      "name": "dayz-scope",
+      "source": "./",
+      "description": "DayZ modding skills, agents, and reference docs."
+    }
+  ]
+}
