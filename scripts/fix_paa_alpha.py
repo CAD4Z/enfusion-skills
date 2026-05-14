@@ -12,8 +12,8 @@ def read() -> str:
 
 
 def main() -> None:
-    flag : str = "0400000001000000"
-    file : str = read()
+    flag: str = "0400000001000000"
+    file: str = read()
 
     file.seek(2, 0)
 
