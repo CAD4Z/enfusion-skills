@@ -69,7 +69,7 @@ Only those that the mod actually modifies are defined.
 
 The `value` field is the name of the entry-point function. If empty, the default is used. The `files[]` field contains paths to script directories/files that are compiled together with the module's original scripts.
 
-> Further information: `references/DayZ/Scripts/api/INDEX.md`
+> Further information: `../../Scripts/api/INDEX.md`
 
 ### Example — vanilla DLC (Sakhal/Frostline)
 

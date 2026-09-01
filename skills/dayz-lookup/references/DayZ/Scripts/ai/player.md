@@ -289,7 +289,7 @@ The player generates noise in several situations:
 | Voice chat | Whisper/Talk/Shout | `weatherReduction` (every 1s) |
 | Sound events | AnimEvent.NoiseParams | `weatherReduction` |
 
-`NoiseAIEvaluate.GetNoiseMultiplier(player)` — accounts for speed, footwear, surface (see more in `references/DayZ/Scripts/ai/infrastructure.md`).
+`NoiseAIEvaluate.GetNoiseMultiplier(player)` — accounts for speed, footwear, surface (see more in `infrastructure.md`).
 
 ---
 

@@ -35,7 +35,7 @@ Inherits `GenericComponent`. Parent of all script components.
 2. **`OnComponentInsert(owner, other)`** — component added to entity. Last event in Workbench edit mode
 3. **`EOnInit(owner, extra)`** — after all components are inserted (requires `EV_INIT` mask)
 4. **`EOnActivate(owner)`** — if entity is `TFL_ACTIVE` and component is active (active by default)
-5. **`EOn*` events** — by event mask (see `references/DayZ/Scripts/api/1_Core/entity.md` — `EntityEvent`)
+5. **`EOn*` events** — by event mask (see `../1_Core/entity.md` — `EntityEvent`)
 6. **`EOnDeactivate(owner)`** — on `Deactivate()` or removal
 7. **`OnComponentRemove(owner, other)`** — component removed from entity
 8. **`OnDelete(owner)`** — entity is being destroyed
@@ -50,7 +50,7 @@ Inherits `GenericComponent`. Parent of all script components.
 | `OnComponentRemove(IEntity owner, ScriptComponent other)` | Another component removed from the entity |
 | `OnDelete(IEntity owner)` | Entity/component is being destroyed |
 
-The remaining `EOn*` events (Frame, Touch, Simulate, Contact, etc.) are analogous to `IEntity` — see `references/DayZ/Scripts/api/1_Core/entity.md`.
+The remaining `EOn*` events (Frame, Touch, Simulate, Contact, etc.) are analogous to `IEntity` — see `../1_Core/entity.md`.
 
 ### GenericComponentClass
 
