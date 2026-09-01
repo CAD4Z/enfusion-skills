@@ -1,6 +1,6 @@
 # Memory and references
 
-Full breakdown of memory and reference handling in Enforce Script. `SKILL.md` contains a summary of the key rules; this file has the detailed semantics, rationale, and edge cases.
+Full breakdown of memory and reference handling in Enforce Script — semantics, rationale, and edge cases.
 
 ---
 
@@ -108,13 +108,10 @@ class Owner
 {
     // good — ref on a field
     ref MyData m_Data;
-    ref array<ref MyData> m_Items;
 
-    // good — template parameter
-    void Foo(ref MyData data)   // BAD! function parameter
-    {
-        // ...
-    }
+    // good — ref inside a template parameter
+    ref array<ref MyData> m_Items;
+    ref map<int, ref MyData> m_ByIndex;
 }
 
 // bad — ref in parameter
@@ -301,7 +298,7 @@ ref MyData m_Data = new MyData();
 m_Data = null;   // ARC will delete once the last reference is gone
 ```
 
-**Special case: entities.** Never use `delete` on entity objects — it is a **guaranteed crash**. For entities, use `GetGame().ObjectDelete(entity)`:
+**Special case: entities.** Never use `delete` on entity objects — it is a **guaranteed crash**. For entities, use `g_Game.ObjectDelete(entity)`:
 
 ```c
 EntityAI item = ...;
@@ -310,7 +307,7 @@ EntityAI item = ...;
 delete item;
 
 // good
-GetGame().ObjectDelete(item);
+g_Game.ObjectDelete(item);
 ```
 
 See also `engine-pitfalls.md` item 6.
@@ -390,7 +387,7 @@ Only via the game API:
 void RemoveItem(EntityAI item)
 {
     if (item) {
-        GetGame().ObjectDelete(item);
+        g_Game.ObjectDelete(item);
     }
 }
 ```

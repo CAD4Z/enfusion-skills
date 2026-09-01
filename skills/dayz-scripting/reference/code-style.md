@@ -1,6 +1,6 @@
 # Code style
 
-Full code style for all `.c` files in the project. `SKILL.md` contains a summary of the key rules; this file has the detailed formulations, examples, and edge cases.
+Full code style for `.c` files. `SKILL.md` carries the compressed contract; this file settles what it leaves open.
 
 ---
 
@@ -257,7 +257,23 @@ Don't leave comments like "Returns the root widget" or "Clears the list" — the
 ## 10. Other
 
 - `#ifdef DIAG_DEVELOPER` blocks follow the same rules — braces, indentation, alignment.
-- Casting — via `Class.CastTo(var, val)` (primary) or `Foo.Cast(bar)`. C-style `(Foo)bar` is forbidden. See `language-rules.md`.
 - `ref` / `autoptr` go directly before the type: `ref array<ref Anim>`.
-- `override` is mandatory when overriding.
-- Don't use the ternary operator (see `SKILL.md` — critical prohibitions).
+
+## 11. Localization
+
+Any string a player can read goes through a localization key, not a literal. Keys are `#STR_` plus a module prefix, defined in the mod's `.csv` tables and resolved by the engine at display time.
+
+```c
+// bad — literal reaches the screen
+m_Label.SetText("Compass calibrated");
+
+// good — key
+m_Label.SetText("#STR_UIB_COMPASS_CALIBRATED");
+```
+
+```
+-- in a layout, the same rule applies to `text`
+text "#STR_UIB_COMPASS_TITLE"
+```
+
+This is the one exception to "string literals are English" in section 8: that rule governs internal strings — log lines, class names, config values, debug output — which stay literal English and never take a key. The split is by audience, not by language: if a player sees it, it is a key.

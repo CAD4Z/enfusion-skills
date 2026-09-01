@@ -528,7 +528,7 @@ g_Game.GetMission().RemoveActiveInputExcludes({"menu"});
 
 The optional `bForceSupress` on `Remove` forces input release through the suppression path. Vanilla `MissionGameplay` uses it when batch-clearing excludes during menu transitions (e.g. `RemoveActiveInputExcludes({"menu"}, bForceSupress)`).
 
-**Failing to pair causes input freeze** — the player won't be able to use keys even after the menu closes. One of the most common UI mistakes.
+Consequences of leaving these unpaired — `ui-pitfalls.md` sections 1, 9, and 10.
 
 ### Cursor
 
@@ -536,8 +536,6 @@ The optional `bForceSupress` on `Remove` forces input release through the suppre
 g_Game.GetUIManager().ShowCursor(true);   // show (on opening)
 g_Game.GetUIManager().ShowCursor(false);  // hide (on closing)
 ```
-
-Pairing is mandatory — skipping `false` on close leaves the cursor on screen.
 
 ### Game pause
 
@@ -555,8 +553,6 @@ if (mission) {
     mission.Continue();
 }
 ```
-
-Pairing is mandatory — skipping `Continue()` leaves the game paused after the menu closes.
 
 ### Reacting to ESC / Back
 
@@ -721,8 +717,6 @@ Three categories exist (`P:/scripts/3_game/tools/tools.c`):
 | `CALL_CATEGORY_SYSTEM` | `0` | Runs always | System-level work that must run on both client and server, regardless of game state. |
 | `CALL_CATEGORY_GUI` | `1` | Runs always (on client) | UI logic — runs continuously on the client even if a menu is open. The standard choice for HUD/menu callbacks. |
 | `CALL_CATEGORY_GAMEPLAY` | `2` | Runs unless ingame menu is opened | Gameplay-time logic that should pause when a menu is open. |
-
-For UI callbacks, prefer `CALL_CATEGORY_GUI` — it runs whenever the menu/HUD does, and is the convention used throughout vanilla UI code. `CALL_CATEGORY_SYSTEM` runs in both client and server contexts and is intended for non-UI system work; it is not appropriate for callbacks that touch widgets. `CALL_CATEGORY_GAMEPLAY` is paused when an ingame menu is up — useful for game-world timers, but inappropriate for UI elements that need to keep updating while a menu is visible.
 
 ### Coexistence with vanilla HUD
 

@@ -2,7 +2,7 @@
 
 Catalog of known DayZ UI mistakes. Every entry is a reproducible problem, not theoretical. Format: symptom → cause → safe pattern → bad/good examples.
 
-`SKILL.md` contains a summary of the most dangerous ones. This is the full catalog with details.
+`SKILL.md` carries the invariants; this is the full catalog behind them.
 
 ---
 
@@ -97,32 +97,22 @@ class GoodHud
 
 ## 3. Wrong CALL_CATEGORY for UI timers
 
-**Symptom:** UI timer fires at the wrong time — either keeps ticking when a menu is open and shouldn't, or pauses when the UI is supposed to keep updating. In some cases — accessing widgets that have already been Unlinked.
+**Symptom:** a UI timer fires at the wrong time — ticking on while a menu is open, or stalling while the UI still needs updating. Sometimes it reaches widgets that were already Unlinked.
 
-**Cause:** `CallQueue` has three categories, each with different runtime semantics (per `P:/scripts/3_game/tools/tools.c`):
+**Cause:** `CallQueue` has three categories with different runtime semantics. Only `CALL_CATEGORY_GUI` runs whenever the client UI does. Full table — `widget-scripting.md` section 5.
 
-| Constant | Engine comment |
-|----------|----------------|
-| `CALL_CATEGORY_SYSTEM` | Runs always |
-| `CALL_CATEGORY_GUI` | Runs always (on client) |
-| `CALL_CATEGORY_GAMEPLAY` | Runs unless ingame menu is opened |
-
-For UI work, `CALL_CATEGORY_GUI` is the correct choice — it runs on the client whenever the UI does. `CALL_CATEGORY_SYSTEM` is intended for system-level work that runs in both client and server contexts (logout timers, etc.). `CALL_CATEGORY_GAMEPLAY` pauses when an ingame menu is open, which makes UI callbacks miss updates and lifetime correlations against widgets become unpredictable.
-
-**Safe pattern:** for any callback that touches widgets, use `CALL_CATEGORY_GUI`.
+**Safe pattern:** any callback that touches a widget goes on `CALL_CATEGORY_GUI`.
 
 ```c
-// bad — UI timer on SYSTEM (intended for non-UI server-aware work)
+// bad — SYSTEM is for non-UI work that also runs server-side
 g_Game.GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateLabel, 100, true);
 
-// bad — UI timer on GAMEPLAY (pauses when menu opens, ticks become irregular)
+// bad — GAMEPLAY stalls while a menu is open, so ticks go irregular
 g_Game.GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(UpdateLabel, 100, true);
 
-// good — UI timer on GUI
+// good
 g_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(UpdateLabel, 100, true);
 ```
-
-`CALL_CATEGORY_SYSTEM` is the right choice for non-UI callbacks (e.g. vanilla uses it for the logout countdown). `CALL_CATEGORY_GAMEPLAY` is appropriate for game-world timers that should freeze when a menu is up.
 
 ---
 
@@ -448,3 +438,45 @@ class MyPanel: ScriptedWidgetEventHandler
 ```
 
 Details on auto-bind — `widget-scripting.md` section 2.
+
+---
+
+## 13. Repeating CallLater without a matching Remove
+
+**Symptom:** after a menu or HUD element is closed, the log fills with null-access errors, or a counter keeps advancing for something no longer on screen. Opening and closing repeatedly multiplies the effect — two opens, two callbacks running.
+
+**Cause:** `CallLater(fn, ms, true)` registers a **repeating** callback on the call queue. The queue holds it independently of the widget that started it, so destroying the owner does not stop it. On the next tick it runs against a destroyed object.
+
+**Safe pattern:** every repeating `CallLater` has a `Remove` on the teardown path, at the same level as the call that started it.
+
+```c
+// bad — registered, never removed
+class BadHud
+{
+    void BadHud()
+    {
+        g_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(Tick, 100, true);
+    }
+
+    void ~BadHud()
+    {
+        // the queue still holds Tick
+    }
+}
+
+// good — paired
+class GoodHud
+{
+    void GoodHud()
+    {
+        g_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(Tick, 100, true);
+    }
+
+    void ~GoodHud()
+    {
+        g_Game.GetCallQueue(CALL_CATEGORY_GUI).Remove(Tick);
+    }
+}
+```
+
+`Remove` takes the same function reference and the same category the call was registered under. A one-shot `CallLater(fn, ms, false)` needs no removal once it has fired, but still needs one where the owner can die before the delay elapses.

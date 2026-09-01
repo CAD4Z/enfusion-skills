@@ -1,6 +1,6 @@
 # Language conventions
 
-Applied rules for using language constructs in Enforce Script. `SKILL.md` contains a summary of the key rules; this file has the detailed usage patterns and rationale.
+Applied rules for using language constructs in Enforce Script — the patterns and the reasoning behind them.
 
 This file is **about applying the language correctly**, not about working around bugs. The catalog of known issues is in `engine-pitfalls.md`. Memory and reference semantics are in `memory-refs.md`. The modded mechanism is in `modded-classes.md`.
 
@@ -144,7 +144,7 @@ Combines type cast and result check in one expression:
 
 ```c
 PlayerBase player;
-if (Class.CastTo(player, GetGame().GetPlayer())) {
+if (Class.CastTo(player, g_Game.GetPlayer())) {
     player.DoStuff();
 }
 ```
@@ -168,7 +168,7 @@ Also useful in expressions where `Class.CastTo` is awkward syntactically — for
 ```c
 PlayerBase GetCurrentPlayer()
 {
-    return PlayerBase.Cast(GetGame().GetPlayer());
+    return PlayerBase.Cast(g_Game.GetPlayer());
 }
 ```
 

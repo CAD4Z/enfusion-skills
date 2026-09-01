@@ -2,7 +2,7 @@
 
 Catalog of known issues in the Enfusion engine and Enforce Script language. Every entry is a reproducible problem, not a theoretical one. Format: symptom → cause → safe pattern → bad/good examples.
 
-`SKILL.md` contains a summary of the most dangerous ones. This is the full catalog with details.
+`SKILL.md` carries the invariants; this is the full catalog behind them.
 
 ---
 
@@ -182,7 +182,7 @@ string Map(string input)
 
 **Cause:** entities are managed by the engine; deleting them from script breaks internal invariants.
 
-**Safe pattern:** use `GetGame().ObjectDelete(entity)` for entities. For non-entity Managed objects — null the reference and let the GC do its job.
+**Safe pattern:** use `g_Game.ObjectDelete(entity)` for entities. For non-entity Managed objects — null the reference and let the GC do its job.
 
 ```c
 // bad — crash
@@ -191,7 +191,7 @@ delete item;
 
 // good — proper API for deleting an entity
 EntityAI item = ...;
-GetGame().ObjectDelete(item);
+g_Game.ObjectDelete(item);
 
 // good — for an ordinary Managed object
 ref MyData data = new MyData();
@@ -243,10 +243,10 @@ In code dealing with boundary integers, check the range explicitly via `>=` from
 // bad — in init code
 void Init()
 {
-    if (GetGame().IsClient()) {
+    if (g_Game.IsClient()) {
         InitClientStuff();   // won't run on the client
     }
-    if (GetGame().IsServer()) {
+    if (g_Game.IsServer()) {
         InitServerStuff();   // will run on the client too
     }
 }
@@ -263,7 +263,7 @@ void Init()
 }
 ```
 
-See `SKILL.md` section "Client-server" for the general rule.
+See `SKILL.md` for the general rule.
 
 ---
 
@@ -351,3 +351,76 @@ In your own code:
 
 - Don't wrap trivial operations in proto native "for performance" — the boundary overhead eats the benefit.
 - Don't try to rewrite proto native methods doing heavy work as script "for performance" — it will be slower.
+
+---
+
+## 13. Trusting client-supplied data on the server
+
+**Symptom:** a modded server is exploited — items spawned, positions teleported, cooldowns skipped — by a player running a patched client.
+
+**Cause:** the server acted on values that arrived from a client without checking them. An RPC payload, an action's parameters, and anything read out of a `ParamsReadContext` are all attacker-controlled: the client that sent them may be modified.
+
+**Safe pattern:** the server re-derives or re-validates every value it acts on. Read the payload, then check ownership, range, distance, and state against what the server already knows before applying anything.
+
+```c
+// bad — the payload decides
+void OnRPC(PlayerIdentity sender, int rpcType, ParamsReadContext ctx)
+{
+    Param2<EntityAI, int> data;
+    if (ctx.Read(data)) {
+        data.param1.SetQuantity(data.param2);
+    }
+}
+
+// good — the server checks before it acts
+void OnRPC(PlayerIdentity sender, int rpcType, ParamsReadContext ctx)
+{
+    Param2<EntityAI, int> data;
+    if (!ctx.Read(data)) {
+        return;
+    }
+
+    PlayerBase player = GetPlayerByIdentity(sender);
+    if (!player || !data.param1) {
+        return;
+    }
+    if (!player.IsInRange(data.param1, MAX_INTERACT_DISTANCE)) {
+        return;
+    }
+    if (data.param2 < 0 || data.param2 > data.param1.GetQuantityMax()) {
+        return;
+    }
+
+    data.param1.SetQuantity(data.param2);
+}
+```
+
+The check belongs on the server even when the client already performs it — the client's copy is a UX convenience, not a guard.
+
+---
+
+## 14. Paths that only resolve outside the PBO
+
+**Symptom:** everything works in Workbench and from an unpacked mod folder, then the packed build ships with missing textures, unstyled widgets, or a layout that fails to load.
+
+**Cause:** the path was written against the `P:` drive or the project root rather than against the mod's PBO. Once packed, only PBO-relative paths resolve, and a `.edds` referenced without its GUID resolves by path alone — which changes when the file is packed.
+
+**Safe pattern:** every resource path is PBO-relative and starts with the mod's `dir` from `CfgMods`. Keep the GUID prefix on `.edds` references — it binds to content, not to location, and survives packing.
+
+```c
+// bad — absolute project path, dead in the packed build
+m_Root = g_Game.GetWorkspace().CreateWidgets("P:/MyMod/gui/layouts/my_menu.layout");
+
+// good — PBO-relative
+m_Root = g_Game.GetWorkspace().CreateWidgets("MyMod/gui/layouts/my_menu.layout");
+```
+
+```
+-- bad — no GUID, resolves by path only
+imageTexture "gui/textures/icon.edds"
+
+-- good — GUID survives packing
+imageTexture "{0123456789ABCDEF}MyMod/gui/textures/icon.edds"
+```
+
+The same applies to `.styles` and `.imageset` entries in `CfgMods` — for the registration block itself, call the Skill tool with "dayz-ui".

@@ -1,6 +1,6 @@
 # Modded classes
 
-Full breakdown of the `modded` system in Enforce Script — the primary mechanism for extending and overriding code without modifying the original scripts. `SKILL.md` contains a summary of the key rules; this file has the detailed semantics, inheritance chains, edge cases, and the choice between approaches.
+Full breakdown of the `modded` system — the mechanism for extending and overriding code without touching the original scripts, its inheritance chains, edge cases, and the choice between approaches.
 
 ---
 

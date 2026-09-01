@@ -1,35 +1,32 @@
 ---
 name: dayz-ui
-description: DayZ UI development — `.layout` / `.styles` / `.imageset` files, widget scripting, menus, HUD. Critical rules: Unlink, AddActiveInputExcludes pairing, CALL_CATEGORY_GUI, FindAnyWidget+Cast, scriptclass typos, CfgMods registration. Applies to both writing and reviewing UI code.
-when_to_use: Activate when writing or modifying UI code — `.layout`, `.styles`, `.imageset` files, or `.c` files with widget logic (UIScriptedMenu, ScriptedWidgetEventHandler, HUD). Also on requests like "make a UI", "create a menu", "add a HUD", "add a window", "draw a UI", "make a screen", "wire a script to a widget", "handle a button click".
-model: opus
+description: DayZ UI rules — `.layout` / `.styles` / `.imageset` formats, widget scripting, menus, HUD, and the engine invariants that make UI fail silently.
+when_to_use: Writing, modifying, or reviewing UI — a layout, style, or imageset file, or `.c` code that drives widgets. Also on any request to build a menu, a HUD, a window, or a screen, or to wire a script to a widget.
 paths: ["**/*.layout", "**/*.styles", "**/*.imageset"]
 ---
 
 # DayZ UI
 
-This skill covers DayZ UI formats (`.layout`, `.styles`, `.imageset`, `.edds`), the widget scripting layer, events, menus, and HUD. Applies both when writing and when reviewing UI code.
+## Invariants
 
-## Critical UI rules
+- **Every acquisition is paired.** A menu takes things from the game and gives them back in the matching lifecycle hook. Pair at one level — `OnShow`/`OnHide` or constructor/destructor — and keep both halves there. An unreleased acquisition survives the menu.
 
-Must-fix at review. Rationale and bad/good examples — `reference/ui-pitfalls.md`.
+  | Acquire | Release | Left unreleased |
+  |---------|---------|-----------------|
+  | `GetMission().AddActiveInputExcludes({"menu"})` | `RemoveActiveInputExcludes({"menu"})` | input dead until the game restarts |
+  | `GetUIManager().ShowCursor(true)` | `ShowCursor(false)` | cursor stuck over the world |
+  | `GetMission().Pause()` | `Continue()` | world frozen |
+  | `CallLater(fn, ms, true)` | `Remove(fn)` | callback fires into a destroyed object |
 
-- `AddActiveInputExcludes` / `RemoveActiveInputExcludes` must be paired (OnShow/OnHide or constructor/destructor).
-- Call `Widget.Unlink()` before nulling `m_Root` — never just `m_Root = null`.
-- UI timers use `CALL_CATEGORY_GUI`. `SYSTEM` is server-aware non-UI; `GAMEPLAY` pauses with menus.
-- Cast after `FindAnyWidget()` for type-specific methods. No cast available for `Frame/Content/Panel/SmartPanel/Embeded/ThreeStateCheckbox/Window` — no script class exists.
-- `ShowCursor(true)` / `ShowCursor(false)` must be paired.
-- `Pause()` / `Continue()` (on `Mission`) must be paired.
-- Register `.styles` and `.imageset` in `CfgMods` under `class defs { class widgetStyles / class imageSets }`. Layouts don't need registration.
-- `scriptclass` must reference an existing class — typos fail silently at runtime.
+- **`Unlink()` frees a widget.** Nulling `m_Root` breaks only the script's link; the tree stays in the workspace, rendering and costing frames on every open. Call `m_Root.Unlink()`, then null. The root a `UIScriptedMenu` returns from `Init()` is the engine's to free — everything created by hand is yours.
+- **Cast what `FindAnyWidget` returns, and check it.** It hands back a base `Widget` or null, so type-specific methods need `TextWidget.Cast(...)` or `Class.CastTo(...)` and a null check. `Frame`, `Content`, `Panel`, `SmartPanel`, `Embeded`, `ThreeStateCheckbox`, and `Window` have no script class at all — use them as the base `Widget`.
+- **Widget callbacks live on `CALL_CATEGORY_GUI`.** It runs whenever the client UI does. `SYSTEM` is for non-UI work that also runs server-side; `GAMEPLAY` stalls while a menu is open.
+- **Auto-bind matches names exactly.** In a `scriptclass`, a field named `TitleLabel` binds the widget named `TitleLabel`; `m_TitleLabel` binds nothing and stays null. Take the bare name, or bind by hand with `FindAnyWidget` + `Cast`.
+- **`scriptclass` names a class that exists.** A typo compiles, renders, and never runs — no log line either way.
+- **Anchors take the `_ref` form** — `center_ref`, `right_ref`, `bottom_ref`. Bare `center` collapses the widget onto the parent's top-left corner. Left and top are the defaults, written by omitting the attribute.
+- **`.styles` and `.imageset` load once registered** in `config.cpp` under `CfgMods` → `class defs` → `class widgetStyles` / `class imageSets`. Unregistered, widgets render Default and images come back blank. Layouts load by path through `CreateWidgets` and need no entry.
 
-## Naming and file locations
-
-Full reference — `reference/layout-fundamentals.md` and `reference/widget-scripting.md`.
-
-**Widget names in layouts** are `PascalCase`. If a layout has a `scriptclass`, widget names can match field names in the script class for automatic binding via reflection (auto-bind). Mechanism details — `reference/widget-scripting.md`.
-
-**File locations:**
+## File locations
 
 | Type | Path |
 |------|------|
@@ -37,58 +34,18 @@ Full reference — `reference/layout-fundamentals.md` and `reference/widget-scri
 | Styles | `gui/looknfeel/` |
 | Imageset | `gui/imagesets/` |
 | Fonts | `gui/fonts/` |
-| Textures (.edds) | `gui/textures/` |
+| Textures (`.edds`) | `gui/textures/` |
 
-## Scripting layer — key operations
+## Reference
 
-Full reference — `reference/widget-scripting.md`.
+| Read | When |
+|------|------|
+| `reference/widget-scripting.md` | any UI code — creating widgets, events and their return semantics, `UIScriptedMenu`, HUD, `ScriptParams` |
+| `reference/layout-fundamentals.md` | writing a `.layout` — syntax, the widget class hierarchy, property groups, positioning and exact-flags |
+| `reference/widget-catalog.md` | a specific widget's own properties and script methods |
+| `reference/style-system.md` | `.styles` — item slots, states, Color encoding, or a widget rendering Default |
+| `reference/imageset-format.md` | `.imageset` — atlas regions, tiling flags, `set:… image:…` references |
+| `reference/edds-format.md` | `.edds` — Workbench import, GUIDs, `imageTexture` |
+| `reference/ui-pitfalls.md` | an input freeze, a dead widget, a leak, or UI behaving in a way nothing above explains |
 
-- **Create a widget from a layout** — `g_Game.GetWorkspace().CreateWidgets("path/to/file.layout")`.
-- **Find a widget** — `root.FindAnyWidget("WidgetName")` plus a mandatory cast (see above).
-- **Attach an event handler** — `widget.SetHandler(handlerInstance)`. Alternative — `scriptclass` in the layout.
-- **Cleanup** — `m_Root.Unlink()` in the destructor or `OnHide`.
-- **Visibility and state** — `Show(bool)`, `Enable(bool)`.
-
-## Events
-
-Full reference — `reference/widget-scripting.md`.
-
-- **Return semantics** — `true` means "event handled, do not propagate". `false` lets the event bubble up to the parent.
-- **Returning `true` without actually handling the event** breaks parent containers' logic (drag&drop, focus navigation). Return `true` only when the event is actually handled.
-- **In `UIScriptedMenu`**, widget events arrive directly in the menu's methods — `SetHandler` is not needed. The menu does not extend `ScriptedWidgetEventHandler`; instead it declares its own copy of the same event method set, and the engine routes layout events into them.
-
-## Menus and HUD
-
-Full reference — `reference/widget-scripting.md`.
-
-- **`UIScriptedMenu`** — for interaction with pause / cursor / input blocking. Registered in `MissionBase.CreateScriptedMenu`, opened via `g_Game.GetUIManager().EnterScriptedMenu(MENU_ID, null)`.
-- **HUD** — persistent elements without input blocking. Created in the mission's `OnMissionStart`, updated in `OnUpdate` or via `g_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(...)`.
-
-## Styles and resources
-
-Full reference — `reference/style-system.md`, `reference/imageset-format.md`, `reference/edds-format.md`.
-
-- **`.styles`** define the visual appearance of widgets via Item-slots and states. Applied to a widget through the `style` property.
-- **`.imageset`** — texture atlases that define named regions inside a `.edds` file. Used in layouts (`image0 "set:name image:icon"`) and in styles.
-- **`.edds`** — the engine's primary texture format. Created from PNG/TGA via Workbench import. Receive a GUID on import: `{D2377E3C2ECB1102}path.edds`.
-
-## Reference files map
-
-| File | Contents |
-|------|----------|
-| `reference/layout-fundamentals.md` | `.layout` syntax, property-group inheritance, common Widget properties, positioning |
-| `reference/widget-catalog.md` | All widgets — type-specific properties, key notes |
-| `reference/style-system.md` | `.styles` format, Item-slot and state concepts, registration via CfgMods |
-| `reference/imageset-format.md` | `.imageset` format, ImageSetClass/TextureClass/DefClass, `.edds` references via GUID, registration via CfgMods |
-| `reference/edds-format.md` | `.edds` format, use in imagesets and directly in widgets |
-| `reference/widget-scripting.md` | UI scripting — base API, events, UIScriptedMenu, HUD elements |
-| `reference/ui-pitfalls.md` | Catalog of UI mistakes and their consequences |
-
-## When to read which file
-
-- Creating or editing a `.layout` file → `reference/layout-fundamentals.md`.
-- Looking up a specific widget and its properties → `reference/widget-catalog.md`.
-- Working with `.styles`, or "why does my widget look default" → `reference/style-system.md`.
-- Hooking up an imageset, looking up `image0` or `imageTexture` properties → `reference/imageset-format.md` and `reference/edds-format.md`.
-- Writing any UI code (creating menus, handling events, HUD) → `reference/widget-scripting.md`.
-- Suspected input freeze, dead widgets, unexplained UI behaviour → `reference/ui-pitfalls.md`.
+For the Enforce Script rules the `.c` side of the UI still has to satisfy, call the Skill tool with "dayz-scripting".
