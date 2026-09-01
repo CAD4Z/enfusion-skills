@@ -1,18 +1,16 @@
 {
-  "name": "dayz-scope",
-  "version": "0.1.1",
-  "description": "Claude Code skills and agents for DayZ modding development.",
+  "name": "enfusion-skills",
+  "version": "0.3.0",
+  "description": "Agent skills and reference docs for DayZ modding on the Enfusion engine.",
   "author": {
     "name": "hurfy",
     "url": "https://github.com/hurfy"
   },
-  "repository": "https://github.com/TomatoLabz/DayZScope",
+  "repository": "https://github.com/CAD4Z/enfusion-skills",
   "skills": [
     "./skills/dayz-scripting",
-    "./skills/dayz-ui"
-  ],
-  "agents": [
-    "./agents/dayz-meticulous-reviewer.md",
-    "./agents/dayz-reverse-engineer.md"
+    "./skills/dayz-ui",
+    "./skills/dayz-lookup",
+    "./skills/dayz-review"
   ]
 }

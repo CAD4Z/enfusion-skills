@@ -1,14 +1,15 @@
 {
-  "name": "tomatolabz",
+  "name": "cad4z",
+  "description": "Agent skills for DayZ modding on the Enfusion engine.",
   "owner": {
-    "name": "hurfy",
-    "url": "https://github.com/hurfy"
+    "name": "CAD4Z",
+    "url": "https://github.com/CAD4Z"
   },
   "plugins": [
     {
-      "name": "dayz-scope",
+      "name": "enfusion-skills",
       "source": "./",
-      "description": "DayZ modding skills, agents, and reference docs."
+      "description": "DayZ modding skills and reference docs."
     }
   ]
 }
