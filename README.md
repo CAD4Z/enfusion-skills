@@ -1,4 +1,29 @@
-# Enfusion Skills
+<div align="center">
+    <a href="https://github.com/CAD4Z/enfusion-skills"><img src="https://github.com/user-attachments/assets/f554aa83-bc3e-4c86-a489-24caff9b2c9c"></a>
+
+</div>
+
+<div align="center">
+    <img src="https://img.shields.io/github/issues/CAD4Z/enfusion-skills?style=for-the-badge" alt="open issues" />
+    <img src="https://img.shields.io/badge/version-0.2.0-blue?style=for-the-badge" alt="version" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/github/license/CAD4Z/enfusion-skills?style=for-the-badge" alt="license" /></a>
+</div>
+
+<br />
+
+<div align="center">
+  📎Enfusion skills for your AI-Аgents!
+</div>
+
+<div align="center">
+  <sub>
+    Built with love 
+    &bull; Brought to you by <a href="https://github.com/CAD4Z">@CAD4Z</a>
+    and other <a href="https://github.com/CAD4Z/enfusion-skills/graphs/contributors">contributors</a>
+  </sub>
+</div>
+
+## Introduction
 
 Agent skills and reference docs for DayZ modding — Enforce Script, layouts, configs, and engine internals.
 
