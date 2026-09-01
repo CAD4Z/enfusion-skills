@@ -1,0 +1,3 @@
+interface:
+  display_name: "DayZ UI"
+  short_description: "Layouts, styles, imagesets, and widget scripting rules"

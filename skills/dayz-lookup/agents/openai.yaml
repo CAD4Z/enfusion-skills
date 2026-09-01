@@ -1,0 +1,3 @@
+interface:
+  display_name: "DayZ Lookup"
+  short_description: "Verify a DayZ engine or Enforce Script API question against source"

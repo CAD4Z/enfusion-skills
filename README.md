@@ -1,42 +1,56 @@
-# DayZ Scope
+# Enfusion Skills
 
-Claude Code plugin for DayZ modding — skills, agents, and reference docs for working with Enforce Script, layouts, configs, and engine internals.
+Agent skills and reference docs for DayZ modding — Enforce Script, layouts, configs, and engine internals.
 
-## What's inside
+Runs in **Claude Code** as a plugin, and in every other agent — Codex, Cursor, Cline, Windsurf, Copilot, Zed and the rest — through the `npx skills` installer. Every skill is one `SKILL.md` plus an `agents/openai.yaml` beside it; every harness reads the same body and they differ only in metadata.
 
-### Skills
+## Skills
 
-| Skill | Triggers on | Purpose |
-|-------|-------------|---------|
-| `dayz-scripting` | `**/*.c` files | Enforce Script conventions, critical language rules, modded-class semantics, memory/ref lifecycle, engine pitfalls |
-| `dayz-ui` | `**/*.layout`, `**/*.styles`, `**/*.imageset` | UI formats, widget scripting, menus, HUD, critical UI rules (Unlink, input excludes, CALL_CATEGORY_GUI, etc.) |
+### Model-invoked
 
-### Agents
+Reachable by the model or by you. Rich trigger phrasing in the description, so auto-invocation fires.
 
-| Agent | Purpose |
-|-------|---------|
-| `dayz-meticulous-reviewer` | Reviews staged changes or the whole project for DayZ-specific issues. Reports prioritized findings — does not edit. |
-| `dayz-reverse-engineer` | Answers API/engine questions by searching local docs first, then extracted game scripts on the `P:` drive. |
+- **[dayz-scripting](./skills/dayz-scripting/SKILL.md)** — Enforce Script conventions and the five engine invariants the compiler will not catch. Fires on `.c` files.
+- **[dayz-ui](./skills/dayz-ui/SKILL.md)** — `.layout` / `.styles` / `.imageset` formats, widget scripting, menus, HUD, and the UI invariants that fail silently. Fires on UI files.
+- **[dayz-lookup](./skills/dayz-lookup/SKILL.md)** — answers an API or engine-behaviour question from source: project docs, then this plugin's reference set, then the extracted vanilla scripts on `P:`. Runs as a sub-agent and reports back with file paths, so the search never lands in your context.
 
-### References
+### User-invoked
 
-`references/` contains 80 markdown files covering the Enforce Script API (`1_Core` → `5_Mission`), AI systems, configs, and class catalogs. Used primarily by the `dayz-reverse-engineer` agent, but also readable directly.
+Run on request. Claude Code holds this with `disable-model-invocation: true`; Codex with `policy.allow_implicit_invocation: false` in `agents/openai.yaml`, the same shape its own `review-agent` skill uses.
+
+- **[dayz-review](./skills/dayz-review/SKILL.md)** — three-axis review of a change: **Standards** (does it follow the project's documented conventions?), **Runtime** (will it behave in game — pairing, lifecycle, client/server, packed paths?), and **Spec** (does it do what was asked?), run as three parallel sub-agents and reported side by side.
+
+## References
+
+`skills/dayz-lookup/references/` holds 80 markdown files covering the Enforce Script API (`1_Core` → `5_Mission`), AI systems, configs, and class catalogs. They live inside `dayz-lookup` because it is the only skill that reads them; everything else reaches that material by invoking the skill and getting a summary back.
 
 ## Install
 
+Two ways in. The **Claude Code plugin** installs the set as a managed bundle that updates when this repo ships. The **`npx skills` installer** copies the skills into your project as ordinary files you own, and covers every other agent.
+
+**Claude Code**
+
 ```
-/plugin marketplace add TomatoLabz/DayZScope
-/plugin install dayz-scope@tomatolabz
+/plugin marketplace add CAD4Z/enfusion-skills
+/plugin install enfusion-skills@cad4z
 ```
+
+**Codex, and every other agent**
+
+```
+npx skills@latest add CAD4Z/enfusion-skills
+```
+
+It detects the agents on your machine and asks which skills to take. Each skill is copied whole — `reference/`, `references/`, and `agents/openai.yaml` with it — into `.agents/skills/` and the agent's own path. `--skill dayz-scripting` takes one, `-a codex` targets a single agent, `-g` installs globally, and `npx skills update` pulls later changes. Nothing updates behind your back.
 
 ## External dependencies
 
-The `dayz-reverse-engineer` agent reads vanilla DayZ scripts as ground truth when local docs are insufficient. These must be extracted to the `P:` drive via DayZ Tools (the standard modding setup):
+`dayz-lookup` treats the vanilla DayZ scripts as ground truth when the docs run out. They come from the standard DayZ Tools extraction to the `P:` drive:
 
 - `P:/scripts/1_core`, `2_gamelib`, `3_game`, `4_world`, `5_mission` — engine and game scripts
 - `P:/gui/layouts`, `looknfeel`, `imagesets`, `fonts` — vanilla UI assets
 
-If the `P:` drive isn't set up, the agent will still work using local references only — answers may just be less verified.
+Without `P:`, the lookup still answers from the local references and flags the answer as unverified.
 
 ## Project structure
 
@@ -45,21 +59,13 @@ If the `P:` drive isn't set up, the agent will still work using local references
 ├── .claude-plugin/
 │   ├── marketplace.json
 │   └── plugin.json
-├── agents/
-│   ├── dayz-meticulous-reviewer.md
-│   └── dayz-reverse-engineer.md
 ├── skills/
-│   ├── dayz-scripting/
-│   │   ├── SKILL.md
-│   │   └── reference/
-│   └── dayz-ui/
-│       ├── SKILL.md
-│       └── reference/
-├── references/
-│   └── DayZ/
-│       ├── Configs/
-│       └── Scripts/{ai,api/{1_Core,2_GameLib,3_Game,4_World,5_Mission}}
+│   ├── dayz-scripting/     SKILL.md + agents/openai.yaml + reference/
+│   ├── dayz-ui/            SKILL.md + agents/openai.yaml + reference/
+│   ├── dayz-lookup/        SKILL.md + agents/openai.yaml + references/ (80 files)
+│   └── dayz-review/        SKILL.md + agents/openai.yaml
 ├── scripts/
 │   └── fix_paa_alpha.py
+├── AGENTS.md
 └── CLAUDE.md
 ```

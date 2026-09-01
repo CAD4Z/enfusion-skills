@@ -1,0 +1,5 @@
+interface:
+  display_name: "DayZ Review"
+  short_description: "Review a DayZ change on standards, runtime, and spec"
+policy:
+  allow_implicit_invocation: false
