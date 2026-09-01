@@ -5,14 +5,14 @@
 
 <div align="center">
     <img src="https://img.shields.io/github/issues/CAD4Z/enfusion-skills?style=for-the-badge" alt="open issues" />
-    <img src="https://img.shields.io/badge/version-0.2.0-blue?style=for-the-badge" alt="version" /></a>
-    <a href="LICENSE"><img src="https://img.shields.io/github/license/CAD4Z/enfusion-skills?style=for-the-badge" alt="license" /></a>
+    <img src="https://img.shields.io/badge/version-0.3.1-blue?style=for-the-badge" alt="version" />
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-PolyForm%20Strict%201.0.0-red?style=for-the-badge" alt="license" /></a>
 </div>
 
 <br />
 
 <div align="center">
-  📎Enfusion skills for your AI-Аgents!
+  📎Enfusion skills for your AI-Agents!
 </div>
 
 <div align="center">
