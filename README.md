@@ -51,7 +51,7 @@ Run on request. Claude Code holds this with `disable-model-invocation: true`; Co
 
 ## Install
 
-Two ways in. The **Claude Code plugin** installs the set as a managed bundle that updates when this repo ships. The **`npx skills` installer** copies the skills into your project as ordinary files you own, and covers every other agent.
+Two ways in. The **Claude Code plugin** installs the set as a managed bundle that updates when this repo ships. The **`npx skills` installer** copies the skills into your project as ordinary files on disk, and covers every other agent.
 
 **Claude Code**
 
@@ -92,5 +92,10 @@ Without `P:`, the lookup still answers from the local references and flags the a
 ├── scripts/
 │   └── fix_paa_alpha.py
 ├── AGENTS.md
-└── CLAUDE.md
+├── CLAUDE.md
+└── LICENSE
 ```
+
+## License
+
+PolyForm Strict 1.0.0 — see [LICENSE](./LICENSE). Source-available, not open source: you may read and use these skills for any noncommercial purpose, but not redistribute or modify them. DayZ and the Enfusion engine are the property of Bohemia Interactive.

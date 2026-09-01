@@ -1,12 +1,13 @@
 {
   "name": "enfusion-skills",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Agent skills and reference docs for DayZ modding on the Enfusion engine.",
   "author": {
     "name": "hurfy",
     "url": "https://github.com/hurfy"
   },
   "repository": "https://github.com/CAD4Z/enfusion-skills",
+  "license": "PolyForm-Strict-1.0.0",
   "skills": [
     "./skills/dayz-scripting",
     "./skills/dayz-ui",
