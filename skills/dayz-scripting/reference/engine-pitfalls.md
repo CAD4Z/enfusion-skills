@@ -111,6 +111,10 @@ class Holder
 }
 ```
 
+A getter that builds a fresh array of `ref` records is the sharp case: each pass builds a new array, and the temporary being iterated is held by nothing, so its records can be released while the loop is still reading them. The local is what owns the array for the length of the loop.
+
+The rule is about an array of `ref` records returned by value and read straight out of the `foreach` expression. An `out` parameter is the caller's own local, an `array<string>` holds nothing that can be released, and a field read directly is `IterateField` above — none of the three needs a local, and calling one of them a defect is a false finding.
+
 ---
 
 ## 4. Bitwise operators without parens
@@ -424,3 +428,17 @@ imageTexture "{0123456789ABCDEF}MyMod/gui/textures/icon.edds"
 ```
 
 The same applies to `.styles` and `.imageset` entries in `CfgMods` — for the registration block itself, call the Skill tool with "dayz-ui".
+
+---
+
+## 15. File I/O on an RPC handler
+
+**Symptom:** the server stalls in bursts on a populated map. Frame time tracks player count rather than anything the world is doing.
+
+**Cause:** `FileSerializer` is synchronous and runs on the game thread. A handler that reads a record, mutates it and writes it back is a disk round trip per command — usually several, across the actor's file, every affected peer's, and a shared file re-read to answer with. Nothing in the engine rate-limits an RPC, so a modified or simply looping client sets the rate.
+
+**Safe pattern:** three guards, all before the handler reaches the disk.
+
+- **Verify the sender.** `OnRPC` hands you a `PlayerIdentity`; whether that player is in the session's own online table is a separate question, and a handler that never asks acts on identities it has already torn down.
+- **Throttle per player**, dropping the stamp where the online entry is dropped, so a reconnecting player is not held by a stamp from their last session.
+- **Refuse a no-op before the write.** A setter that reports "changed" for a value that already read that way runs the whole write-and-notify fan-out for nothing.

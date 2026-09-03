@@ -87,6 +87,10 @@ class GoodOwner
 }
 ```
 
+**A weak field to a script `Managed` reads `null` the moment ARC destroys the object.** The runtime clears every weak reference when the last strong one goes, so one owner with several weak observers is a safe design, and an observer's `if (m_Thing)` is a real test rather than a guess about lifetime. Vanilla leans on it in the open: `Effect : Managed` (`3_game/effect.c`) is held alive by exactly one strong reference, the `map<int, ref Effect>` inside `EffectManager` (`effectmanager.c`), and consumers keep plain weak fields such as `EffectSound m_SoundTurnOn`.
+
+Entities are the exception. `EntityAI` and its descendants are engine-side objects rather than script `Managed`, and a weak script reference to a deleted entity is not cleared for you — see section 7 on `delete`.
+
 ---
 
 ## 3. Key rule: `ref` only on class fields

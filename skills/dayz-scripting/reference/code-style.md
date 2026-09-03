@@ -258,6 +258,7 @@ Don't leave comments like "Returns the root widget" or "Clears the list" — the
 
 - `#ifdef DIAG_DEVELOPER` blocks follow the same rules — braces, indentation, alignment.
 - `ref` / `autoptr` go directly before the type: `ref array<ref Anim>`.
+- A local collection is written `= {}`. `new array<T>()` is the form for a `ref` field, where the field is the owner — on a local it claims an ownership the local already has, and nothing diagnoses the difference.
 
 ## 11. Localization
 

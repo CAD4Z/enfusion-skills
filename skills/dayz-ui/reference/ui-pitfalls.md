@@ -480,3 +480,57 @@ class GoodHud
 ```
 
 `Remove` takes the same function reference and the same category the call was registered under. A one-shot `CallLater(fn, ms, false)` needs no removal once it has fired, but still needs one where the owner can die before the delay elapses.
+
+---
+
+## 14. A component object released right after it spawns its widget
+
+**Symptom:** the control works but is dead to the touch. A button fires its click and never lights up on hover or on press; whatever the panel does on a rebuild — enabling it, changing its icon — silently stops reaching it. Nothing is logged and nothing crashes.
+
+**Cause:** the widget and the object handling it have different owners. `CreateWidgets` puts the widget in the workspace tree, which holds it; `SetHandler(this)` is a **weak** registration. So where the only strong reference to the component is the builder's local, the object is released the moment the builder returns, and the widget stays on screen with its handler gone.
+
+**Safe pattern:** the builder gives the component a strong home before it returns — a field for a control built once, an owning array for controls rebuilt with a list.
+
+```c
+// bad — the only strong reference dies with the builder
+protected void BuildCross(Row row)
+{
+    CAD_UIButton cross = new CAD_UIButton();
+    cross.Init(row.GetRoot(), CAD_UIButtonVariant.BARE);
+}
+
+// good — an owning array, cleared where the rows are dropped
+protected ref array<ref CAD_UIButton> m_RowButtons = {};
+
+protected void BuildCross(Row row)
+{
+    CAD_UIButton cross = new CAD_UIButton();
+    cross.Init(row.GetRoot(), CAD_UIButtonVariant.BARE);
+    m_RowButtons.Insert(cross);
+}
+```
+
+Clear the array where the widgets it owns are unlinked and nowhere else: earlier releases the object under a widget still on screen, later leaves another set behind on every rebuild. A control built once belongs in its own field, outside whatever the rebuild clears.
+
+---
+
+## 15. SetAlpha on a root whose children do not inherit alpha
+
+**Symptom:** a fade half-lands. The container dims — or nothing visibly changes at all — while the parts inside it stay at full brightness.
+
+**Cause:** `inheritalpha` defaults to `0`, so `SetAlpha` on a parent affects only that widget's own drawing. A `FrameWidget` root draws nothing at all, so the call has no visible effect whatsoever; a `PanelWidget` root dims its background alone.
+
+**Safe pattern:** every child that must fade with the root carries `inheritalpha 1` in the layout — on the children, not on the root, whose alpha is the one being written.
+
+```
+FrameWidgetClass PlaceMarker {
+ ImageWidgetClass MarkerPlate {
+  inheritalpha 1
+ }
+ ImageWidgetClass MarkerGlyph {
+  inheritalpha 1
+ }
+}
+```
+
+It reaches only the children the layout declares. A widget created at runtime from another layout and linked in under one of these is a separate tree with its own defaults, and needs the flag in its own file.
