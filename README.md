@@ -5,7 +5,7 @@
 
 <div align="center">
     <img src="https://img.shields.io/github/issues/CAD4Z/enfusion-skills?style=for-the-badge" alt="open issues" />
-    <img src="https://img.shields.io/badge/version-0.3.1-blue?style=for-the-badge" alt="version" />
+    <img src="https://img.shields.io/badge/version-0.3.2-blue?style=for-the-badge" alt="version" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-PolyForm%20Strict%201.0.0-red?style=for-the-badge" alt="license" /></a>
 </div>
 
@@ -90,11 +90,23 @@ Without `P:`, the lookup still answers from the local references and flags the a
 │   ├── dayz-lookup/        SKILL.md + agents/openai.yaml + references/ (80 files)
 │   └── dayz-review/        SKILL.md + agents/openai.yaml
 ├── scripts/
-│   └── fix_paa_alpha.py
+│   └── fix_paa_alpha.cmd
 ├── AGENTS.md
 ├── CLAUDE.md
 └── LICENSE
 ```
+
+## PAA AlphaFlag fix
+
+Windows users can repair the `AlphaFlag value is not 1 or 2` header error without installing
+Python. Drop a `.paa` file onto `scripts\fix_paa_alpha.cmd`, or run it from a terminal:
+
+```bat
+scripts\fix_paa_alpha.cmd C:\path\to\texture.paa
+```
+
+With no argument, the command repairs the only `.paa` in the current folder. It refuses to guess
+when the folder contains none or more than one.
 
 ## License
 
