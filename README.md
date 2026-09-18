@@ -25,6 +25,8 @@
 
 ## Introduction
 
+I highly recommend using this alongside a full-cycle workflow like [mattpocock/skills](https://github.com/mattpocock/skills), [obra/superpowers](https://github.com/obra/superpowers), or any similar tools to improve the overall quality of the work!
+
 Agent skills and reference docs for DayZ modding — Enforce Script, layouts, configs, and engine internals.
 
 Runs in **Claude Code** as a plugin, and in every other agent — Codex, Cursor, Cline, Windsurf, Copilot, Zed and the rest — through the `npx skills` installer. Every skill is one `SKILL.md` plus an `agents/openai.yaml` beside it; every harness reads the same body and they differ only in metadata.
@@ -95,18 +97,6 @@ Without `P:`, the lookup still answers from the local references and flags the a
 ├── CLAUDE.md
 └── LICENSE
 ```
-
-## PAA AlphaFlag fix
-
-Windows users can repair the `AlphaFlag value is not 1 or 2` header error without installing
-Python. Drop a `.paa` file onto `scripts\fix_paa_alpha.cmd`, or run it from a terminal:
-
-```bat
-scripts\fix_paa_alpha.cmd C:\path\to\texture.paa
-```
-
-With no argument, the command repairs the only `.paa` in the current folder. It refuses to guess
-when the folder contains none or more than one.
 
 ## License
 
